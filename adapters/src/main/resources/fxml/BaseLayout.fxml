@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ This file is part of Devset CE.
+  ~
+  ~ Copyright (C) "2025" Dominik Martyniak
+  ~
+  ~ Devset CE is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ Devset CE is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with Devset CE. If not, see <https://www.gnu.org/licenses/>.
+  -->
+
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox fx:controller="io.devset.ce.configurations.fxml.BaseLayoutController"
+      xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" >
+
+    <children>
+        <fx:include source="TopToolbar.fxml"/>
+
+        <SplitPane fx:id="splitPane" VBox.vgrow="ALWAYS">
+
+            <!-- LEFT MENU (fixed width) -->
+            <AnchorPane minWidth="100.0" maxWidth="100.0" prefWidth="100.0">
+                <children>
+                    <fx:include source="LeftMenuView.fxml"/>
+                </children>
+            </AnchorPane>
+
+            <!-- RIGHT CONTENT -->
+            <AnchorPane>
+                <StackPane fx:id="contentContainer"
+                           AnchorPane.topAnchor="0.0"
+                           AnchorPane.bottomAnchor="0.0"
+                           AnchorPane.leftAnchor="0.0"
+                           AnchorPane.rightAnchor="0.0"/>
+            </AnchorPane>
+
+        </SplitPane>
+    </children>
+</VBox>

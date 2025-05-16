@@ -1,0 +1,143 @@
+/*
+ * This file is part of Devset CE.
+ *
+ * Copyright (C) "2025" Dominik Martyniak
+ *
+ * Devset CE is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Devset CE is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Devset CE. If not, see <https://www.gnu.org/licenses/>.
+ */
+
+plugins {
+    id "org.springframework.boot"
+    id "idea"
+    id 'org.openjfx.javafxplugin' version '0.1.0'
+}
+
+buildDir = './../build'
+
+bootJar {
+    archiveFileName = 'devset-ce.jar'
+}
+
+springBoot {
+    mainClass = 'io.devset.ce.DevsetCeApplication'
+}
+
+group = 'io.devset'
+version = '0.0.1-SNAPSHOT'
+
+def versionFile = "$buildDir/generated/resources/version.properties"
+
+tasks.register('generateVersionProperties') {
+    doLast {
+        def file = new File(versionFile)
+        file.parentFile.mkdirs()
+        file.text = "app.version=${project.version}"
+    }
+}
+
+processResources {
+    from(versionFile) {
+        into ''
+    }
+}
+
+compileJava.dependsOn('generateVersionProperties')
+
+sourceSets {
+    integTest {
+        java.srcDir "$projectDir/src/integTest/java"
+        resources.srcDir "$projectDir/src/integTest/resources"
+        compileClasspath += main.output + test.output
+        runtimeClasspath += main.output + test.output
+    }
+}
+
+idea {
+    module {
+        testSources.from(sourceSets.integTest.java.srcDirs)
+    }
+}
+
+configurations {
+    integTestImplementation.extendsFrom testImplementation
+    integTestRuntime.extendsFrom testRuntime
+}
+
+tasks.register('integTest', Test) {
+    description = "Run integration tests"
+    group = "verification"
+    testClassesDirs = sourceSets.integTest.output.classesDirs
+    classpath = sourceSets.integTest.runtimeClasspath
+    jvmArgs '-Xmx1g', '-Xms1g'
+    useJUnitPlatform()
+}
+
+processIntegTestResources {
+    duplicatesStrategy = DuplicatesStrategy.WARN
+}
+
+dependencies {
+    implementation project(':adapters')
+    implementation project(':application')
+    implementation project(':domain')
+
+    //FX
+    implementation "org.openjfx:javafx-controls:$versions.javafxVersion"
+    implementation "org.openjfx:javafx-fxml:$versions.javafxVersion"
+    implementation "org.openjfx:javafx-graphics:$versions.javafxVersion"
+    implementation "org.openjfx:javafx-base:$versions.javafxVersion"
+
+    //SPRING
+    implementation 'org.springframework.boot:spring-boot-starter'
+
+    //TEST
+    testImplementation "org.junit.jupiter:junit-jupiter:$versions.junitJupiter"
+    testImplementation platform("org.testcontainers:testcontainers-bom:$versions.testcontainersBom")
+    testImplementation 'org.testcontainers:junit-jupiter'
+    testImplementation "org.testcontainers:postgresql"
+    testImplementation "org.testcontainers:rabbitmq"
+    testImplementation "org.testcontainers:kafka"
+    testImplementation 'org.springframework.kafka:spring-kafka-test'
+    testImplementation 'org.springframework.kafka:spring-kafka'
+
+
+}
+
+test {
+    useJUnitPlatform()
+}
+
+integTest {
+    testLogging {
+        events "failed"
+        exceptionFormat "full"
+        showStandardStreams = false
+    }
+    systemProperty 'logging.level.root', 'ERROR'
+}
+
+tasks.withType(JavaExec).configureEach {
+    def osName = System.getProperty("os.name").toLowerCase()
+    def platform = osName.contains("win") ? "win" :
+            osName.contains("mac") ? "mac" : "linux"
+
+    def javafxLibPath = configurations.runtimeClasspath.asPath
+
+    jvmArgs = [
+            "--module-path", javafxLibPath,
+            "--add-modules", "javafx.controls,javafx.fxml",
+            "--add-reads", "org.xerial.sqlitejdbc=ALL-UNNAMED"
+
+    ]
+}

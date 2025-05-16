@@ -1,0 +1,64 @@
+/*
+ * This file is part of Devset CE.
+ *
+ * Copyright (C) "2025" Dominik Martyniak
+ *
+ * Devset CE is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Devset CE is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Devset CE. If not, see <https://www.gnu.org/licenses/>.
+ */
+
+plugins {
+    id "project-report"
+    id "groovy"
+    id 'org.openjfx.javafxplugin' version '0.1.0'
+}
+
+dependencies {
+    implementation project(":domain")
+    implementation project(":application")
+
+    //FX
+    implementation "org.openjfx:javafx-controls:$versions.javafxVersion"
+    implementation "org.openjfx:javafx-fxml:$versions.javafxVersion"
+    implementation "org.openjfx:javafx-graphics:$versions.javafxVersion"
+    implementation "org.openjfx:javafx-base:$versions.javafxVersion"
+
+    //SPRING
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation "org.openjfx:javafx-controls:$versions.javafxVersion"
+    implementation "org.openjfx:javafx-fxml:$versions.javafxVersion"
+
+    //SQL
+    implementation "org.xerial:sqlite-jdbc:$versions.sqlite"
+    implementation "org.hibernate.orm:hibernate-community-dialects:$versions.hibernateDialcet"
+    implementation "org.springframework.boot:spring-boot-starter-data-jpa"
+    implementation "org.flywaydb:flyway-core:$versions.flyway"
+
+    //KAFKA
+    implementation 'org.springframework.kafka:spring-kafka'
+
+    //OTHER
+    implementation "com.fasterxml.jackson.core:jackson-databind:$versions.jackson"
+    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$versions.jackson"
+    compileOnly "org.projectlombok:lombok:$versions.lombok"
+    annotationProcessor "org.projectlombok:lombok:$versions.lombok"
+    implementation "org.mapstruct:mapstruct:$versions.mapsruct"
+    annotationProcessor "org.mapstruct:mapstruct-processor:$versions.mapsruct"
+
+    //TEST
+    testImplementation platform("org.spockframework:spock-bom:$versions.spockBom")
+    testImplementation "org.spockframework:spock-core"
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+
+}

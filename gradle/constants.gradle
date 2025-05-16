@@ -1,0 +1,41 @@
+/*
+ * This file is part of Devset CE.
+ *
+ * Copyright (C) "2025" Dominik Martyniak
+ *
+ * Devset CE is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Devset CE is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Devset CE. If not, see <https://www.gnu.org/licenses/>.
+ */
+
+/**
+ * In this script should be added all constants of the build.
+ */
+ext {
+    versions = [
+            springContext         : "6.2.5",
+            springBootDependencies: "3.4.4",
+            flyway                : "10.13.0",
+            sqlite                : "3.49.1.0",
+            testcontainersBom     : "1.19.8",
+            junitJupiter          : "5.11.4",
+            spockBom              : "2.4-M5-groovy-4.0",
+            javafxVersion         : "21.0.6",
+            jackson               : "2.18.3",
+            lombok                : "1.18.36",
+            mapsruct              : "1.6.3",
+            hibernateDialcet      : "6.6.11.Final",
+            ehcache               : "3.10.8",
+            hibernateUtils55      : "3.8.1",
+            jacksonDatabind       : "2.16.0"
+    ]
+}
