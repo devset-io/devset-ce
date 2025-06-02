@@ -1,0 +1,35 @@
+plugins {
+    id "io.spring.dependency-management"
+}
+
+allprojects {
+    group = 'io.devset'
+}
+
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'io.spring.dependency-management'
+    apply plugin: 'java-library'
+    apply from: rootProject.file('gradle/constants.gradle')
+
+    sourceCompatibility = 21
+    targetCompatibility = 21
+
+    tasks.withType(JavaCompile).configureEach {
+        options.compilerArgs.add("-parameters")
+    }
+
+    repositories {
+        mavenCentral()
+        maven { url 'https://repo.spring.io/milestone' }
+        maven { url 'https://repo.spring.io/snapshot' }
+    }
+
+    dependencyManagement {
+        imports {
+            mavenBom("org.springframework.boot:spring-boot-dependencies:$versions.springBootDependencies")
+        }
+
+    }
+
+}

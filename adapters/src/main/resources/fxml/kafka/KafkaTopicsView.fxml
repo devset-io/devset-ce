@@ -1,0 +1,46 @@
+<!--
+  ~ This file is part of Devset CE.
+  ~
+  ~ Copyright (C) "2025" Dominik Martyniak
+  ~
+  ~ Devset CE is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ Devset CE is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with Devset CE. If not, see <https://www.gnu.org/licenses/>.
+  -->
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox spacing="10" xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="io.devset.ce.kafka.ui.controllers.KafkaTopicsController"
+      style="-fx-padding: 20;"
+      prefWidth="900" prefHeight="600">
+
+    <HBox spacing="10">
+        <TextField fx:id="searchField"
+                   promptText="Search topics..."
+                   HBox.hgrow="ALWAYS"/>
+        <Button text="➕ Add Topic" onAction="#addTopic"/>
+    </HBox>
+
+    <TableView fx:id="topicTable" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="nameCol" text="name" />
+            <TableColumn fx:id="partitionsCol" text="partitions" />
+            <TableColumn fx:id="replicationCol" text="replication" />
+            <TableColumn fx:id="cleanupCol" text="cleanupPolicy" />
+            <TableColumn fx:id="retentionCol" text="retentionMs" />
+            <TableColumn fx:id="actionsCol" text="Actions" />
+        </columns>
+    </TableView>
+</VBox>

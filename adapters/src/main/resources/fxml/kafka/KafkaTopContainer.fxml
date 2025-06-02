@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ This file is part of Devset CE.
+  ~
+  ~ Copyright (C) "2025" Dominik Martyniak
+  ~
+  ~ Devset CE is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ Devset CE is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with Devset CE. If not, see <https://www.gnu.org/licenses/>.
+  -->
+
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<AnchorPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="io.devset.ce.kafka.ui.controllers.KafkaTopContainerController">
+
+    <GridPane fx:id="mainContainer" hgap="10" vgap="10">
+
+        <padding>
+            <Insets top="10" right="10" bottom="10" left="10"/>
+        </padding>
+
+        <!-- URL and Port Row -->
+        <Label text="URL:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+        <TextField fx:id="kafkaUrlField" promptText="localhost" prefWidth="160" GridPane.columnIndex="1"
+                   GridPane.rowIndex="0"/>
+
+        <Label text="Port:" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+        <TextField fx:id="portField" promptText="29092" prefWidth="80" GridPane.columnIndex="3"
+                   GridPane.rowIndex="0"/>
+
+        <Label text="User:" GridPane.columnIndex="4" GridPane.rowIndex="0"/>
+        <TextField fx:id="userField" promptText="(optional)" prefWidth="120" GridPane.columnIndex="5"
+                   GridPane.rowIndex="0"/>
+
+        <Label text="Password:" GridPane.columnIndex="6" GridPane.rowIndex="0"/>
+        <PasswordField fx:id="passwordField" promptText="(optional)" prefWidth="120" GridPane.columnIndex="7"
+                       GridPane.rowIndex="0"/>
+
+        <Button fx:id="connectButton" text="Connect" onAction="#handleConnectionToggle"
+                GridPane.columnIndex="8" GridPane.rowIndex="0"/>
+
+        <Label fx:id="connectedLabel" text="Connected" visible="false" styleClass="connected-label"
+               GridPane.columnIndex="9" GridPane.rowIndex="0"/>
+        <Label fx:id="disconnectedLabel" text="Disconnected" styleClass="disconnected-label"
+               GridPane.columnIndex="9" GridPane.rowIndex="0"/>
+    </GridPane>
+
+</AnchorPane>
