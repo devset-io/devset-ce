@@ -21,9 +21,12 @@ package io.devset.ce.flows.services;
 
 import io.devset.ce.common.ProviderMetaData;
 import io.devset.ce.common.RuleDto;
+import io.devset.ce.flows.services.strategies.FlowStrategyResolver;
 import io.devset.ce.kafka.KafkaFacade;
 import io.devset.ce.schemas.SchemaFacade;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -31,20 +34,39 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class FlowWorkerManager {
 
     private final KafkaFacade kafkaFacade;
     private final SchemaFacade schemaFacade;
+    private final FlowStrategyResolver flowStrategyResolver;
     private final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
     private final Map<String, FlowWorker> workers = new ConcurrentHashMap<>();
 
-    public void startWorker(String id, ProviderMetaData providerMetaData, RuleDto rules, int tickIntervalMs) {
+    @PostConstruct
+    public void startCleanupTask() {
+        Executors.newSingleThreadScheduledExecutor()
+                .scheduleAtFixedRate(this::cleanupFinishedWorkers, 5, 5, TimeUnit.SECONDS);
+    }
+
+    private void cleanupFinishedWorkers() {
+        workers.entrySet().removeIf(entry -> {
+            if (!entry.getValue().isRunning()) {
+                log.info("Removed finished worker: {}", entry.getKey());
+            }
+            return !entry.getValue().isRunning();
+        });
+    }
+
+    public void startWorker(String id, ProviderMetaData providerMetaData, RuleDto rule, int tickIntervalMs) {
         if (workers.containsKey(id)) return;
-        var schema = schemaFacade.findById(rules.getSchemaId());
-        FlowWorker worker = new FlowWorker(id, providerMetaData, schema, rules, tickIntervalMs, kafkaFacade);
+        var schema = schemaFacade.findById(rule.getSchemaId());
+        var strategy = flowStrategyResolver.resolve(kafkaFacade, schema, providerMetaData, rule, tickIntervalMs);
+        FlowWorker worker = new FlowWorker(id, strategy);
         workers.put(id, worker);
         executor.submit(worker);
     }

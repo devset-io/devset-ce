@@ -69,10 +69,10 @@
                            style="-fx-border-color: #ccc; -fx-border-radius: 5; -fx-padding: 10; -fx-background-color: white;"
                            onDragDetected="#onDragLoopSender"/>
 
-<!--                    <Label text="📤 Single Sender"-->
-<!--                           style="-fx-border-color: #ccc; -fx-border-radius: 5; -fx-padding: 10; -fx-background-color: white;"-->
-<!--                           onDragDetected="#onDragSingleSender"/>-->
-<!---->
+                    <Label text="📤 Single Sender"
+                           style="-fx-border-color: #ccc; -fx-border-radius: 5; -fx-padding: 10; -fx-background-color: white;"
+                           onDragDetected="#onDragSingleSender"/>
+
 <!--                    <Label text="🔀 Condition"-->
 <!--                           style="-fx-border-color: #ccc; -fx-border-radius: 5; -fx-padding: 10; -fx-background-color: white;"-->
 <!--                           onDragDetected="#onDragCondition"/>-->

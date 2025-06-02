@@ -19,6 +19,7 @@
 
 package io.devset.ce.common;
 
+import io.devset.ce.flows.FlowElement;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -33,6 +34,7 @@ import java.util.List;
 public class RuleDto {
     private String id;
     private String schemaId;
+    private FlowElement flowElement;
     private int globalTickMillis;
     private List<FieldRuleDto> rules;
 }

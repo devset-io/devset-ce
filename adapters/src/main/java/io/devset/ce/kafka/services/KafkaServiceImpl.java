@@ -163,7 +163,7 @@ public class KafkaServiceImpl implements KafkaService {
 
             KafkaTemplate<String, String> template = producers.get(configId);
             if (template == null) {
-                log.error("[UI] Failed to send message [{}] to Kafka [{}]", values, configId);
+                log.error("[UI] Failed to send message [{}] to Kafka [{}], No KafkaTemplate", values, configId);
                 throw new IllegalStateException("No KafkaTemplate for: " + configId);
             }
 

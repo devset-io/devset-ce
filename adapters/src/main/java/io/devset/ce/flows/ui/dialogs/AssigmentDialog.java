@@ -23,14 +23,12 @@ import io.devset.ce.flows.dto.FlowNodeDto;
 import io.devset.ce.schemas.dto.SchemaDto;
 import javafx.scene.control.*;
 import javafx.util.StringConverter;
+import lombok.experimental.UtilityClass;
 
 import java.util.List;
 
+@UtilityClass
 public class AssigmentDialog {
-
-    private AssigmentDialog() {
-        throw new IllegalStateException("Utility class");
-    }
 
     private static final ButtonType assignBtn = new ButtonType("Assign", ButtonBar.ButtonData.OK_DONE);
     private static final ButtonType removeBtn = new ButtonType("Remove", ButtonBar.ButtonData.OTHER);

@@ -22,12 +22,10 @@ package io.devset.ce.flows.ui.dialogs;
 import io.devset.ce.flows.dto.FlowNodeDto;
 import io.devset.ce.schemas.dto.SchemaDto;
 import javafx.scene.control.*;
+import lombok.experimental.UtilityClass;
 
+@UtilityClass
 public class SchemaPayloadDialog {
-
-    private SchemaPayloadDialog() {
-        throw new IllegalStateException("Utility class");
-    }
 
     public static void showSchemaPayloadDialog(SchemaDto assigned, FlowNodeDto schemaNode) {
 

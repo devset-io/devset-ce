@@ -40,7 +40,7 @@ dependencies {
 
     //SQL
     implementation "org.xerial:sqlite-jdbc:$versions.sqlite"
-    implementation "org.hibernate.orm:hibernate-community-dialects:$versions.hibernateDialcet"
+    implementation "org.hibernate.orm:hibernate-community-dialects:$versions.hibernateDialect"
     implementation "org.springframework.boot:spring-boot-starter-data-jpa"
     implementation "org.flywaydb:flyway-core:$versions.flyway"
 

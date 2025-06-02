@@ -28,12 +28,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.devset.ce.common.FieldRuleDto;
 import io.devset.ce.common.RuleDto;
 import io.devset.ce.flows.FlowElement;
+import io.devset.ce.flows.FlowsFacade;
 import io.devset.ce.flows.dto.FlowDefinitionDto;
 import io.devset.ce.flows.dto.FlowDto;
 import io.devset.ce.flows.dto.FlowNodeDto;
 import io.devset.ce.flows.services.UiLogAppender;
 import io.devset.ce.flows.ui.controlers.utils.FlowElementFactory;
 import io.devset.ce.flows.ui.controlers.utils.SchemaParser;
+import io.devset.ce.flows.ui.dialogs.LooperDialog;
+import io.devset.ce.flows.ui.dialogs.SingleSenderDialog;
 import io.devset.ce.schemas.dto.SchemaDto;
 import javafx.application.Platform;
 import javafx.scene.control.ComboBox;
@@ -55,7 +58,6 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static io.devset.ce.flows.ui.dialogs.AssigmentDialog.showAssigmentDialog;
-import static io.devset.ce.flows.ui.dialogs.SchemaDialogSplitView.showSchemaDialog;
 import static io.devset.ce.flows.ui.dialogs.SchemaPayloadDialog.showSchemaPayloadDialog;
 import static io.devset.ce.flows.ui.controlers.utils.Addons.connectNodesWithArrow;
 
@@ -73,13 +75,16 @@ class FlowSceneService {
     private final List<Label> labels = new ArrayList<>();
     private final Pane canvasPane;
     private FlowNodeDto selectedNode;
+    private final FlowsFacade flowsFacade;
 
-    FlowSceneService(Pane canvasPane, List<SchemaDto> availableSchemas, List<FlowDto> availableFlows, List<String> availableTopics, FlowDefinitionDto state) {
+    FlowSceneService(Pane canvasPane, List<SchemaDto> availableSchemas, List<String> availableTopics, FlowsFacade flowsFacade) {
         this.canvasPane = canvasPane;
         this.availableSchemas = availableSchemas;
-        this.availableFlows = availableFlows;
-        this.state = state;
+        this.availableFlows = flowsFacade.getNames();
+        var firstFlow = availableFlows.stream().findFirst();
+        this.state = firstFlow.isEmpty() ? flowsFacade.createFlow() : flowsFacade.getById(firstFlow.get().getId());
         this.availableTopics = availableTopics;
+        this.flowsFacade = flowsFacade;
     }
 
     void refreshAvailableFlows(List<FlowDto> availableFlows) {
@@ -252,14 +257,29 @@ class FlowSceneService {
         if (fieldRule.isEmpty()) {
             return;
         }
-        AtomicReference<RuleDto> rule = new AtomicReference<>(new RuleDto(UUID.randomUUID().toString(), node.getSchemaId(), 1000, new ArrayList<>()));
+        AtomicReference<RuleDto> rule = new AtomicReference<>(new RuleDto(UUID.randomUUID().toString(), node.getSchemaId(), node.getType(), 1000, new ArrayList<>()));
         state.getRule(node.getId()).ifPresent(rule::set);
-        showSchemaDialog(rule.get(), schemaTitle, SchemaParser.extractFields(schemaNode), state.getProviderMetadata())
-                .ifPresent(configured -> this.state.addRule(node.getId(), configured));
+        switch (node.getType()) {
+            case LOOP_SENDER ->
+                    LooperDialog.showdDialog(rule.get(), schemaTitle, SchemaParser.extractFields(schemaNode), state.getProviderMetadata())
+                            .ifPresent(configured -> {
+                                this.state.addRule(node.getId(), configured);
+                                saveFlows();
+                            });
+
+            case SINGLE_SENDER ->
+                    SingleSenderDialog.showDialog(rule.get(), schemaTitle, SchemaParser.extractFields(schemaNode), state.getProviderMetadata())
+                            .ifPresent(configured -> {
+                                this.state.addRule(node.getId(), configured);
+                                saveFlows();
+                            });
+
+        }
+
     }
 
     private void createConnection(FlowNodeDto node) {
-        if (selectedNode != null && selectedNode.getType().equals(FlowElement.SCHEMA) && node.getType().equals(FlowElement.LOOP_SENDER)) {
+        if (selectedNode != null && selectedNode.getType().equals(FlowElement.SCHEMA) && node.getType().isAction()) {
             // Check if this Schema is already connected
             if (!state.hasConnection(selectedNode.getId()) && !state.isConnection(node.getId())) {
                 var schemaNode = state.findNode(selectedNode.getId()).orElseThrow();
@@ -319,5 +339,15 @@ class FlowSceneService {
         if (!getAvailableFlows().isEmpty()) {
             templateSelector.getSelectionModel().selectFirst();
         }
+    }
+
+    public void saveFlows() {
+        flowsFacade.saveFlow(getState());
+        refreshAvailableFlows(flowsFacade.getNames());
+    }
+
+    public void deleteFlows() {
+        flowsFacade.delete(getState().getId());
+        refreshAvailableFlows(flowsFacade.getNames());
     }
 }

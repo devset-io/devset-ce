@@ -17,21 +17,33 @@
  * along with Devset CE. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.devset.ce.flows;
+package io.devset.ce.flows.services.strategies;
 
+
+import io.devset.ce.common.ProviderMetaData;
+import io.devset.ce.common.RuleDto;
+import io.devset.ce.kafka.KafkaFacade;
+import io.devset.ce.schemas.dto.SchemaDto;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 
-public enum FlowElement {
-    SCHEMA(false),
-    PROCESSOR(true),
-    LOOP_SENDER(true),
-    SINGLE_SENDER(true),
-    CONDITION(true);
+@Slf4j
+@Getter
+@RequiredArgsConstructor
+@ToString
+public class FlowWorkerContext {
 
-    @Getter
-    private final boolean isAction;
+    private int iteration = 1;
+    private final SchemaDto schema;
+    private final ProviderMetaData providerMetaData;
+    private final RuleDto rule;
+    private final int tickIntervalMillis;
+    private final KafkaFacade kafkaFacade;
 
-    FlowElement(boolean isAction) {
-        this.isAction = isAction;
+
+    public void increaseIteration() {
+        this.iteration++;
     }
 }

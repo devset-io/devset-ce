@@ -63,12 +63,9 @@ public class FlowEditorController {
     @FXML
     void initialize() {
         var availableSchemas = kafkaFacade.findSchemas();
-        var availableFlows = flowsFacade.getNames();
         var availableTopics = kafkaFacade.getAllTopics().stream().map(KafkaTopicDto::getName).toList();
 
-        var firstFlow = availableFlows.stream().findFirst();
-        var state = firstFlow.isEmpty() ? flowsFacade.createFlow() : flowsFacade.getById(firstFlow.get().getId());
-        this.service = new FlowSceneService(canvasPane, availableSchemas, availableFlows, availableTopics, state);
+        this.service = new FlowSceneService(canvasPane, availableSchemas, availableTopics, flowsFacade);
         service.initNewScene();
         service.loadTemplateList(templateSelector);
         service.loadTopics(topicSelector);
@@ -160,9 +157,7 @@ public class FlowEditorController {
     @FXML
     void saveFlow() {
         this.service.getState().setName(flowNameField.getText());
-        this.flowsFacade.saveFlow(service.getState());
-        service.refreshAvailableFlows(flowsFacade.getNames());
-        this.service.loadTemplateList(templateSelector);
+        service.saveFlows();
     }
 
     @FXML
@@ -184,8 +179,7 @@ public class FlowEditorController {
 
     @FXML
     void onDeleteFlow() {
-        this.flowsFacade.delete(service.getState().getId());
-        service.refreshAvailableFlows(flowsFacade.getNames());
+        this.service.deleteFlows();
         this.service.loadTemplateList(templateSelector);
     }
 

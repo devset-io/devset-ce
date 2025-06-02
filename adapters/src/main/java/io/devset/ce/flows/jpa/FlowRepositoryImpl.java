@@ -76,7 +76,10 @@ public class FlowRepositoryImpl implements FlowRepository {
                 .collect(
                         Collectors.toMap(
                                 FlowRuleEntity::getNodeId,
-                                rule -> new FlowRule(rule.getId(), rule.getSchemaId(), rule.getGlobalTickMillis(),
+                                rule -> new FlowRule(rule.getId(),
+                                        rule.getSchemaId(),
+                                        flow.getNodes().stream().filter(it -> it.getId().equals(rule.getNodeId())).findAny().get().getType(),
+                                        rule.getGlobalTickMillis(),
                                         rule.getNumericFieldRules().stream().map(mapper::toDomain).toList()
 
                                 )

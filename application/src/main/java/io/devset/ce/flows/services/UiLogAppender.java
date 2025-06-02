@@ -19,29 +19,26 @@
 
 package io.devset.ce.flows.services;
 
-import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.AppenderBase;
+import lombok.Setter;
 
 import java.util.function.Consumer;
 
 public class UiLogAppender extends AppenderBase<ILoggingEvent> {
 
+    @Setter
     private static Consumer<String> logConsumer;
-
-    public static void setLogConsumer(Consumer<String> consumer) {
-        logConsumer = consumer;
-    }
 
     @Override
     protected void append(ILoggingEvent eventObject) {
-        // tutaj log trafia do TextArea w UI
+
         if (logConsumer != null && shouldSendToUI(eventObject)) {
             logConsumer.accept(eventObject.getFormattedMessage());
         }
     }
 
     private boolean shouldSendToUI(ILoggingEvent event) {
-        return event.getLevel() == Level.INFO && event.getFormattedMessage().contains("[UI]");
+        return event.getFormattedMessage().contains("[UI]");
     }
 }

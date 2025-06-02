@@ -33,7 +33,7 @@ ext {
             jackson               : "2.18.3",
             lombok                : "1.18.36",
             mapsruct              : "1.6.3",
-            hibernateDialcet      : "6.6.11.Final",
+            hibernateDialect      : "6.6.11.Final",
             ehcache               : "3.10.8",
             hibernateUtils55      : "3.8.1",
             jacksonDatabind       : "2.16.0"

@@ -33,6 +33,7 @@ import java.util.List;
 public class FlowRule {
     private String id;
     private String schemaId;
+    private FlowElement flowElement;
     private int globalTickMillis;
     private List<FieldRule> rules;
 }

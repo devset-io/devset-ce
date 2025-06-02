@@ -17,21 +17,21 @@
  * along with Devset CE. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.devset.ce.flows;
+package io.devset.ce.flows.services.strategies;
+
 
 import lombok.Getter;
+import lombok.ToString;
 
-public enum FlowElement {
-    SCHEMA(false),
-    PROCESSOR(true),
-    LOOP_SENDER(true),
-    SINGLE_SENDER(true),
-    CONDITION(true);
+@ToString
+public abstract class AbstractFlowStrategy {
 
     @Getter
-    private final boolean isAction;
+    public final FlowWorkerContext context;
 
-    FlowElement(boolean isAction) {
-        this.isAction = isAction;
+    protected AbstractFlowStrategy(FlowWorkerContext context) {
+        this.context = context;
     }
+
+    public abstract boolean execute();
 }
