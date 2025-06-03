@@ -12,6 +12,7 @@
   <img src="https://img.shields.io/badge/status-early%20preview-yellow" alt="Status"/>
   <img src="https://img.shields.io/github/v/tag/devset-io/devset-ce?label=version" alt="Current version"/>
 </p>
+
 ## About the Project
 
 Devset CE (Community Edition) is an open-source tool designed to simplify testing and working with event-driven systems
