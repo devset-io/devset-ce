@@ -44,8 +44,6 @@ public class AssigmentDialog {
         ComboBox<SchemaDto> comboBox = new ComboBox<>();
         comboBox.getItems().addAll(availableSchemas);
 
-        comboBox.getItems().addAll(availableSchemas);
-
         comboBox.setConverter(new StringConverter<>() {
             @Override
             public String toString(SchemaDto dto) {
