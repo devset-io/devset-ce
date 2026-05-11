@@ -7,7 +7,7 @@ plugins {
 apply from: rootProject.file("gradle/constants.gradle")
 
 group = "io.devset"
-version = "0.0.1-SNAPSHOT"
+version = "0.1.0"
 
 java {
     toolchain {
