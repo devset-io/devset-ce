@@ -1,0 +1,35 @@
+/*
+ * This file is part of Devset CE.
+ *
+ * Copyright (C) 2025-2026 Dominik Martyniak
+ *
+ * Licensed under the Functional Source License, Version 1.1, Apache 2.0 Future License
+ * (the "License"); you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License in the LICENSE file at the root of this repository.
+ */
+
+package io.devset.ce.be.collection.infrastructure.persistence;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
+
+/**
+ * JPA entity for the message_dispatch_collection table.
+ */
+@Entity
+@Table(name = "message_dispatch_collection")
+@Getter
+@Setter
+public class CollectionEntity {
+
+    @Id
+    @Column(name = "collection_name", nullable = false, updatable = false, length = 200)
+    private String collectionName;
+
+    protected CollectionEntity() {
+    }
+}

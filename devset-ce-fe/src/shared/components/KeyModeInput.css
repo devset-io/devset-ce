@@ -1,0 +1,49 @@
+.key-mode-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.key-mode-input-modes {
+  display: flex;
+  gap: 4px;
+}
+
+.key-mode-input-btn {
+  padding: 3px 8px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+  color: var(--ink-500, #5b718f);
+  background: transparent;
+  transition: background 0.15s, color 0.15s;
+}
+
+.key-mode-input-btn:hover {
+  background: var(--panel-soft, #f0f4f8);
+  color: var(--ink-900, #1f324c);
+}
+
+.key-mode-input-btn.is-active {
+  background: var(--brand, #2b8a66);
+  color: #fff;
+}
+
+.key-mode-input-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.key-mode-input-field {
+  flex: 1;
+  padding: 8px 10px;
+  font-size: 0.8rem;
+  border: 1px solid #c8d6ec;
+  border-radius: 8px;
+  background: #fff;
+  color: #1f324c;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  opacity: 1;
+}

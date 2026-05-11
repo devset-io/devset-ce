@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns="http://www.ehcache.org/v3"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:jsr107="http://www.ehcache.org/v3/jsr107"
+        xsi:schemaLocation="
+            http://www.ehcache.org/v3 http://www.ehcache.org/schema/ehcache-core.xsd
+            http://www.ehcache.org/v3/jsr107 http://www.ehcache.org/schema/ehcache-107-ext.xsd">
+
+    <service>
+        <jsr107:defaults enable-management="true" enable-statistics="true"/>
+    </service>
+
+    <cache-template name="default-template">
+        <key-type>java.lang.Object</key-type>
+        <value-type>java.lang.Object</value-type>
+        <expiry>
+            <ttl unit="hours">12</ttl>
+        </expiry>
+        <resources>
+            <heap unit="entries">1000</heap>
+        </resources>
+    </cache-template>
+
+    <cache alias="collection.by-name" uses-template="default-template"/>
+    <cache alias="collection.all" uses-template="default-template"/>
+    <cache alias="single-request.by-name" uses-template="default-template"/>
+    <cache alias="single-request.all" uses-template="default-template"/>
+    <cache alias="workflow.by-id" uses-template="default-template"/>
+    <cache alias="workflow.all" uses-template="default-template"/>
+    <cache alias="workflow-catalog.by-name" uses-template="default-template"/>
+    <cache alias="workflow-catalog.names" uses-template="default-template"/>
+    <cache alias="schema.latest-by-id" uses-template="default-template"/>
+    <cache alias="schema.all" uses-template="default-template"/>
+    <cache alias="single-step.history" uses-template="default-template"/>
+</config>

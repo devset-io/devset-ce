@@ -1,0 +1,75 @@
+HELP.md
+.gradle
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### VS Code ###
+.vscode/
+/kafka-data/
+
+/src/main/resources/static/
+/docs/
+/http/
+/data/
+/devset.db
+/git.txt
+/docker-compose.yml
+
+### Local dev config ###
+src/main/resources/application-dev.yml
+
+### Secrets & credentials ###
+.env
+.env.*
+*.key
+*.pem
+*.p12
+*.jks
+*credentials*
+*secret*
+
+### Build artifacts ###
+*.tar
+*.tar.gz
+*.log
+
+### macOS ###
+.DS_Store
+**/.DS_Store
+
+### Tools ###
+.claude/
+
+### Project-specific ###
+deploy.txt
+check.json

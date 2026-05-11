@@ -1,0 +1,156 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g. 0.1.0)'
+        required: true
+        type: string
+
+permissions: {}
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    environment: production-release
+
+    permissions:
+      contents: write
+      packages: write
+      id-token: write
+      attestations: write
+
+    steps:
+      - name: Verify actor is authorized
+        if: github.actor != 'sixset'
+        run: |
+          echo "::error::Only the maintainer can run releases. Triggered by: ${{ github.actor }}"
+          exit 1
+
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Validate version format
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?$ ]]; then
+            echo "::error::Version must be X.Y.Z or X.Y.Z-suffix (e.g. 0.1.0, 1.2.3-rc1)"
+            exit 1
+          fi
+
+      - name: Check version is new
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          if git rev-parse "v$VERSION" >/dev/null 2>&1; then
+            echo "::error::Tag v$VERSION already exists"
+            exit 1
+          fi
+
+      # ── Frontend ──────────────────────────────────────────────
+      - name: Set up Node 22
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: devset-ce-fe/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: devset-ce-fe
+        run: npm ci
+
+      - name: Lint frontend
+        working-directory: devset-ce-fe
+        run: npm run lint
+
+      - name: Test frontend
+        working-directory: devset-ce-fe
+        run: npm run test
+
+      - name: Build frontend
+        working-directory: devset-ce-fe
+        run: npm run build
+
+      - name: Copy frontend build to backend static resources
+        run: |
+          mkdir -p devset-ce-be/src/main/resources/static
+          cp -r devset-ce-fe/dist/* devset-ce-be/src/main/resources/static/
+
+      # ── Backend ───────────────────────────────────────────────
+      - name: Set up Java 25
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        with:
+          distribution: temurin
+          java-version: 25
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@017a9effdb900e5b5b2fddfb590a105619dca3c3 # v4.4.2
+        with:
+          build-scan-publish: false
+          add-job-summary-as-pr-comment: never
+
+      - name: Build and test backend
+        working-directory: devset-ce-be
+        run: ./gradlew build
+
+      - name: Integration tests
+        working-directory: devset-ce-be
+        run: ./gradlew integTest
+
+      - name: Build fat JAR
+        working-directory: devset-ce-be
+        run: ./gradlew bootJar
+
+      # ── Docker ────────────────────────────────────────────────
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@030e881283bb7a6894de51c315a6bfe6a94e05cf # v6
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=semver,pattern={{version}},value=v${{ inputs.version }}
+            type=semver,pattern={{major}}.{{minor}},value=v${{ inputs.version }}
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6.19.2
+        with:
+          context: devset-ce-be
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          provenance: mode=max
+          sbom: true
+
+      # ── Release ───────────────────────────────────────────────
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda # v3.0.0
+        with:
+          tag_name: "v${{ inputs.version }}"
+          generate_release_notes: true
+          files: devset-ce-be/build/libs/*.jar
+          fail_on_unmatched_files: true
+          make_latest: true

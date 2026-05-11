@@ -1,0 +1,51 @@
+{
+  "name": "devset-ce-fe",
+  "private": true,
+  "license": "SEE LICENSE IN LICENSE.md",
+  "version": "0.0.0",
+  "type": "module",
+  "author": "Dominik Martyniak",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/devset-io/devset-ce-fe.git"
+  },
+  "homepage": "https://github.com/devset-io/devset-ce-fe",
+  "bugs": {
+    "url": "https://github.com/devset-io/devset-ce-fe/issues"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@xyflow/react": "12.10.1",
+    "ace-builds": "1.43.6",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "react-router-dom": "7.13.2",
+    "sonner": "2.0.7"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.39.4",
+    "@tailwindcss/typography": "0.5.16",
+    "@types/node": "24.12.0",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "@vitejs/plugin-react": "6.0.0",
+    "autoprefixer": "10.4.27",
+    "eslint": "9.39.4",
+    "eslint-plugin-react-hooks": "7.0.1",
+    "eslint-plugin-react-refresh": "0.5.2",
+    "globals": "17.4.0",
+    "postcss": "8.5.10",
+    "tailwindcss": "3.4.17",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.56.1",
+    "vite": "8.0.5",
+    "vitest": "4.1.5"
+  }
+}

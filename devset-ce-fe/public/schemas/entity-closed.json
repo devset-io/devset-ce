@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Entity Closed",
+  "type": "object",
+  "properties": {
+    "id": { "type": ["string", "null"] },
+    "userId": { "type": "integer" },
+    "status": { "type": ["string", "null"] },
+    "value": { "type": "integer" },
+    "verifiedMileage": { "type": "integer" }
+  }
+}

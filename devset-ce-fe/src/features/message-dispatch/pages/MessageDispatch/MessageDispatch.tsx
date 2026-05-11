@@ -1,0 +1,155 @@
+/*
+ * This file is part of Devset CE.
+ *
+ * Copyright (C) 2025-2026 Dominik Martyniak
+ *
+ * Licensed under the Functional Source License, Version 1.1, Apache 2.0 Future License
+ * (the "License"); you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License in the LICENSE file at the root of this repository.
+ */
+
+import { useMemo } from 'react'
+import { useI18n } from '../../../../core/i18n/I18nProvider'
+import { MessageDispatch } from './components/MessageDispatch'
+import { useMessageDispatch } from './hooks/MessageDispatch.hooks'
+import type { MessageDispatchLabels } from '../../types/messageDispatch.view.types'
+
+export function MessageDispatchContainer() {
+  const { t } = useI18n()
+
+  const labels = useMemo<MessageDispatchLabels>(
+    () => ({
+      collections: {
+        title: t('dispatch.collections.title'),
+        refresh: t('dispatch.collections.refresh'),
+        refreshing: t('dispatch.collections.refreshing'),
+        newCollectionPlaceholder: t('dispatch.collections.newCollectionPlaceholder'),
+        add: t('dispatch.collections.add'),
+        loadingCollections: t('dispatch.collections.loading'),
+        emptyCollections: t('dispatch.collections.empty'),
+        actionsFor: t('dispatch.collections.actionsFor'),
+        collectionActions: t('dispatch.collections.collectionActions'),
+        clone: t('dispatch.collections.clone'),
+        rename: t('dispatch.collections.rename'),
+        delete: t('dispatch.collections.delete'),
+        emptyRequests: t('dispatch.collections.emptyRequests'),
+        requestActions: t('dispatch.collections.requestActions'),
+      },
+      request: {
+        title: t('dispatch.request.title'),
+        subtitle: t('dispatch.request.subtitle'),
+        loadedFromHistory: t('dispatch.request.loadedFromHistory'),
+        loadedSingleRequest: t('dispatch.request.loadedSingleRequest'),
+        fromCollection: t('dispatch.request.fromCollection'),
+        sending: t('dispatch.request.sending'),
+        send: t('dispatch.request.send'),
+        update: t('dispatch.request.update'),
+        save: t('dispatch.request.save'),
+        hideHistory: t('dispatch.request.hideHistory'),
+        history: t('dispatch.request.history'),
+        saveModalAria: t('dispatch.request.saveModalAria'),
+        saveModalTitle: t('dispatch.request.saveModalTitle'),
+        saveModalSubtitle: t('dispatch.request.saveModalSubtitle'),
+        close: t('dispatch.request.close'),
+        collectionLabel: t('dispatch.request.collectionLabel'),
+        collectionPlaceholder: t('dispatch.request.collectionPlaceholder'),
+        requestLabel: t('dispatch.request.requestLabel'),
+        requestPlaceholder: t('dispatch.request.requestPlaceholder'),
+        cancel: t('dispatch.request.cancel'),
+        saving: t('dispatch.request.saving'),
+        connector: t('dispatch.request.connector'),
+        noConnectors: t('dispatch.request.noConnectors'),
+        contentType: t('dispatch.request.contentType'),
+        queue: t('dispatch.request.queue'),
+        routingKey: t('dispatch.request.routingKey'),
+        exchange: t('dispatch.request.exchange'),
+        topic: t('dispatch.request.topic'),
+        protoSchemaTitle: t('dispatch.request.protoSchemaTitle'),
+        protoApplied: t('dispatch.request.protoApplied'),
+        applyProtoAsBase: t('dispatch.request.applyProtoAsBase'),
+        schemas: t('dispatch.request.schemas'),
+        import: t('dispatch.request.import'),
+        noProtoSchemas: t('dispatch.request.noProtoSchemas'),
+        expandProtoSchema: t('dispatch.request.expandProtoSchema'),
+        collapseProtoSchema: t('dispatch.request.collapseProtoSchema'),
+        expand: t('dispatch.request.expand'),
+        collapse: t('dispatch.request.collapse'),
+        stepStateTitle: t('dispatch.request.stepStateTitle'),
+        importSchema: t('dispatch.request.importSchema'),
+        noJsonSchemas: t('dispatch.request.noJsonSchemas'),
+        lockedTitle: t('dispatch.request.lockedTitle'),
+        lockedHint: t('dispatch.request.lockedHint'),
+        protobufNote: t('dispatch.request.protobufNote'),
+        rawDsl: t('dispatch.request.rawDsl'),
+        functionStudio: t('dispatch.request.functionStudio'),
+        rawDslProtoHint: t('dispatch.request.rawDslProtoHint'),
+        rawDslJsonHint: t('dispatch.request.rawDslJsonHint'),
+        formatJson: t('dispatch.request.formatJson'),
+        functionStudioNote: t('dispatch.request.functionStudioNote'),
+        wireFormatTitle: t('flow.wireFormat.title'),
+        wireFormatTooltipAria: t('flow.wireFormat.tooltipAria'),
+        wireFormatTooltip: t('flow.wireFormat.tooltip'),
+        wireFormatEnable: t('flow.wireFormat.enable'),
+        wireFormatSource: t('flow.wireFormat.source'),
+        wireFormatSourceMessagePrefix: t('flow.wireFormat.source.messagePrefix'),
+        wireFormatPrefixValue: t('flow.wireFormat.prefixValue'),
+        wireFormatPrefixValueError: t('flow.wireFormat.prefixValueError'),
+        wireFormatHint: t('flow.wireFormat.hint'),
+      },
+      kafkaEnvelope: {
+        kafkaKey: t('dispatch.kafka.key'),
+        headers: t('dispatch.kafka.headers'),
+        headerKeyPlaceholder: t('dispatch.kafka.headerKeyPlaceholder'),
+        headerValuePlaceholder: t('dispatch.kafka.headerValuePlaceholder'),
+        headerKeyAria: t('dispatch.kafka.headerKeyAria'),
+        headerValueAria: t('dispatch.kafka.headerValueAria'),
+        removeHeaderAria: t('dispatch.kafka.removeHeaderAria'),
+        addHeaderAria: t('dispatch.kafka.addHeaderAria'),
+      },
+      history: {
+        title: t('dispatch.history.title'),
+        hint: t('dispatch.history.hint'),
+        refresh: t('dispatch.history.refresh'),
+        refreshing: t('dispatch.history.refreshing'),
+        search: t('dispatch.history.search'),
+        searchPlaceholder: t('dispatch.history.searchPlaceholder'),
+        broker: t('dispatch.history.broker'),
+        format: t('dispatch.history.format'),
+        all: t('dispatch.history.all'),
+        clear: t('dispatch.history.clear'),
+        loading: t('dispatch.history.loading'),
+        empty: t('dispatch.history.empty'),
+        emptyFiltered: t('dispatch.history.emptyFiltered'),
+        preview: t('dispatch.history.preview'),
+        load: t('dispatch.history.load'),
+        missing: t('dispatch.history.missing'),
+        destination: t('dispatch.history.destination'),
+        run: t('dispatch.history.run'),
+      },
+      historyPreview: {
+        modalAria: t('dispatch.historyPreview.aria'),
+        title: t('dispatch.historyPreview.title'),
+        close: t('dispatch.historyPreview.close'),
+        producer: t('dispatch.historyPreview.producer'),
+        messageType: t('dispatch.historyPreview.messageType'),
+        contentType: t('dispatch.historyPreview.contentType'),
+        topic: t('dispatch.historyPreview.topic'),
+        exchange: t('dispatch.historyPreview.exchange'),
+        routingKey: t('dispatch.historyPreview.routingKey'),
+        key: t('dispatch.historyPreview.key'),
+        executions: t('dispatch.historyPreview.executions'),
+        stage: t('dispatch.historyPreview.stage'),
+        event: t('dispatch.historyPreview.event'),
+        missing: t('dispatch.historyPreview.missing'),
+        state: t('dispatch.historyPreview.state'),
+        headers: t('dispatch.historyPreview.headers'),
+        workflowState: t('dispatch.historyPreview.workflowState'),
+      },
+    }),
+    [t],
+  )
+
+  const props = useMessageDispatch({ labels })
+
+  return <MessageDispatch {...props} />
+}

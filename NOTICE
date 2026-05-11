@@ -1,0 +1,10 @@
+Devset CE
+Copyright 2025-2026 Dominik Martyniak
+
+Licensed under the Functional Source License, Version 1.1, Apache 2.0 Future License.
+
+This product includes software developed by third parties. See individual
+component directories for detailed attribution:
+
+- devset-ce-be/NOTICE — Backend third-party licenses
+- devset-ce-fe/package.json — Frontend dependencies and their licenses

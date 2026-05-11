@@ -1,0 +1,213 @@
+/*
+ * This file is part of Devset CE.
+ *
+ * Copyright (C) 2025-2026 Dominik Martyniak
+ *
+ * Licensed under the Functional Source License, Version 1.1, Apache 2.0 Future License
+ * (the "License"); you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License in the LICENSE file at the root of this repository.
+ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: 'Manrope', 'Segoe UI', sans-serif;
+  color: #0f1a2f;
+  --ink-900: #0d1a2e;
+  --ink-800: #22344e;
+  --ink-700: #304564;
+  --ink-600: #405b7d;
+  --ink-500: #4d6488;
+  --line-200: #dbe6f6;
+  --line-300: #c6d5ea;
+  --nav-900: #0f261d;
+  --nav-800: #143327;
+  --nav-border: #2a4f3d;
+  --nav-text: #f1f6ff;
+  --menu-text: #d8efe2;
+  --menu-hover-bg: #1d4433;
+  --menu-hover-border: #2f6049;
+  --menu-brand-muted: #a7c7b7;
+  --panel: #ffffff;
+  --panel-soft: #f4f8f6;
+  --surface-header: rgba(255, 255, 255, 0.88);
+  --app-bg: radial-gradient(circle at 85% 4%, #f4f8ff 0%, #edf3ff 35%, #ecf1f9 100%);
+  --brand: #2b8a66;
+  --brand-strong: #216e52;
+  --brand-soft: #e9f4ef;
+  --brand-border: #c9dfd4;
+  --brand-ink: #225944;
+  --brand-ink-muted: #3f6f5c;
+  --panel-deep: #eff5f1;
+  --panel-elevated: #f7fbf8;
+  --panel-hover: #edf5f0;
+  --flow-grid: #d7e7df;
+  --shadow-card: 0 8px 24px rgba(25, 45, 74, 0.08);
+}
+
+[data-theme='dark'] {
+  --ink-900: #e6ebf4;
+  --ink-800: #c5cfdf;
+  --ink-700: #aab4c7;
+  --ink-600: #97a4bb;
+  --ink-500: #8995ad;
+  --line-200: #2a3342;
+  --line-300: #334153;
+  --nav-900: #121722;
+  --nav-800: #151c28;
+  --nav-border: #252f3f;
+  --nav-text: #d9e1ef;
+  --menu-text: #acb8ca;
+  --menu-hover-bg: #1c2432;
+  --menu-hover-border: #2a3648;
+  --menu-brand-muted: #8393a8;
+  --panel: #181f2b;
+  --panel-soft: #1f2734;
+  --panel-deep: #141b25;
+  --panel-elevated: #232d3d;
+  --panel-hover: #283345;
+  --surface-header: rgba(22, 29, 41, 0.92);
+  --app-bg: radial-gradient(circle at 85% 4%, #1d2433 0%, #171d2a 45%, #121824 100%);
+  --brand: #4eb58a;
+  --brand-strong: #3f946f;
+  --brand-soft: #1d332a;
+  --brand-border: #315845;
+  --brand-ink: #9ad8bb;
+  --brand-ink-muted: #7cb59a;
+  --flow-grid: #2b3545;
+  --shadow-card: 0 10px 30px rgba(2, 7, 18, 0.5);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--app-bg);
+  color: var(--ink-900);
+}
+
+.settings-label,
+.runs-label {
+  display: block;
+  color: #30445f;
+  font-size: 0.84rem;
+  margin-bottom: 8px;
+}
+
+.settings-label :is(input, select),
+.runs-label :is(input, select) {
+  width: 100%;
+  margin-top: 5px;
+  border: 1px solid var(--line-300);
+  border-radius: 10px;
+  background: #fff;
+  padding: 9px 10px;
+  font: inherit;
+}
+
+.runs-cta {
+  margin-top: 6px;
+  border-radius: 10px;
+  padding: 9px 12px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 0.16s ease, border-color 0.16s ease, color 0.16s ease;
+}
+
+.runs-cta:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.runs-cta-primary {
+  border: 1px solid var(--brand);
+  background: var(--brand);
+  color: #fff;
+}
+
+.runs-cta-primary:hover:not(:disabled) {
+  background: var(--brand-strong);
+  border-color: var(--brand-strong);
+}
+
+.runs-cta-secondary {
+  border: 1px solid #c7d4e6;
+  background: #fff;
+  color: #365170;
+}
+
+.runs-cta-secondary:hover:not(:disabled) {
+  border-color: #b9c9df;
+  background: #f5f8fc;
+}
+
+[data-theme='dark'] .settings-label,
+[data-theme='dark'] .runs-label {
+  color: var(--ink-900);
+}
+
+[data-theme='dark'] .settings-label :is(input, select),
+[data-theme='dark'] .runs-label :is(input, select) {
+  border-color: var(--line-300);
+  background: var(--panel-soft);
+  color: var(--ink-900);
+}
+
+[data-theme='dark'] .runs-cta-secondary {
+  border-color: var(--line-300);
+  background: var(--panel-soft);
+  color: var(--ink-900);
+}
+
+[data-theme='dark'] .runs-cta-secondary:hover:not(:disabled) {
+  border-color: var(--line-200);
+  background: var(--panel-elevated);
+}
+
+[data-theme='dark'] .runs-cta-primary {
+  border-color: var(--brand-border);
+  background: var(--brand);
+  color: #fff;
+}
+
+[data-theme='dark'] .runs-cta-primary:hover:not(:disabled) {
+  border-color: var(--brand-strong);
+  background: var(--brand-strong);
+}
+
+[data-theme='dark'] .bg-white {
+  background-color: var(--panel) !important;
+}
+
+[data-theme='dark'] .text-slate-800,
+[data-theme='dark'] .text-slate-700 {
+  color: var(--ink-900) !important;
+}
+
+[data-theme='dark'] .text-slate-600,
+[data-theme='dark'] .text-slate-500 {
+  color: var(--ink-700) !important;
+}
+
+[data-theme='dark'] .border-slate-200,
+[data-theme='dark'] .border-slate-300 {
+  border-color: var(--line-300) !important;
+}
+
+[data-theme='dark'] .bg-slate-50,
+[data-theme='dark'] .bg-slate-100 {
+  background-color: var(--panel-soft) !important;
+}

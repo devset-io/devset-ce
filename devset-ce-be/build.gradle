@@ -1,0 +1,145 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.5.13'
+    id 'io.spring.dependency-management' version '1.1.7'
+    id "idea"
+}
+apply from: rootProject.file("gradle/constants.gradle")
+
+group = "io.devset"
+version = "0.0.1-SNAPSHOT"
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
+
+bootJar {
+    archiveFileName = "devset-be-ce.jar"
+}
+
+springBoot {
+    mainClass = "io.devset.ce.be.config.DevsetCeBeApplication"
+}
+
+sourceSets {
+    integTest {
+        java.srcDirs = ["src/integTest/java"]
+        resources.srcDirs = ["src/integTest/resources"]
+
+        compileClasspath += sourceSets.main.output + sourceSets.test.output
+        runtimeClasspath += sourceSets.main.output + sourceSets.test.output
+    }
+}
+
+idea {
+    module {
+        testSources.from(sourceSets.integTest.java.srcDirs)
+    }
+}
+
+configurations {
+    integTestImplementation.extendsFrom(testImplementation)
+    integTestRuntimeOnly.extendsFrom(testRuntimeOnly)
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs += "-parameters"
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencyLocking {
+    lockAllConfigurations()
+    lockMode = LockMode.STRICT
+}
+
+dependencies {
+
+    implementation "org.springframework.boot:spring-boot-starter"
+    implementation "org.springframework.boot:spring-boot-starter-web"
+    implementation "org.springframework.boot:spring-boot-starter-websocket"
+    implementation "org.springframework.boot:spring-boot-starter-data-jpa"
+    implementation "org.springframework.boot:spring-boot-starter-cache"
+    implementation("org.ehcache:ehcache:$versions.ehcache") {
+        capabilities {
+            requireCapability "org.ehcache:ehcache-jakarta"
+        }
+    }
+    implementation "org.springframework.boot:spring-boot-starter-amqp"
+    implementation "org.springframework.kafka:spring-kafka"
+    implementation "org.mongodb:bson:${versions.mongoDbDriver}"
+    implementation "org.mongodb:mongodb-driver-core:${versions.mongoDbDriver}"
+    implementation "org.mongodb:mongodb-driver-sync:${versions.mongoDbDriver}"
+
+    implementation "com.fasterxml.jackson.core:jackson-databind"
+    implementation "com.google.protobuf:protobuf-java:4.31.1"
+    implementation "com.google.protobuf:protobuf-java-util:4.31.1"
+    implementation "org.apache.kafka:kafka-clients"
+    implementation "org.mapstruct:mapstruct:${versions.mapstruct}"
+    implementation "org.hibernate.orm:hibernate-community-dialects:${versions.hibernateDialect}"
+    runtimeOnly "org.xerial:sqlite-jdbc:${versions.sqlite}"
+
+    compileOnly "org.projectlombok:lombok:${versions.lombok}"
+
+    annotationProcessor "org.projectlombok:lombok:${versions.lombok}"
+    annotationProcessor "org.mapstruct:mapstruct-processor:${versions.mapstruct}"
+    annotationProcessor "org.projectlombok:lombok-mapstruct-binding:${versions.lombokMapstructBinding}"
+
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation platform("org.junit:junit-bom:${versions.junitJupiter}")
+    testImplementation "org.junit.jupiter:junit-jupiter"
+
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+
+    testImplementation platform("org.testcontainers:testcontainers-bom:${versions.testcontainersBom}")
+    testImplementation "org.testcontainers:mongodb"
+    testImplementation "org.testcontainers:kafka"
+    testImplementation "org.testcontainers:junit-jupiter"
+
+}
+
+configurations.configureEach {
+    resolutionStrategy.eachDependency { details ->
+        if (details.requested.group == 'org.apache.commons' && details.requested.name == 'commons-lang3') {
+            details.useVersion '3.18.0'
+            details.because 'CVE-2025-48924 - Uncontrolled Recursion'
+        }
+        if (details.requested.group == 'org.apache.commons' && details.requested.name == 'commons-compress') {
+            details.useVersion '1.26.2'
+            details.because 'Security patch'
+        }
+    }
+}
+
+tasks.register("integTest", Test) {
+
+    description = "Run integration tests"
+    group = "verification"
+
+    testClassesDirs = sourceSets.integTest.output.classesDirs
+    classpath = sourceSets.integTest.runtimeClasspath
+
+    jvmArgs("-Xmx1g", "-Xms1g")
+
+    useJUnitPlatform()
+
+    testLogging {
+        events("failed")
+        exceptionFormat = "full"
+        showStandardStreams = false
+    }
+
+    systemProperty("logging.level.root", "ERROR")
+}
+
+tasks.named("processIntegTestResources") {
+    duplicatesStrategy = DuplicatesStrategy.WARN
+}
+
+test {
+    useJUnitPlatform()
+}

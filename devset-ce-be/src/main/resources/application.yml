@@ -1,0 +1,36 @@
+spring:
+  datasource:
+    url: jdbc:sqlite:/data/devset.db
+    driver-class-name: org.sqlite.JDBC
+  cache:
+    type: jcache
+    jcache:
+      config: classpath:ehcache.xml
+  jpa:
+    database-platform: org.hibernate.community.dialect.SQLiteDialect
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+  kafka:
+    bootstrap-servers: localhost:29092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+
+server:
+  port: 8082
+
+devset:
+  cors:
+    allowed-origins: http://localhost:5173
+  monitoring:
+    resources:
+      enabled: true
+      interval-ms: 30000
+      initial-delay-ms: 10000
+  engine:
+    max-active-runs: 10
+    max-executions-per-run: 10

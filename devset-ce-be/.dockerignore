@@ -1,0 +1,27 @@
+.git
+.gradle
+.idea
+build/*
+!build/libs/
+build/libs/*
+!build/libs/devset-be-ce.jar
+out
+*.iml
+*.log
+devset.db
+README.md
+docs
+http
+
+# Defense in depth — keep secrets/credentials out of build context
+.env
+.env.*
+*.pem
+*.key
+id_rsa*
+.aws/
+.ssh/
+.gradle/caches/
+local.properties
+secrets/
+*.swp

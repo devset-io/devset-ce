@@ -1,0 +1,8 @@
+spring:
+  cache:
+    type: none
+  datasource:
+    url: jdbc:sqlite:build/devset-integ.db
+  jpa:
+    hibernate:
+      ddl-auto: create-drop

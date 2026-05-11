@@ -1,0 +1,650 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Devset — Send real messages to Kafka and RabbitMQ. Local. Yours.</title>
+    <meta name="description"
+          content="Send real messages to local Kafka and RabbitMQ, test how your app responds and trace the outcome — without scripts, without cloud."/>
+    <link rel="icon" type="image/svg+xml" href="./assets/devset-logo.svg"/>
+
+    <meta property="og:type" content="website"/>
+    <meta property="og:title" content="Devset — Send real messages to Kafka and RabbitMQ"/>
+    <meta property="og:description"
+          content="Local-first workflow engine for testing Kafka and RabbitMQ message flows. No cloud, no scripts."/>
+    <meta property="og:url" content="https://devset.io"/>
+    <meta property="og:site_name" content="Devset"/>
+
+    <meta name="twitter:card" content="summary"/>
+    <meta name="twitter:title" content="Devset — Local message lab for Kafka and RabbitMQ"/>
+    <meta name="twitter:description"
+          content="Send real messages to local Kafka and RabbitMQ, test how your app responds — without scripts, without cloud."/>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+          rel="stylesheet"/>
+    <link rel="stylesheet" href="./landing.css"/>
+
+</head>
+
+<body>
+<div class="shell">
+
+    <!-- ─────────────────────── TOPBAR ─────────────────────── -->
+    <header class="topbar">
+        <a class="brand bare" href="#top" aria-label="Devset — home">
+            <img class="mark" src="./assets/devset-logo.svg" alt=""/>
+            <span>devset</span>
+            <small>local message lab</small>
+        </a>
+
+        <nav class="topnav" aria-label="Main">
+            <a href="#install">install</a>
+            <a href="#canvas">flow</a>
+            <a href="#modules">modules</a>
+            <a href="#fn">functions</a>
+            <a href="#roadmap">roadmap</a>
+            <a href="#faq">faq</a>
+        </nav>
+
+        <div class="topbar-right">
+            <a class="ghost-link" href="https://github.com/devset-io/devset-ce" target="_blank" rel="noreferrer">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 2C6.48 2 2 6.59 2 12.24c0 4.51 2.87 8.34 6.84 9.69.5.1.68-.22.68-.49 0-.24-.01-1.04-.02-1.88-2.78.62-3.37-1.21-3.37-1.21-.45-1.18-1.11-1.49-1.11-1.49-.91-.64.07-.63.07-.63 1 .08 1.53 1.06 1.53 1.06.9 1.57 2.35 1.12 2.92.86.09-.67.35-1.12.63-1.38-2.22-.26-4.56-1.15-4.56-5.1 0-1.13.39-2.05 1.03-2.77-.1-.26-.45-1.31.1-2.72 0 0 .84-.28 2.75 1.06A9.3 9.3 0 0 1 12 6.83a9.3 9.3 0 0 1 2.5.35c1.9-1.34 2.74-1.06 2.74-1.06.55 1.41.21 2.46.1 2.72.64.72 1.03 1.64 1.03 2.77 0 3.96-2.34 4.83-4.57 5.09.36.32.67.95.67 1.91 0 1.38-.01 2.49-.01 2.83 0 .27.18.59.69.49A10.27 10.27 0 0 0 22 12.24C22 6.59 17.52 2 12 2z"/>
+                </svg>
+                <span>github</span>
+            </a>
+            <a class="btn btn-primary" href="#install"># get started</a>
+        </div>
+    </header>
+
+    <a id="top" tabindex="-1"></a>
+    <main>
+
+        <!-- ─────────────────────── HERO ─────────────────────── -->
+        <section class="hero">
+            <div class="hero-text">
+
+                <h1 class="hero-title">
+                    Feed your broker.<br/>
+                    <span class="accent">Test your app.</span><br/>
+                    <span class="quiet">Skip the scripts.<span class="blink"></span></span>
+                </h1>
+
+                <p class="hero-lead">
+                    Devset is a small, local-first app for testing message-driven systems on Kafka and RabbitMQ.
+                    Built for engineers who want a real UI — and for everyone on the team who shouldn't have to write a
+                    script
+                    just to fire one message.
+                </p>
+
+                <div class="hero-actions">
+                    <a class="btn btn-primary" href="#install">$ docker compose up</a>
+                    <a class="btn btn-link" href="#flow">see how it works →</a>
+                </div>
+
+                <ul class="hero-points">
+                    <li>kafka &amp; rabbitmq from one shell</li>
+                    <li>visual flow builder, not yaml</li>
+                    <li>nothing leaves your machine</li>
+                    <li>built for devs and non-devs alike</li>
+                </ul>
+
+            </div>
+
+            <aside class="flow-mock" aria-label="Devset message flow">
+                <div class="flow-head">
+                    <span class="flow-title">devset ▸ message flow</span>
+                    <span class="flow-live"><i class="flow-live-dot"></i>LIVE</span>
+                </div>
+
+                <div class="flow-stage" aria-hidden="true">
+                    <div class="flow-row">
+                        <div class="flow-node is-devset">
+                            <span class="flow-node-label">devset</span>
+                            <span class="flow-node-glyph">⊙</span>
+                            <span class="flow-node-sub">dispatch</span>
+                        </div>
+                        <div class="flow-wire">
+                            <span class="flow-pkt flow-pkt-1">▣</span>
+                        </div>
+                        <div class="flow-node is-broker">
+                            <span class="flow-node-label">broker</span>
+                            <span class="flow-node-glyph">≡</span>
+                            <span class="flow-node-sub">kafka  rabbitmq</span>
+                        </div>
+                        <div class="flow-wire">
+                            <span class="flow-pkt flow-pkt-2">▣</span>
+                        </div>
+                        <div class="flow-node is-consumer">
+                            <span class="flow-node-label">consumer</span>
+                            <span class="flow-node-glyph">▷</span>
+                            <span class="flow-node-sub">your service</span>
+                        </div>
+                    </div>
+
+                    <div class="flow-return-wrap">
+                        <div class="flow-return">
+                            <span class="flow-return-label">your app · trace ack</span>
+                            <span class="flow-pkt flow-pkt-3">▣</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flow-log" aria-hidden="true">
+                    <div class="flow-log-line"><span class="t">12:04:11.082</span> <span class="ok">PUBLISHED</span>
+                        orders.v3 · key=order-123 · 4ms
+                    </div>
+                    <div class="flow-log-line"><span class="t">12:04:11.094</span> <span class="ok">DELIVERED</span>
+                        partition 2 · offset 88421
+                    </div>
+                    <div class="flow-log-line"><span class="t">12:04:12.310</span> <span class="ok">CONSUMED</span>
+                        tracking-svc · 12ms
+                    </div>
+                    <div class="flow-log-line"><span class="t">12:04:12.318</span> <span class="dim">ACK</span>
+                        trace-id=8c5c-4d67
+                    </div>
+                </div>
+            </aside>
+
+            <ul class="hero-modules" aria-label="What you get on day one">
+                <li>
+                    <span class="hm-glyph">⊙</span>
+                    <strong>Message Dispatch</strong>
+                    <span>fire real messages with payload &amp; headers</span>
+                </li>
+                <li>
+                    <span class="hm-glyph">⌬</span>
+                    <strong>Flow Builder</strong>
+                    <span>drag stages, wire repeats, emits, conditions</span>
+                </li>
+                <li>
+                    <span class="hm-glyph">ƒ</span>
+                    <strong>Function Studio</strong>
+                    <span>shape payloads field-by-field, no JSON pain</span>
+                </li>
+                <li>
+                    <span class="hm-glyph">≡</span>
+                    <strong>Workflow Runs</strong>
+                    <span>live event stream, replay, status</span>
+                </li>
+                <li>
+                    <span class="hm-glyph">▤</span>
+                    <strong>Schema Repo</strong>
+                    <span>JSON Schema &amp; Protobuf, versioned</span>
+                </li>
+                <li>
+                    <span class="hm-glyph">▷</span>
+                    <strong>Playground</strong>
+                    <span>dry-run flows, no broker required</span>
+                </li>
+            </ul>
+        </section>
+
+        <div class="ascii-rule">install</div>
+
+        <!-- ─────────────────────── INSTALL ─────────────────────── -->
+        <section class="section" id="install">
+            <div class="section-heading">
+                <p class="eyebrow">install</p>
+                <h2>Run the full stack locally with Docker Compose.</h2>
+                <p>Devset ships as a Docker image. Pull it, point it at your local Kafka or RabbitMQ and start testing.
+                    Frontend and backend run together out of the box.</p>
+            </div>
+
+            <div class="install-grid">
+                <article class="install-card">
+                    <span class="step">step 01</span>
+                    <h3>Clone</h3>
+                    <pre>git clone https://github.com/devset-io/devset-ce.git</pre>
+                </article>
+                <article class="install-card">
+                    <span class="step">step 02</span>
+                    <h3>Run</h3>
+                    <pre>cd devset-ce &amp;&amp; docker compose up</pre>
+                </article>
+                <article class="install-card">
+                    <span class="step">step 03</span>
+                    <h3>Open</h3>
+                    <pre>http://localhost:8082</pre>
+                </article>
+            </div>
+            <p class="install-note">Make sure your local broker (Kafka or RabbitMQ) is running. Then configure the
+                connection in <code>Settings → Brokers</code> inside the UI.</p>
+        </section>
+
+        <div class="ascii-rule">visual flow</div>
+
+        <!-- ─────────────────────── FLOW + CANVAS (merged) ─────────────────────── -->
+        <section class="section" id="canvas">
+            <div class="section-heading">
+                <p class="eyebrow">visual flow</p>
+                <h2>Build flows on a canvas, watch them execute as a visible chain.</h2>
+                <p>The Flow Builder uses a node-based canvas where you drag stages, connect them visually and configure
+                    each step inline. Then fire the flow and trace every message from source event to delivery outcome —
+                    no scripts, no guessing.</p>
+            </div>
+
+            <div class="canvas-mock" aria-label="Flow Builder canvas — example pipeline">
+                <div class="canvas-mock-head">
+                    <span class="canvas-mock-title">flow builder ▸ shop-purchase-flow</span>
+                    <span class="canvas-mock-meta">canvas · 4 stages · dsl auto</span>
+                </div>
+                <div class="canvas-mock-stage">
+                    <div class="canvas-stages">
+                        <article class="canvas-stage">
+                            <header>
+                                <span class="dot dot-ok"></span>
+                                <strong>Add To Cart</strong>
+                                <span class="badge badge-start">START</span>
+                                <span class="idx">#1</span>
+                            </header>
+                            <p class="slug">add-to-cart</p>
+                            <div class="pills"><span>repeat x1</span><span>emit on</span></div>
+                        </article>
+                        <span class="canvas-arrow" aria-hidden="true">――▸</span>
+                        <article class="canvas-stage">
+                            <header>
+                                <span class="dot dot-cool"></span>
+                                <strong>Checkout</strong>
+                                <span class="idx">#2</span>
+                            </header>
+                            <p class="slug">checkout</p>
+                            <div class="pills"><span>repeat x1</span><span>emit on</span></div>
+                        </article>
+                        <span class="canvas-arrow" aria-hidden="true">――▸</span>
+                        <article class="canvas-stage">
+                            <header>
+                                <span class="dot dot-ok"></span>
+                                <strong>Payment</strong>
+                                <span class="idx">#3</span>
+                            </header>
+                            <p class="slug">payment</p>
+                            <div class="pills"><span>repeat x1</span><span>emit on</span></div>
+                        </article>
+                        <span class="canvas-arrow" aria-hidden="true">――▸</span>
+                        <article class="canvas-stage">
+                            <header>
+                                <span class="dot dot-ok"></span>
+                                <strong>Confirmation</strong>
+                                <span class="badge badge-end">END</span>
+                                <span class="idx">#4</span>
+                            </header>
+                            <p class="slug">confirmation</p>
+                            <div class="pills"><span>repeat x1</span><span>emit on</span></div>
+                        </article>
+                    </div>
+                </div>
+                <div class="canvas-mock-foot">
+                    <span><b>start/end</b> computed from position</span>
+                    <span><b>dsl payload</b> built from nodes</span>
+                    <span><b>schemas</b> 10 loaded from api</span>
+                </div>
+            </div>
+
+            <div class="showcase">
+                <article class="card featured">
+                    <span class="label">canvas editor</span>
+                    <h3>Drag, connect, configure — then run.</h3>
+                    <p>Each stage is a node. Click it to edit headers, payload and Function Studio logic. Wire stages together to define order. Set repeats, emits and conditions per stage. Run the whole flow from the same view.</p>
+                    <div class="badge-row">
+                        <span>drag &amp; drop</span><span>stages</span><span>conditions</span><span>repeats</span><span>emits</span><span>dsl preview</span>
+                    </div>
+                </article>
+                <article class="card">
+                    <span class="label">data sources</span>
+                    <h3>Real data, not fixtures.</h3>
+                    <p>Before a stage emits, it can query your database and inject results into <code>workflow.state</code>. Test with live rows — not hardcoded JSON you copy-pasted three months ago.</p>
+                    <div class="badge-row">
+                        <span>db query</span><span>workflow.state</span><span>per-stage</span>
+                    </div>
+                </article>
+                <article class="card">
+                    <h3>Why a canvas</h3>
+                    <p>Multi-step event flows are hard to reason about in raw JSON or YAML. The canvas gives a spatial view of the whole pipeline — you spot gaps before you run.</p>
+                </article>
+            </div>
+
+            <!-- journey — information flow example -->
+            <div class="journey" id="flow" style="margin-top: 28px;">
+                <span class="journey-label">// example journey · 4 stages · real payloads</span>
+                <div class="journey-flow">
+                    <article class="journey-node">
+                        <div class="journey-node-head"><span class="journey-node-dot"></span><strong>Open Page</strong>
+                        </div>
+                        <p>User opens the storefront and starts a new local session.</p>
+                        <pre>{
+  "header": {
+    "eventName": "PAGE_OPENED",
+    "eventType": "user.page.opened",
+    "journeyStep": "1"
+  },
+  "payload": {
+    "sessionId": "cc6e6471-...",
+    "userId": 370282,
+    "page": "home"
+  }
+}</pre>
+                    </article>
+                    <span class="journey-arrow" aria-hidden="true">──►</span>
+                    <article class="journey-node">
+                        <div class="journey-node-head"><span class="journey-node-dot"></span><strong>Click
+                            Product</strong></div>
+                        <p>The same user clicks into a product and enriches the payload.</p>
+                        <pre>{
+  "header": {
+    "eventName": "PRODUCT_CLICKED",
+    "eventType": "user.product.clicked",
+    "journeyStep": "2"
+  },
+  "payload": {
+    "sessionId": "cc6e6471-...",
+    "productId": 5417,
+    "productName": "Sneakers X",
+    "category": "shoes"
+  }
+}</pre>
+                    </article>
+                    <span class="journey-arrow" aria-hidden="true">──►</span>
+                    <article class="journey-node">
+                        <div class="journey-node-head"><span class="journey-node-dot"></span><strong>Add To
+                            Cart</strong></div>
+                        <p>Cart data appears in the next event without losing previous context.</p>
+                        <pre>{
+  "header": {
+    "eventName": "ADDED_TO_CART",
+    "eventType": "user.cart.item.added",
+    "journeyStep": "3"
+  },
+  "payload": {
+    "cartId": "4d20f07c-...",
+    "productId": 5417,
+    "quantity": 1,
+    "cartValue": 233
+  }
+}</pre>
+                    </article>
+                    <span class="journey-arrow" aria-hidden="true">──►</span>
+                    <article class="journey-node">
+                        <div class="journey-node-head"><span class="journey-node-dot"></span><strong>Pay &amp; Create
+                            Order</strong></div>
+                        <p>The journey ends with a paid order event ready for consumer verification.</p>
+                        <pre>{
+  "header": {
+    "eventName": "ORDER_CREATED",
+    "eventType": "user.order.created",
+    "journeyStep": "4"
+  },
+  "payload": {
+    "orderId": "f82add80-...",
+    "paymentStatus": "PAID",
+    "paymentMethod": "CARD",
+    "orderStatus": "CREATED"
+  }
+}</pre>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <div class="ascii-rule">function studio</div>
+
+        <!-- ─────────────────────── FN STUDIO ─────────────────────── -->
+        <section class="section" id="fn">
+            <div class="section-heading">
+                <p class="eyebrow">function studio</p>
+                <h2>Build payload DSL visually, field by field.</h2>
+                <p>Function Studio is built into the Flow Builder and Message Dispatch. Instead of writing raw JSON, you
+                    define field-level transformations with a visual editor — set literal values, reference other
+                    fields, add conditions or generate dynamic data per field.</p>
+            </div>
+
+            <!-- Function Studio mockup -->
+            <div class="fn-mock" role="img" aria-label="Function Studio interface mockup">
+                <div class="fn-head">
+                    <div class="fn-head-left">
+                        <span class="fn-title">Function Studio</span>
+                        <span class="fn-sub">Node: add-to-cart ()</span>
+                    </div>
+                    <span class="fn-close">close</span>
+                </div>
+
+                <div class="fn-body">
+                    <!-- LEFT — Set Fields Snapshot -->
+                    <aside class="fn-left">
+                        <div class="fn-section-title">Set Fields Snapshot</div>
+
+                        <label class="fn-label">Schema</label>
+                        <div class="fn-select">DeviceCurrentMeterEvent <span class="fn-caret">▾</span></div>
+
+                        <label class="fn-label">Source Mode <span class="fn-info">i</span></label>
+                        <div class="fn-toggle">
+                            <span>none</span>
+                            <span class="is-on">previous-stage</span>
+                        </div>
+
+                        <div class="fn-search-row">
+                            <span class="fn-pill is-root">root</span>
+                            <div class="fn-search">Search field…</div>
+                        </div>
+
+                        <ul class="fn-fields">
+                            <li class="is-active">
+                                <span class="fn-tag is-fn">FN</span>
+                                <span class="fn-fname">userId</span>
+                                <span class="fn-fval is-fn">uuid()</span>
+                            </li>
+                            <li>
+                                <span class="fn-tag is-fn">FN</span>
+                                <span class="fn-fname">itemId</span>
+                                <span class="fn-fval is-fn">int(1000,9999)</span>
+                            </li>
+                            <li>
+                                <span class="fn-tag">LITERAL</span>
+                                <span class="fn-fname">itemName</span>
+                                <span class="fn-fval">Wireless Mouse</span>
+                            </li>
+                            <li>
+                                <span class="fn-tag">LITERAL</span>
+                                <span class="fn-fname">quantity</span>
+                                <span class="fn-fval">1</span>
+                            </li>
+                            <li>
+                                <span class="fn-tag">LITERAL</span>
+                                <span class="fn-fname">price</span>
+                                <span class="fn-fval">49.99</span>
+                            </li>
+                        </ul>
+                    </aside>
+
+                    <!-- RIGHT — Function Task panel -->
+                    <section class="fn-right">
+                        <div class="fn-tabs">
+                            <span class="fn-tab is-active">Function Task</span>
+                            <span class="fn-tab">Raw DSL</span>
+                        </div>
+
+                        <div class="fn-panel">
+                            <div class="fn-section-title">Tasks</div>
+                            <div class="fn-pillbar">
+                                <span class="fn-pill is-on">Function Task</span>
+                                <span class="fn-pill">State Task</span>
+                            </div>
+
+                            <label class="fn-label">Target field</label>
+                            <div class="fn-input">userId</div>
+
+                            <label class="fn-label">Function input</label>
+                            <div class="fn-select">Builder <span class="fn-caret">▾</span></div>
+
+                            <label class="fn-label">Function</label>
+                            <div class="fn-select">Generate UUID (uuid) <span class="fn-caret">▾</span></div>
+
+                            <label class="fn-label">Description and example <span class="fn-info">?</span></label>
+                            <div class="fn-code">
+                                <span class="fn-code-fn">uuid</span><span class="fn-code-paren">()</span>
+                            </div>
+
+                            <label class="fn-label">Value type</label>
+                            <div class="fn-select">Function ($fn) <span class="fn-caret">▾</span></div>
+
+                            <button class="fn-apply" type="button">Apply</button>
+                        </div>
+                    </section>
+                </div>
+
+                <div class="fn-foot">
+                    <span><b>$fn</b> · function</span>
+                    <span><b>$ref</b> · field reference</span>
+                    <span><b>$path</b> · json path</span>
+                    <span><b>$when</b> · conditional</span>
+                    <span><b>random · weighted</b></span>
+                </div>
+            </div>
+
+        </section>
+
+            <div class="ascii-rule">local-first</div>
+
+            <!-- ─────────────────────── SECURITY ─────────────────────── -->
+            <section class="section" id="security">
+                <div class="security">
+                    <p class="eyebrow">local-first</p>
+                    <h3>Your payloads, headers and workflows stay on your machine.</h3>
+                    <p>Devset connects directly to your local broker. No cloud relay, no hosted middleman. Every
+                        workflow run, every message, every schema lives in your environment. You see the full execution
+                        path — no hidden automation.</p>
+                </div>
+            </section>
+
+            <div class="ascii-rule">roadmap</div>
+            <!-- ─────────────────────── ROADMAP ─────────────────────── -->
+            <section class="section" id="roadmap">
+                <div class="section-heading">
+                    <p class="eyebrow">roadmap</p>
+                    <h2>What exists now, what is next, what the community can shape.</h2>
+                    <p>A visible roadmap makes the project easier to trust and easier to contribute to.</p>
+                </div>
+
+                <div class="roadmap-grid">
+                    <article class="roadmap-card now">
+                        <span class="tag">now · shipped</span>
+                        <h3>Already in core</h3>
+                        <ul>
+                            <li>dispatch real Kafka and RabbitMQ messages with headers, payloads and local broker
+                                targets
+                            </li>
+                            <li>build multi-step flows with Function Studio, repeats, emits and stage logic</li>
+                            <li>inspect workflow runs, schemas and broker settings in one UI</li>
+                        </ul>
+                    </article>
+                    <article class="roadmap-card">
+                        <span class="tag">q3 2026</span>
+                        <h3>Next up</h3>
+                        <ul>
+                            <li>more advanced flow building with branching paths and multi-step journeys</li>
+                            <li>pull data from APIs and databases directly into flow execution</li>
+                            <li>state control across stages so one flow can drive multiple paths</li>
+                        </ul>
+                    </article>
+                    <article class="roadmap-card">
+                        <span class="tag">planned</span>
+                        <h3>Longer horizon</h3>
+                        <ul>
+                            <li>team schema library — share event contracts across the team</li>
+                            <li>shared flow history — replay and compare runs together</li>
+                            <li>role-based broker access</li>
+                        </ul>
+                    </article>
+                </div>
+            </section>
+
+            <div class="ascii-rule">faq</div>
+
+            <!-- ─────────────────────── FAQ ─────────────────────── -->
+            <section class="section faq" id="faq">
+                <div class="section-heading">
+                    <p class="eyebrow">faq</p>
+                    <h2>Questions developers tend to ask first.</h2>
+                </div>
+
+                <div class="faq-grid">
+                    <details>
+                        <summary>Can I use Devset for both Kafka and RabbitMQ flows?</summary>
+                        <p>Yes. The product story is written around Kafka and RabbitMQ rather than one broker only.</p>
+                    </details>
+                    <details>
+                        <summary>Does any message data have to leave my machine?</summary>
+                        <p>No. Devset connects directly to your local broker. Nothing is relayed through external
+                            servers.</p>
+                    </details>
+                    <details>
+                        <summary>Can I start without Docker?</summary>
+                        <p>Devset runs in Docker. Point it at your existing local Kafka or RabbitMQ — no extra
+                            containers beyond the app itself.</p>
+                    </details>
+                    <details>
+                        <summary>Is the Community Edition the full product?</summary>
+                        <p>Yes. All core modules — dispatch, flow builder, function studio, schema repo — are included
+                            in the CE without a paid tier.</p>
+                    </details>
+                    <details open>
+                        <summary>What license does Devset use?</summary>
+                        <p>FSL-1.1-Apache-2.0 (Functional Source License). You can read, modify and run the code freely.
+                            You cannot use it to build a competing commercial product. Two years after each release,
+                            that version converts to Apache 2.0.</p>
+                    </details>
+                    <details>
+                        <summary>Will Devset always be free to use?</summary>
+                        <p>Yes for developers. Devset is free for internal use, testing and development. The FSL
+                            restriction only blocks third parties from reselling Devset as a competing commercial
+                            product.</p>
+                    </details>
+                    <details>
+                        <summary>Do I need to write any code to start testing?</summary>
+                        <p>No. Compose payloads in the UI, configure field logic in Function Studio and fire messages
+                            without writing test scripts.</p>
+                    </details>
+                    <details>
+                        <summary>Where do I report bugs or ask for features?</summary>
+                        <p>Open an issue on GitHub. PRs welcome too — the project is source-available.</p>
+                    </details>
+                </div>
+            </section>
+
+            <!-- ─────────────────────── CTA ─────────────────────── -->
+            <section class="section" id="cta">
+                <div class="cta">
+                    <div class="copy">
+                        <p class="eyebrow">get started</p>
+                        <h2>Stop pasting JSON into terminals.</h2>
+                        <p>Connect Devset to local Kafka or RabbitMQ and send your first real message in under 2
+                            minutes. No scripts. No cloud.</p>
+                    </div>
+                    <div class="actions">
+                        <a class="btn btn-primary" href="https://github.com/devset-io/devset-ce" target="_blank"
+                           rel="noreferrer">open github →</a>
+                        <a class="btn" href="#install">install in 3 steps</a>
+                    </div>
+                </div>
+            </section>
+
+    </main>
+
+    <!-- ─────────────────────── FOOTER ─────────────────────── -->
+    <footer class="footer">
+        <div class="left">
+            <img class="mark" src="./assets/devset-logo.svg" alt=""/>
+            <span>devset — local message lab · source-available</span>
+        </div>
+        <div class="meta">
+            <a href="https://github.com/devset-io/devset-ce" target="_blank" rel="noreferrer">github</a>
+            <a href="https://github.com/devset-io/devset-ce/issues" target="_blank" rel="noreferrer">issues</a>
+            <a href="https://github.com/devset-io/devset-ce/blob/main/LICENSE" target="_blank" rel="noreferrer">license · fsl-1.1-apache-2.0</a>
+        </div>
+    </footer>
+
+</div>
+</body>
+</html>

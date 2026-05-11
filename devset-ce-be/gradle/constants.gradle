@@ -1,0 +1,32 @@
+/*
+ * This file is part of Devset CE.
+ *
+ * Copyright (C) 2025-2026 Dominik Martyniak
+ *
+ * Licensed under the Functional Source License, Version 1.1, Apache 2.0 Future License
+ * (the "License"); you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License in the LICENSE file at the root of this repository.
+ */
+
+/**
+ * In this script should be added all constants of the build.
+ */
+ext {
+    versions = [
+            springBootDependencies: "3.5.13",
+            flyway                : "10.13.0",
+            sqlite                : "3.45.1.0",
+            testcontainersBom     : "1.21.4",
+            junitJupiter          : "5.11.4",
+            spockBom              : "2.4-M5-groovy-4.0",
+            jackson               : "2.18.3",
+            lombok                : "1.18.40",
+            mapstruct             : "1.6.3",
+            lombokMapstructBinding: "0.2.0",
+            hibernateDialect      : "6.6.11.Final",
+            ehcache               : "3.10.9",
+            hibernateUtils55      : "3.8.1",
+            jacksonDatabind       : "2.16.0",
+            mongoDbDriver         : "5.6.1"
+    ]
+}

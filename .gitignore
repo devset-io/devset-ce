@@ -1,0 +1,30 @@
+# macOS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+
+# Build artifacts
+.gradle/
+build/
+dist/
+out/
+target/
+node_modules/
+*.log
+*.jar
+*.class
+*.war
+coverage/
+
+# Secrets
+.env
+.env.*
+
+# Tools
+/.claude/

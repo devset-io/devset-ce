@@ -1,0 +1,787 @@
+/* Kafka Live Data — feature styles */
+
+/* ─── Layout fix: .content-body has no height by default ───────────────────── */
+.content-body:has(.klive-root) {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0;
+}
+
+/* ─── Root ─────────────────────────────────────────────────────────────────── */
+.klive-root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ─── Error ────────────────────────────────────────────────────────────────── */
+.klive-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--ink-500);
+  font-size: 0.85rem;
+}
+
+.klive-error-banner {
+  padding: 6px 16px;
+  font-size: 0.78rem;
+  color: #dc2626;
+  background: rgba(220, 38, 38, 0.06);
+  border-bottom: 1px solid rgba(220, 38, 38, 0.12);
+}
+
+/* ─── Empty State ──────────────────────────────────────────────────────────── */
+.klive-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  padding: 40px;
+}
+
+.klive-empty-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  max-width: 380px;
+  padding: 40px 32px;
+  border-radius: 14px;
+  border: 1px solid var(--line-200);
+  background: var(--panel);
+  box-shadow: var(--shadow-card);
+  text-align: center;
+}
+
+.klive-empty-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 20px;
+  background: var(--brand-soft);
+  color: var(--brand);
+}
+
+.klive-empty-icon svg {
+  width: 26px;
+  height: 26px;
+}
+
+.klive-empty-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--ink-900);
+}
+
+.klive-empty-subtitle {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--ink-500);
+  line-height: 1.5;
+}
+
+.klive-empty-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.klive-empty-label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ink-600);
+  text-align: left;
+}
+
+/* ─── Combo (shared select) ────────────────────────────────────────────────── */
+.klive-combo {
+  appearance: none;
+  padding: 7px 28px 7px 10px;
+  border: 1px solid var(--line-300);
+  border-radius: 10px;
+  background: var(--panel) url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M8 10l4 4 4-4' stroke='%238995ad' stroke-width='1.7' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 6px center / 16px;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ink-900);
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.klive-combo:hover {
+  border-color: var(--brand-border);
+}
+
+.klive-combo:focus {
+  outline: none;
+  border-color: var(--brand);
+}
+
+.klive-combo:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ─── Scope Bar ────────────────────────────────────────────────────────────── */
+.klive-scope-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--line-200);
+  background: var(--panel-soft);
+}
+
+.klive-scope-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.klive-status-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--brand);
+}
+
+.klive-status-label.paused {
+  color: #94a3b8;
+}
+
+.klive-scope-sep {
+  width: 1px;
+  height: 16px;
+  background: var(--line-300);
+  margin: 0 4px;
+}
+
+.klive-crumb-sep {
+  font-size: 0.85rem;
+  color: var(--ink-500);
+}
+
+.klive-scope-stats {
+  font-size: 0.72rem;
+  color: var(--ink-500);
+  font-family: 'Roboto Mono', monospace;
+}
+
+.klive-scope-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+/* ─── Mode Toggle ──────────────────────────────────────────────────────────── */
+.klive-mode-toggle {
+  display: flex;
+  border: 1px solid var(--line-300);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.klive-mode-btn {
+  padding: 4px 10px;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-500);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.klive-mode-btn + .klive-mode-btn {
+  border-left: 1px solid var(--line-300);
+}
+
+.klive-mode-btn.active {
+  background: var(--brand-soft);
+  color: var(--brand);
+}
+
+.klive-mode-btn:hover:not(.active) {
+  background: var(--panel-hover);
+}
+
+/* ─── Fetch Button ─────────────────────────────────────────────────────────── */
+.klive-fetch-btn {
+  padding: 5px 12px;
+  border: 1px solid var(--brand-border);
+  border-radius: 8px;
+  background: var(--brand-soft);
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--brand);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.klive-fetch-btn:hover:not(:disabled) {
+  background: var(--brand);
+  color: #fff;
+}
+
+.klive-fetch-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ─── Pulse Dot ────────────────────────────────────────────────────────────── */
+.klive-pulse-dot {
+  position: relative;
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--brand);
+}
+
+.klive-pulse-dot::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 2px solid var(--brand);
+  animation: klive-pulse 1.6s ease-out infinite;
+}
+
+.klive-pulse-dot.paused {
+  background: #94a3b8;
+}
+
+.klive-pulse-dot.paused::after {
+  display: none;
+}
+
+@keyframes klive-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+/* ─── Search ───────────────────────────────────────────────────────────────── */
+.klive-search-wrap {
+  position: relative;
+}
+
+.klive-search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 15px;
+  height: 15px;
+  color: var(--ink-500);
+  pointer-events: none;
+}
+
+.klive-search-input {
+  width: 260px;
+  padding: 6px 10px 6px 30px;
+  border: 1px solid var(--line-300);
+  border-radius: 10px;
+  background: var(--panel);
+  font-family: inherit;
+  font-size: 0.76rem;
+  color: var(--ink-900);
+  transition: border-color 0.15s;
+}
+
+.klive-search-input::placeholder {
+  color: var(--ink-500);
+}
+
+.klive-search-input:focus {
+  outline: none;
+  border-color: var(--brand);
+}
+
+/* ─── Pause Button ─────────────────────────────────────────────────────────── */
+.klive-pause-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--line-300);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink-600);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.klive-pause-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.klive-pause-btn:hover {
+  border-color: var(--brand-border);
+  color: var(--brand);
+}
+
+.klive-pause-btn.paused {
+  border-color: var(--brand);
+  color: var(--brand);
+  background: var(--brand-soft);
+}
+
+/* ─── Icon Button ──────────────────────────────────────────────────────────── */
+.klive-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--line-300);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink-600);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.klive-icon-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.klive-icon-btn:hover {
+  border-color: var(--brand-border);
+  color: var(--brand);
+}
+
+/* ─── Content (master/detail grid) ─────────────────────────────────────────── */
+.klive-content {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 540px;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ─── Message Stream ───────────────────────────────────────────────────────── */
+.klive-stream {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  border-right: 1px solid var(--line-200);
+}
+
+.klive-stream-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  border-right: 1px solid var(--line-200);
+  color: var(--ink-500);
+  font-size: 0.82rem;
+}
+
+.klive-stream-header {
+  display: grid;
+  grid-template-columns: 96px 78px 110px 140px 1fr 70px;
+  gap: 0;
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--line-200);
+  background: var(--panel-soft);
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-500);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.klive-stream-body {
+  flex: 1;
+  max-height: calc(100vh - 180px);
+  overflow-y: auto;
+}
+
+.klive-msg-row {
+  display: grid;
+  grid-template-columns: 96px 78px 110px 140px 1fr 70px;
+  gap: 0;
+  width: 100%;
+  padding: 7px 12px;
+  border: none;
+  border-bottom: 1px solid var(--line-200);
+  background: transparent;
+  font-family: inherit;
+  font-size: 0.76rem;
+  color: var(--ink-900);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.12s;
+  animation: klive-flash 1.2s ease-out;
+}
+
+.klive-msg-row:hover {
+  background: var(--panel-hover);
+}
+
+.klive-msg-row.selected {
+  background: var(--brand-soft);
+  border-left: 3px solid var(--brand);
+  padding-left: 9px;
+}
+
+@keyframes klive-flash {
+  0% {
+    background: rgba(78, 181, 138, 0.12);
+  }
+  100% {
+    background: transparent;
+  }
+}
+
+.klive-msg-time {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-500);
+}
+
+.klive-msg-partition {
+  display: flex;
+  align-items: center;
+}
+
+.klive-partition-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 5px;
+  background: var(--brand-soft);
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--brand-ink);
+  font-family: 'Roboto Mono', monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.klive-partition-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--brand);
+}
+
+.klive-msg-offset {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-600);
+}
+
+.klive-msg-key {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--brand);
+}
+
+.klive-msg-key.empty {
+  font-weight: 400;
+  color: var(--ink-500);
+}
+
+.klive-msg-value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--ink-500);
+}
+
+.klive-msg-size {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.68rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-500);
+  text-align: right;
+}
+
+/* ─── Load More ────────────────────────────────────────────────────────────── */
+.klive-load-more {
+  display: flex;
+  justify-content: center;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line-200);
+}
+
+.klive-load-more-btn {
+  padding: 6px 20px;
+  border: 1px solid var(--line-300);
+  border-radius: 8px;
+  background: var(--panel);
+  font-family: inherit;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--ink-600);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.klive-load-more-btn:hover:not(:disabled) {
+  border-color: var(--brand-border);
+  background: var(--brand-soft);
+  color: var(--brand);
+}
+
+.klive-load-more-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ─── Detail Panel ─────────────────────────────────────────────────────────── */
+.klive-detail {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--panel);
+}
+
+.klive-detail-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-500);
+  font-size: 0.82rem;
+}
+
+.klive-detail-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line-200);
+  background: var(--panel-soft);
+  flex-shrink: 0;
+}
+
+.klive-detail-meta-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 4px 0;
+}
+
+.klive-detail-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-500);
+  flex-shrink: 0;
+  min-width: 72px;
+}
+
+.klive-detail-value {
+  font-size: 0.78rem;
+  color: var(--ink-900);
+  word-break: break-all;
+}
+
+.klive-detail-value.mono,
+.mono {
+  font-family: 'Roboto Mono', monospace;
+}
+
+.klive-detail-headers {
+  flex-wrap: wrap;
+}
+
+.klive-header-pill {
+  display: inline-block;
+  padding: 2px 8px;
+  margin: 2px 4px 2px 0;
+  border-radius: 5px;
+  background: var(--panel-deep);
+  font-size: 0.7rem;
+  color: var(--ink-700);
+}
+
+/* ─── Detail Payload ───────────────────────────────────────────────────────── */
+.klive-detail-payload {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.klive-detail-payload-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--line-200);
+  flex-shrink: 0;
+}
+
+.klive-detail-payload-actions {
+  display: flex;
+  gap: 4px;
+}
+
+/* ─── JSON Syntax ──────────────────────────────────────────────────────────── */
+.klive-json {
+  margin: 0;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.76rem;
+  line-height: 1.6;
+  color: var(--ink-800);
+  white-space: pre;
+}
+
+.klive-json-line {
+  white-space: pre;
+}
+
+.klive-tok-key {
+  color: #4a90d9;
+}
+
+.klive-tok-str {
+  color: #50a770;
+}
+
+.klive-tok-num {
+  color: #d4a052;
+}
+
+.klive-tok-bool {
+  color: #a78bfa;
+}
+
+.klive-tok-null {
+  color: #94a3b8;
+}
+
+[data-theme='dark'] .klive-tok-key {
+  color: #7db5ff;
+}
+
+[data-theme='dark'] .klive-tok-str {
+  color: #7fd8a8;
+}
+
+[data-theme='dark'] .klive-tok-num {
+  color: #ffd28b;
+}
+
+[data-theme='dark'] .klive-tok-bool {
+  color: #c084fc;
+}
+
+[data-theme='dark'] .klive-tok-null {
+  color: #94a3b8;
+}
+
+/* ─── Fullscreen Modal ─────────────────────────────────────────────────────── */
+.klive-modal-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(8, 14, 24, 0.55);
+  backdrop-filter: blur(2px);
+}
+
+.klive-modal {
+  display: flex;
+  flex-direction: column;
+  width: min(90vw, 780px);
+  max-height: 80vh;
+  border-radius: 14px;
+  background: var(--panel);
+  border: 1px solid var(--line-200);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+
+.klive-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--line-200);
+}
+
+.klive-modal-title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--ink-900);
+}
+
+.klive-modal-subtitle {
+  margin: 4px 0 0;
+  font-size: 0.72rem;
+  font-family: 'Roboto Mono', monospace;
+  color: var(--ink-500);
+}
+
+.klive-modal-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.klive-modal-body {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0;
+}
+
+/* ─── CodeEditor overrides ─────────────────────────────────────────────────── */
+.klive-detail-payload-body {
+  flex: 1;
+  min-height: 120px;
+  overflow: hidden;
+  padding: 0;
+}
+
+.klive-modal-body {
+  min-height: 200px;
+}
