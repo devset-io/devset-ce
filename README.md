@@ -1,25 +1,36 @@
-# Devset CE
+# Devset
 
-**Source-available, local-first workflow engine for testing Kafka and RabbitMQ message flows.**
+**Free, self-hosted scenario engine for testing and simulating Kafka and RabbitMQ event-driven systems.**
 
-Define workflows. Send real messages. Inspect results. All locally — no cloud, no scripts, no context switching.
+Testing event-driven systems is painful. You end up writing throwaway Java or Python scripts just to publish a few messages, integration tests are brittle and slow, multi-step scenarios require glue code nobody wants to maintain, and reproducing production issues locally means reverse-engineering payloads by hand.
+
+Devset gives you a visual builder and a declarative DSL for event-driven scenarios. Send real messages to real brokers, chain multi-step flows with conditionals and loops, switch between JSON and Protobuf — all on your machine. Iterate in seconds instead of minutes.
+
+- **No cloud.** Runs entirely on your machine.
+- **No accounts.** Open the UI and start.
+- **No telemetry.** Your scenarios stay local.
+
+Think Postman or Cypress, but for Kafka and RabbitMQ instead of HTTP.
+
+<sub>Source-available under FSL-1.1 — free for internal use, converts to Apache 2.0 after two years.</sub>
 
 ---
 
-## What is Devset CE?
+## What is Devset?
 
-Devset CE is a workflow engine with a visual UI for generating and sending structured events to Kafka and RabbitMQ. It compiles a declarative pipeline DSL into an executable plan that produces events with support for JSON and Protobuf serialization, conditional logic, repeat loops, and stateful field expressions.
+Devset is a scenario engine for event-driven systems. It compiles a declarative DSL into an executable plan that produces events to Kafka and RabbitMQ, with support for JSON and Protobuf serialization, conditional logic, repeat loops, stateful field expressions, and template resolution. A visual builder helps design scenarios, then run them against real brokers locally.
 
 **Key features:**
 
-- Send real messages to Kafka and RabbitMQ
-- Build multi-step workflows visually
-- JSON and Protobuf content types with schema registry
+- Declarative DSL for event-driven scenarios — JSON or Protobuf payloads
+- Real messages to real Kafka and RabbitMQ brokers (not mocks)
+- Visual scenario builder with the DSL as the source of truth
 - Conditional emit, repeat loops, wait steps
 - Stateful expressions and template resolution
-- WebSocket streaming for Kafka topic monitoring
+- Schema registry support for Protobuf
+- WebSocket streaming for live Kafka topic inspection
 - SQLite persistence — zero external database dependencies
-- No data leaves your machine
+- Local-first — your data never leaves your machine
 
 ---
 
@@ -50,7 +61,7 @@ Devset CE is a workflow engine with a visual UI for generating and sending struc
 
 ## Repository structure
 
-This is a monorepo containing all Devset CE components:
+This is a monorepo containing all Devset components:
 
 | Directory | Component | Stack |
 |-----------|-----------|-------|
@@ -165,7 +176,7 @@ Backend configuration is managed via `application.yml` and Spring profiles:
 | `server.port` | `8082` | HTTP server port |
 | `spring.datasource.url` | `jdbc:sqlite:/data/devset.db` | SQLite database path |
 | `devset.cors.allowed-origins` | `http://localhost:5173` | Comma-separated CORS origins |
-| `devset.engine.max-active-runs` | `10` | Maximum concurrent workflow runs |
+| `devset.engine.max-active-runs` | `10` | Maximum concurrent scenario runs |
 | `devset.engine.max-executions-per-run` | `10` | Maximum executions per single run |
 
 ---
@@ -187,10 +198,10 @@ cd devset-ce-fe && npm test
 
 ## License
 
-Devset CE is source-available software licensed under the
+Devset is source-available software licensed under the
 [Functional Source License 1.1 (FSL-1.1-Apache-2.0)](LICENSE).
 
-- You **can** use, modify, and self-host Devset CE for internal use, education, and research.
+- You **can** use, modify, and self-host Devset for internal use, education, and research.
 - You **cannot** offer it as a competing commercial product or service.
 - After **2 years** from each release, that version automatically converts to [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0).
 
