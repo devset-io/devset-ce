@@ -15,6 +15,7 @@ import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import io.devset.ce.be.common.domain.WorkflowEngineException;
+import io.devset.ce.be.common.util.LogSanitizer;
 import io.devset.ce.be.mongodb.application.MongoDbFacade;
 import io.devset.ce.be.mongodb.application.dto.MongoDbConnectionStatusDto;
 import io.devset.ce.be.mongodb.application.dto.MongoDbQueryRequestDto;
@@ -138,7 +139,7 @@ public class MongoDbFacadeImpl implements MongoDbFacade {
             return action.apply(client);
         } catch (MongoException e) {
             String safeMessage = MongoUriSanitizer.redactInText(e.getMessage());
-            log.warn("MongoDB {} failed for connection={}: {}", operation, connectionName, safeMessage);
+            log.warn("MongoDB {} failed for connection={}: {}", LogSanitizer.sanitize(operation), LogSanitizer.sanitize(connectionName), safeMessage);
             throw new WorkflowEngineException(
                     "MongoDB " + operation + " failed for connection=" + connectionName + ": " + safeMessage);
         }

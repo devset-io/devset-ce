@@ -13,6 +13,7 @@ package io.devset.ce.be.rabbit.infrastructure;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.devset.ce.be.common.domain.ConnectionType;
 import io.devset.ce.be.common.domain.WorkflowEngineException;
+import io.devset.ce.be.common.util.LogSanitizer;
 import io.devset.ce.be.rabbit.application.DynamicRabbitProducerManager;
 import io.devset.ce.be.rabbit.application.dto.RabbitBrokerResourcesDto;
 import io.devset.ce.be.rabbit.application.dto.RabbitConnectionStatusDto;
@@ -161,10 +162,10 @@ public class DynamicRabbitProducerManagerImpl implements DynamicRabbitProducerMa
 
             return new RabbitBrokerResourcesDto(true, queues, exchanges);
         } catch (ResourceAccessException e) {
-            log.warn("RabbitMQ Management API unreachable for connection '{}': {}", connectionName, e.getMessage());
+            log.warn("RabbitMQ Management API unreachable for connection '{}': {}", LogSanitizer.sanitize(connectionName), e.getMessage());
             return RabbitBrokerResourcesDto.unavailable();
         } catch (RestClientException e) {
-            log.warn("RabbitMQ Management API error for connection '{}': {}", connectionName, e.getMessage());
+            log.warn("RabbitMQ Management API error for connection '{}': {}", LogSanitizer.sanitize(connectionName), e.getMessage());
             return RabbitBrokerResourcesDto.unavailable();
         }
     }

@@ -13,6 +13,7 @@ package io.devset.ce.be.mongodb.infrastructure;
 import com.mongodb.MongoException;
 import com.mongodb.client.MongoClient;
 import io.devset.ce.be.common.domain.WorkflowEngineException;
+import io.devset.ce.be.common.util.LogSanitizer;
 import io.devset.ce.be.mongodb.application.dto.MongoDbConnectionStatusDto;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
@@ -156,7 +157,7 @@ public class MongoConnectionRegistry {
         try {
             client.close();
         } catch (RuntimeException e) {
-            log.warn("Failed to close MongoDB client: name={}", name, e);
+            log.warn("Failed to close MongoDB client: name={}", LogSanitizer.sanitize(name), e);
         }
     }
 }

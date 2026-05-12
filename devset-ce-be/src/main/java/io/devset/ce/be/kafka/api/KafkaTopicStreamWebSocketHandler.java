@@ -10,6 +10,7 @@
 
 package io.devset.ce.be.kafka.api;
 
+import io.devset.ce.be.common.util.LogSanitizer;
 import io.devset.ce.be.kafka.application.KafkaTopicStreamService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -65,8 +66,8 @@ public class KafkaTopicStreamWebSocketHandler extends TextWebSocketHandler {
             log.warn(
                     "Cannot start Kafka WS stream. sessionId={}, connectionName={}, topic={}",
                     session.getId(),
-                    connectionName,
-                    topic,
+                    LogSanitizer.sanitize(connectionName),
+                    LogSanitizer.sanitize(topic),
                     exception
             );
             closeSessionWithBadData(session, exception.getMessage());
