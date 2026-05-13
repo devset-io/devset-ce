@@ -1,0 +1,20 @@
+name: "Devset CE CodeQL config"
+
+paths:
+  - devset-ce-be/src/main
+  - devset-ce-fe/src
+
+paths-ignore:
+  - '**/build/**'
+  - '**/dist/**'
+  - '**/node_modules/**'
+  - '**/*.test.ts'
+  - '**/*.test.tsx'
+  - '**/*.spec.ts'
+  - 'devset-ce-be/src/test/**'
+  - 'devset-ce-be/src/integTest/**'
+
+query-filters:
+  - exclude:
+      tags:
+        - experimental
