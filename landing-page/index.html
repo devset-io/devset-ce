@@ -188,21 +188,21 @@
         <section class="section" id="install">
             <div class="section-heading">
                 <p class="eyebrow">install</p>
-                <h2>Run the full stack locally with Docker Compose.</h2>
-                <p>Devset ships as a Docker image. Pull it, point it at your local Kafka or RabbitMQ and start testing.
-                    Frontend and backend run together out of the box.</p>
+                <h2>Run Devset locally in seconds with Docker.</h2>
+                <p>Devset ships as a prebuilt Docker image. Pull it, point it at your local Kafka or RabbitMQ and start
+                    testing. Frontend and backend run together out of the box.</p>
             </div>
 
             <div class="install-grid">
                 <article class="install-card">
                     <span class="step">step 01</span>
-                    <h3>Clone</h3>
-                    <pre>git clone https://github.com/devset-io/devset-ce.git</pre>
+                    <h3>Pull</h3>
+                    <pre>docker pull ghcr.io/devset-io/devset-ce:latest</pre>
                 </article>
                 <article class="install-card">
                     <span class="step">step 02</span>
                     <h3>Run</h3>
-                    <pre>cd devset-ce &amp;&amp; docker compose up</pre>
+                    <pre>docker run -p 8082:8082 -v devset-data:/data ghcr.io/devset-io/devset-ce:latest</pre>
                 </article>
                 <article class="install-card">
                     <span class="step">step 03</span>
