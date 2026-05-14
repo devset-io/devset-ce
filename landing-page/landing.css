@@ -161,6 +161,21 @@ pre { margin: 0; overflow: auto; }
   flex-wrap: nowrap;
 }
 .brand .mark { width: 22px; height: 22px; align-self: center; }
+.brand .brand-logo {
+  height: 44px;
+  width: auto;
+  display: block;
+  align-self: center;
+  filter: drop-shadow(0 0 14px rgba(78, 181, 138, 0.18));
+  animation: brand-logo-aura 4.5s ease-in-out infinite;
+}
+@keyframes brand-logo-aura {
+  0%, 100% { filter: drop-shadow(0 0 10px rgba(78, 181, 138, 0.12)); }
+  50%      { filter: drop-shadow(0 0 18px rgba(78, 181, 138, 0.22)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .brand .brand-logo { animation: none; }
+}
 .brand .slash { color: var(--accent); }
 .brand small {
   font-family: var(--font-mono);
