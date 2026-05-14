@@ -3,6 +3,11 @@ name: Dependency submission
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
+    paths:
+      - 'devset-ce-be/**'
+      - '.github/workflows/dependency-review.yml'
   workflow_dispatch:
 
 permissions:
