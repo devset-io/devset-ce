@@ -14,7 +14,7 @@ RUN apt-get update \
     && rm -rf /tmp/protoc.zip /var/lib/apt/lists/*
 
 # ---- STAGE 2: runtime ----
-FROM eclipse-temurin:25-jdk@sha256:0182539a4355ab94bf1690ae86602536d8a30486c2675ba777ccbed965e1358f
+FROM eclipse-temurin:25-jdk@sha256:c2b7ea21649875fb9052237ac4e3cd4ef63968a2a389a0a1b1a72a5e53e5c93f
 
 COPY --from=protoc /opt/protoc/bin/protoc /usr/local/bin/protoc
 COPY --from=protoc /opt/protoc/include /usr/local/include
