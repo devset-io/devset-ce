@@ -96,8 +96,8 @@ public class SingleStepFacadeImpl implements SingleStepFacade {
     /**
      * Returns the full single-step execution history.
      * <p>
-     * Entries are ordered by creation time descending, with id as a tiebreaker, so the
-     * most recently executed request appears first. The result is cached under
+     * Entries are ordered by creation time descending, with id descending as a tiebreaker,
+     * so the most recently executed request appears first. The result is cached under
      * {@link CacheNames#SINGLE_STEP_HISTORY} and invalidated by {@link #execute}.
      *
      * @return list of all persisted single-step executions, newest first

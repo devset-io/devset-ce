@@ -58,6 +58,8 @@ class CollectionControllerIntegTest {
 
         JsonNode created = objectMapper.readTree(createdResult.getResponse().getContentAsString());
         assertEquals(collectionName, created.path("collectionName").asText());
+        assertTrue(created.path("collectionContext").isObject());
+        assertEquals(0, created.path("collectionContext").size());
 
         JsonNode fetched = objectMapper.readTree(mockMvc.perform(get("/api/collection/{collectionName}", collectionName))
                 .andExpect(status().isOk())
@@ -65,6 +67,8 @@ class CollectionControllerIntegTest {
                 .getResponse()
                 .getContentAsString());
         assertEquals(collectionName, fetched.path("collectionName").asText());
+        assertTrue(fetched.path("collectionContext").isObject());
+        assertEquals(0, fetched.path("collectionContext").size());
 
         JsonNode allCollections = objectMapper.readTree(mockMvc.perform(get("/api/collection"))
                 .andExpect(status().isOk())
