@@ -10,12 +10,16 @@
 
 package io.devset.ce.be.collection.infrastructure.persistence;
 
+import io.devset.ce.be.common.persistence.MapStringObjectJsonConverter;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.Map;
 
 /**
  * JPA entity for the message_dispatch_collection table.
@@ -29,6 +33,10 @@ public class CollectionEntity {
     @Id
     @Column(name = "collection_name", nullable = false, updatable = false, length = 200)
     private String collectionName;
+
+    @Convert(converter = MapStringObjectJsonConverter.class)
+    @Column(name = "collection_context_json", columnDefinition = "TEXT")
+    private Map<String, Object> collectionContext;
 
     protected CollectionEntity() {
     }

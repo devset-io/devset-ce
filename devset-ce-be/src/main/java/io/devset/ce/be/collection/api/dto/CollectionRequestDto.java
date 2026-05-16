@@ -10,12 +10,17 @@
 
 package io.devset.ce.be.collection.api.dto;
 
+import java.util.Map;
+
 /**
  * API DTO for collection create requests and read responses.
  *
- * @param collectionName unique collection name
+ * @param collectionName    unique collection name
+ * @param collectionContext user-defined values shared across the collection
+ *                          (e.g. {@code userId}); may be {@code null} or omitted on input
  */
 public record CollectionRequestDto(
-        String collectionName
+        String collectionName,
+        Map<String, Object> collectionContext
 ) {
 }

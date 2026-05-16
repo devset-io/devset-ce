@@ -58,6 +58,23 @@ public class SingleStepFacadeImpl implements SingleStepFacade {
     private final SingleStepRequestHistoryRepository historyRepository;
     private final SingleStepHistoryPersistenceMapper historyPersistenceMapper;
 
+    /**
+     * Executes a single messaging step ad-hoc, without defining a full workflow.
+     * <p>
+     * The request is validated against the target broker (Kafka requires {@code topic};
+     * Rabbit requires at least one of {@code topic}, {@code exchange}, {@code routingKey}).
+     * For {@link WorkflowContentType#PROTOBUF} content the inline {@code protoSchema} is
+     * resolved to a descriptor and root message; the schema is registered under
+     * {@code workflowId + "-inline-proto-schema"} when no explicit {@code schemaId} is given.
+     * The request is then compiled into a single-stage {@link Workflow}, submitted to the
+     * engine, and a {@link SingleStepExecutionHistory} entry is persisted. Evicts the
+     * cached history list on every invocation so reads see the new entry.
+     *
+     * @param request the validated single-step execution request
+     * @return result containing history id, run id, status, executions count and resolved
+     *         schema metadata
+     * @throws WorkflowEngineException when destination is invalid or protobuf metadata is missing
+     */
     @Override
     @CacheEvict(cacheNames = CacheNames.SINGLE_STEP_HISTORY, allEntries = true)
     public SingleStepExecutionResult execute(SingleStepExecutionRequest request) {
@@ -75,6 +92,16 @@ public class SingleStepFacadeImpl implements SingleStepFacade {
         return new SingleStepExecutionResult(persisted.id(), submission.runId(), submission.status(), submission.executions(), request.workflowId(), request.contentType(), resolvedSchemaId, persisted.protoSchema(), persisted.protobufRootMessage());
     }
 
+
+    /**
+     * Returns the full single-step execution history.
+     * <p>
+     * Entries are ordered by creation time descending, with id as a tiebreaker, so the
+     * most recently executed request appears first. The result is cached under
+     * {@link CacheNames#SINGLE_STEP_HISTORY} and invalidated by {@link #execute}.
+     *
+     * @return list of all persisted single-step executions, newest first
+     */
     @Override
     @Transactional(readOnly = true)
     @Cacheable(cacheNames = CacheNames.SINGLE_STEP_HISTORY)
