@@ -16,6 +16,7 @@ import io.devset.ce.be.singlerequest.application.SingleRequestFacade;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -52,7 +53,7 @@ class CollectionServiceImplTest {
 
     @Test
     void shouldCreateCollectionWhenNameIsUnique() {
-        var definition = new CollectionDefinition("new-col");
+        var definition = new CollectionDefinition("new-col", Map.of());
         var entity = collectionEntity("new-col");
 
         when(repository.existsById("new-col")).thenReturn(false);
@@ -68,7 +69,7 @@ class CollectionServiceImplTest {
 
     @Test
     void shouldThrowWhenCreatingDuplicateCollection() {
-        var definition = new CollectionDefinition("existing");
+        var definition = new CollectionDefinition("existing", Map.of());
         when(repository.existsById("existing")).thenReturn(true);
 
         WorkflowEngineException ex = assertThrows(
@@ -83,7 +84,7 @@ class CollectionServiceImplTest {
     @Test
     void shouldReturnCollectionByName() {
         var entity = collectionEntity("alpha");
-        var definition = new CollectionDefinition("alpha");
+        var definition = new CollectionDefinition("alpha", Map.of());
 
         when(repository.findById("alpha")).thenReturn(Optional.of(entity));
         when(mapper.toDomain(entity)).thenReturn(definition);
@@ -109,8 +110,8 @@ class CollectionServiceImplTest {
     void shouldReturnAllCollections() {
         var entityA = collectionEntity("alpha");
         var entityB = collectionEntity("beta");
-        var defA = new CollectionDefinition("alpha");
-        var defB = new CollectionDefinition("beta");
+        var defA = new CollectionDefinition("alpha", Map.of());
+        var defB = new CollectionDefinition("beta", Map.of());
 
         when(repository.findAll()).thenReturn(List.of(entityA, entityB));
         when(mapper.toDomain(entityA)).thenReturn(defA);

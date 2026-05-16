@@ -25,6 +25,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -114,7 +115,7 @@ class CollectionServiceImplCachingTest {
         when(collectionRepository.save(any(CollectionEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         collectionService.get(COLLECTION_ALPHA);
-        collectionService.create(new CollectionDefinition(COLLECTION_BETA));
+        collectionService.create(new CollectionDefinition(COLLECTION_BETA, Map.of()));
         collectionService.get(COLLECTION_ALPHA);
 
         verify(collectionRepository, times(2)).findById(COLLECTION_ALPHA);

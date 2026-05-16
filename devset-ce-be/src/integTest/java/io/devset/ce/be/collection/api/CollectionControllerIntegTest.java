@@ -58,6 +58,8 @@ class CollectionControllerIntegTest {
 
         JsonNode created = objectMapper.readTree(createdResult.getResponse().getContentAsString());
         assertEquals(collectionName, created.path("collectionName").asText());
+        assertTrue(created.path("collectionContext").isObject());
+        assertEquals(0, created.path("collectionContext").size());
 
         JsonNode fetched = objectMapper.readTree(mockMvc.perform(get("/api/collection/{collectionName}", collectionName))
                 .andExpect(status().isOk())
@@ -65,6 +67,8 @@ class CollectionControllerIntegTest {
                 .getResponse()
                 .getContentAsString());
         assertEquals(collectionName, fetched.path("collectionName").asText());
+        assertTrue(fetched.path("collectionContext").isObject());
+        assertEquals(0, fetched.path("collectionContext").size());
 
         JsonNode allCollections = objectMapper.readTree(mockMvc.perform(get("/api/collection"))
                 .andExpect(status().isOk())
@@ -85,6 +89,36 @@ class CollectionControllerIntegTest {
         assertTrue(error.path("message").asText().contains("Collection not found"));
     }
 
+    @Test
+    void shouldPersistAndReturnCollectionContext() throws Exception {
+        String collectionName = "single-message-collection-" + UUID.randomUUID().toString().replace("-", "");
+
+        Map<String, Object> collectionContext = new LinkedHashMap<>();
+        collectionContext.put("userName", "alice");
+        collectionContext.put("retries", 3);
+
+        Map<String, Object> collectionRequest = new LinkedHashMap<>();
+        collectionRequest.put("collectionName", collectionName);
+        collectionRequest.put("collectionContext", collectionContext);
+
+        mockMvc.perform(post("/api/collection")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(collectionRequest)))
+                .andExpect(status().isCreated());
+
+        JsonNode fetched = objectMapper.readTree(mockMvc.perform(get("/api/collection/{collectionName}", collectionName))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString());
+
+        assertEquals("alice", fetched.path("collectionContext").path("userName").asText());
+        assertEquals(3, fetched.path("collectionContext").path("retries").asInt());
+
+        mockMvc.perform(delete("/api/collection/{collectionName}", collectionName))
+                .andExpect(status().isNoContent());
+    }
+    
     private boolean containsCollectionName(JsonNode entries, String collectionName) {
         for (JsonNode entry : entries) {
             if (collectionName.equals(entry.path("collectionName").asText())) {
