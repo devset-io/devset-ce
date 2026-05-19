@@ -12,6 +12,7 @@ package io.devset.ce.be.collection.infrastructure.persistence;
 
 import io.devset.ce.be.collection.domain.CollectionDefinition;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 /**
  * Maps between JPA entities and domain records for collections.
@@ -33,5 +34,6 @@ public interface CollectionEntityMapper {
      * @param domain the collection domain definition
      * @return the collection entity
      */
+    @Mapping(target = "entityVersion", ignore = true)
     CollectionEntity toEntity(CollectionDefinition domain);
 }

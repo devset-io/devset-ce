@@ -20,7 +20,7 @@ import {
   type SingleRequestPayload,
 } from '../../../../services/message-dispatch.service'
 import type { MessageDispatchAction, MessageDispatchState } from '../../state/MessageDispatch.types'
-import { toSavedRequestsErrorMessage } from '../utils/dispatchSavedRequests.utils'
+import { normalizeError } from '../../../../../../shared/utils/error'
 
 type UseDispatchSingleRequestActionsParams = {
   dispatch: Dispatch<MessageDispatchAction>
@@ -91,7 +91,7 @@ export function useDispatchSingleRequestActions({
       await refreshCollections(false)
       return true
     } catch (error) {
-      failCollection(toSavedRequestsErrorMessage(error, t('dispatch.vm.saveSingleRequestFailed')))
+      failCollection(normalizeError(error, t('dispatch.vm.saveSingleRequestFailed')))
       return false
     } finally {
       dispatch({ type: 'savingSingleRequestCompleted' })
@@ -188,7 +188,7 @@ export function useDispatchSingleRequestActions({
       await refreshCollections(false)
       return true
     } catch (error) {
-      failCollection(toSavedRequestsErrorMessage(error, t('dispatch.vm.renameSingleRequestFailed')))
+      failCollection(normalizeError(error, t('dispatch.vm.renameSingleRequestFailed')))
       return false
     } finally {
       dispatch({ type: 'savingSingleRequestCompleted' })
@@ -249,7 +249,7 @@ export function useDispatchSingleRequestActions({
       dispatch({ type: 'singleRequestSelected', name: loaded.singleRequestName, collectionName: loaded.collectionName })
       dispatch({ type: 'singleRequestNameChanged', value: loaded.singleRequestName })
     } catch (error) {
-      failCollection(toSavedRequestsErrorMessage(error, t('dispatch.vm.loadSingleRequestFailed')))
+      failCollection(normalizeError(error, t('dispatch.vm.loadSingleRequestFailed')))
     }
   }
 
@@ -273,7 +273,7 @@ export function useDispatchSingleRequestActions({
       toast.success(t('dispatch.vm.singleRequestDeleted', { requestName: normalizedName }))
       await refreshCollections(false)
     } catch (error) {
-      failCollection(toSavedRequestsErrorMessage(error, t('dispatch.vm.deleteSingleRequestFailed')))
+      failCollection(normalizeError(error, t('dispatch.vm.deleteSingleRequestFailed')))
     }
   }
 

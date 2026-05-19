@@ -8,7 +8,8 @@
  * You may obtain a copy of the License in the LICENSE file at the root of this repository.
  */
 
-import type { FieldOverridePayload, SetEntry } from '../../flow-builder/types'
+import type { FieldOverridePayload, QueryValue, SetEntry } from '../../flow-builder/types'
+import type { CollectionContextEntry } from '../pages/MessageDispatch/state/MessageDispatch.types'
 import type {
   ContentMode,
   DispatchHeaderRow,
@@ -34,8 +35,28 @@ export type DispatchCollectionsPanelLabels = {
   clone: string
   rename: string
   delete: string
+  editContext: string
+  contextFieldsTitle: string
   emptyRequests: string
   requestActions: string
+}
+
+export type DispatchCollectionContextModalLabels = {
+  modalAria: string
+  title: string
+  subtitle: string
+  close: string
+  cancel: string
+  save: string
+  saving: string
+  fieldPlaceholder: string
+  valuePlaceholder: string
+  addField: string
+  empty: string
+  removeAria: string
+  modeLiteral: string
+  modePath: string
+  modeFn: string
 }
 
 export type DispatchRequestCardLabels = {
@@ -154,6 +175,7 @@ export type DispatchHistoryPreviewModalLabels = {
 
 export type MessageDispatchLabels = {
   collections: DispatchCollectionsPanelLabels
+  collectionContext: DispatchCollectionContextModalLabels
   request: DispatchRequestCardLabels
   kafkaEnvelope: DispatchKafkaEnvelopeCardLabels
   history: DispatchHistoryPanelLabels
@@ -172,6 +194,7 @@ export type DispatchCollectionRequestItemViewModel = {
 export type DispatchCollectionItemViewModel = {
   collectionName: string
   requestCount: number
+  contextFieldCount: number
   isExpanded: boolean
   isMenuOpen: boolean
   requests: DispatchCollectionRequestItemViewModel[]
@@ -192,6 +215,7 @@ export type DispatchCollectionsPanelProps = {
   onCollectionMenuToggle: (collectionName: string) => void
   onCloneCollection: (collectionName: string) => void | Promise<void>
   onDeleteCollection: (collectionName: string) => void | Promise<void>
+  onEditCollectionContext: (collectionName: string) => void
   onRequestSelect: (requestName: string, collectionName: string) => void | Promise<void>
   onRequestMenuToggle: (requestName: string, collectionName: string) => void
   onRequestRenameStart: (collectionName: string, requestName: string) => void
@@ -285,6 +309,12 @@ export type DispatchRequestCardProps = {
   isProtoEditingBlocked: boolean
   payloadEditorMode: PayloadEditorMode
   stepStateRaw: string
+  /**
+   * Bare field names from the loaded request's parent collection context,
+   * surfaced as Raw JSON editor completions: as-is inside `"$ref": "..."`,
+   * and prefixed with `state.` inside `"$path": "..."`.
+   */
+  contextFieldNames: string[]
   studioScopePath: string
   studioSelectedField: string
   studioComputed: DispatchStudioComputedViewModel
@@ -380,9 +410,24 @@ export type DispatchHistoryPreviewModalProps = {
   onClose: () => void
 }
 
+export type DispatchCollectionContextModalProps = {
+  labels: DispatchCollectionContextModalLabels
+  isOpen: boolean
+  isSaving: boolean
+  collectionName: string
+  entries: CollectionContextEntry[]
+  error: string | null
+  onClose: () => void
+  onAddEntry: () => void
+  onUpdateEntry: (id: string, patch: { field?: string; value?: QueryValue }) => void
+  onRemoveEntry: (id: string) => void
+  onSubmit: () => void | Promise<void>
+}
+
 export type MessageDispatchProps = {
   isHistoryPanelOpen: boolean
   collectionsPanel: DispatchCollectionsPanelProps
+  collectionContextModal: DispatchCollectionContextModalProps
   requestCard: DispatchRequestCardProps
   historyPanel: DispatchHistoryPanelProps
   historyPreviewModal: DispatchHistoryPreviewModalProps

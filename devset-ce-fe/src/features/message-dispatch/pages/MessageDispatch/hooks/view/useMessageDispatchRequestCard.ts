@@ -20,6 +20,7 @@ import type {
   DispatchRequestCardProps,
   DispatchSchemaOptionViewModel,
 } from '../../../../types/messageDispatch.view.types'
+import { collectionContextFieldNames } from '../utils/collectionContext.utils'
 
 type MessageDispatchRequestCardDerived = {
   selectedConnector: ConnectorStatus | null
@@ -72,6 +73,14 @@ export function useMessageDispatchRequestCard({
       })),
     [state.connectors],
   )
+
+  const contextFieldNames = useMemo<string[]>(() => {
+    const collectionName =
+      state.loadedSingleRequestCollectionName ?? state.selectedCollectionName
+    if (!collectionName) return []
+    const collection = state.collections.find((entry) => entry.collectionName === collectionName)
+    return collection ? collectionContextFieldNames(collection.collectionContext) : []
+  }, [state.collections, state.loadedSingleRequestCollectionName, state.selectedCollectionName])
 
   const availableSchemaOptions = useMemo<DispatchSchemaOptionViewModel[]>(
     () =>
@@ -167,6 +176,7 @@ export function useMessageDispatchRequestCard({
     isProtoEditingBlocked: derived.isProtoEditingBlocked,
     payloadEditorMode: state.payloadEditorMode,
     stepStateRaw: state.stepStateRaw,
+    contextFieldNames,
     studioScopePath: state.studioScopePath,
     studioSelectedField: state.studioSelectedField,
     studioComputed: {

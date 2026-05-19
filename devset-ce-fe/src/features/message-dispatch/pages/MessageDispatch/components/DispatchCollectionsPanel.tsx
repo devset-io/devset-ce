@@ -26,6 +26,7 @@ export const DispatchCollectionsPanel = React.memo(function DispatchCollectionsP
   onCollectionMenuToggle,
   onCloneCollection,
   onDeleteCollection,
+  onEditCollectionContext,
   onRequestSelect,
   onRequestMenuToggle,
   onRequestRenameStart,
@@ -98,6 +99,21 @@ export const DispatchCollectionsPanel = React.memo(function DispatchCollectionsP
                     <span className="dispatch-tree-name">{collection.collectionName}</span>
                     <span className="dispatch-tree-count">{collection.requestCount}</span>
                   </button>
+                  {collection.contextFieldCount > 0 ? (
+                    <button
+                      type="button"
+                      className="dispatch-tree-context-badge"
+                      onClick={() => onEditCollectionContext(collection.collectionName)}
+                      disabled={isBusy}
+                      title={`${labels.contextFieldsTitle}: ${collection.contextFieldCount}`}
+                      aria-label={`${labels.contextFieldsTitle}: ${collection.contextFieldCount}`}
+                    >
+                      <span className="dispatch-tree-context-badge-glyph" aria-hidden="true">
+                        {'{ }'}
+                      </span>
+                      {collection.contextFieldCount}
+                    </button>
+                  ) : null}
                   <div className="dispatch-tree-menu-wrap">
                     <button
                       type="button"
@@ -125,6 +141,16 @@ export const DispatchCollectionsPanel = React.memo(function DispatchCollectionsP
                           autoFocus
                         >
                           {labels.clone}
+                        </button>
+                        <button
+                          type="button"
+                          role="menuitem"
+                          tabIndex={0}
+                          className="dispatch-tree-menu-item"
+                          onClick={() => onEditCollectionContext(collection.collectionName)}
+                          disabled={isBusy}
+                        >
+                          {labels.editContext}
                         </button>
                         <button
                           type="button"

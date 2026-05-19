@@ -205,6 +205,46 @@
   padding: 1px 6px;
 }
 
+.dispatch-tree-context-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 18px;
+  border: 1px solid color-mix(in srgb, var(--brand) 40%, var(--line-300));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--brand) 12%, var(--panel));
+  color: var(--brand);
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+.dispatch-tree-context-badge:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--brand) 22%, var(--panel));
+  border-color: var(--brand);
+}
+
+.dispatch-tree-context-badge:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+.dispatch-tree-context-badge:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.dispatch-tree-context-badge-glyph {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.66rem;
+  line-height: 1;
+  letter-spacing: -1px;
+  opacity: 0.85;
+}
+
 .dispatch-tree-menu-wrap {
   position: relative;
   flex-shrink: 0;
@@ -790,6 +830,11 @@
   padding: 12px;
   display: grid;
   gap: 10px;
+}
+
+.dispatch-save-modal.is-wide {
+  width: calc(100vw - 36px);
+  max-width: 1100px;
 }
 
 .dispatch-save-modal-head {

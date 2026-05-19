@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -56,6 +57,23 @@ public class CollectionController {
     @GetMapping("/{collectionName}")
     public CollectionRequestDto get(@PathVariable String collectionName) {
         return collectionDtoMapper.toResponse(collectionFacade.get(collectionName));
+    }
+
+    /**
+     * Replaces only the {@code collectionContext} of an existing collection.
+     * Other fields on the request body (including {@code collectionName}) are ignored.
+     *
+     * @param collectionName name from the path; identifies the collection to update
+     * @param request        request body — only {@code collectionContext} is read
+     * @return the updated collection definition
+     */
+    @PatchMapping("/{collectionName}")
+    public CollectionRequestDto update(
+            @PathVariable String collectionName,
+            @RequestBody CollectionRequestDto request
+    ) {
+        CollectionDefinition replacement = new CollectionDefinition(collectionName, request.collectionContext());
+        return collectionDtoMapper.toResponse(collectionFacade.update(replacement));
     }
 
     @DeleteMapping("/{collectionName}")

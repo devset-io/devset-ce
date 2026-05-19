@@ -55,6 +55,15 @@ public class CollectionServiceImpl implements CollectionFacade {
     }
 
     @Override
+    @CacheEvict(cacheNames = {CacheNames.COLLECTION_BY_NAME, CacheNames.COLLECTION_ALL}, allEntries = true)
+    public CollectionDefinition update(CollectionDefinition request) {
+        CollectionEntity existing = repository.findById(request.collectionName())
+                .orElseThrow(() -> new WorkflowEngineException("Collection not found: " + request.collectionName()));
+        existing.setCollectionContext(request.collectionContext());
+        return mapper.toDomain(repository.save(existing));
+    }
+
+    @Override
     @Transactional(readOnly = true)
     @Cacheable(cacheNames = CacheNames.COLLECTION_BY_NAME, key = "#collectionName")
     public CollectionDefinition get(String collectionName) {

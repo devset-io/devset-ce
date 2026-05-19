@@ -121,4 +121,64 @@ describe('createDslCompleter', () => {
     const plItems = complete(plCompleter, '"$fn": "')
     expect(plItems.length).toBeGreaterThanOrEqual(FUNCTION_CATALOG.length)
   })
+
+  it('returns `state.<name>` completions inside "$path": "..."', () => {
+    const c = createDslCompleter('en', { contextFieldNames: ['userId', 'amount'] })
+    const items = complete(c, '"$path": "state.')
+    const captions = items.map((i) => i.caption)
+    expect(captions).toContain('state.userId')
+    expect(captions).toContain('state.amount')
+  })
+
+  it('returns bare-name completions inside "$ref": "..."', () => {
+    const c = createDslCompleter('en', { contextFieldNames: ['userId'] })
+    const items = complete(c, '  "id": { "$ref": "')
+    const captions = items.map((i) => i.caption)
+    expect(captions).toContain('userId')
+    expect(captions).not.toContain('state.userId')
+  })
+
+  it('still triggers $ref/$path completions after typing names with digits, underscores or hyphens', () => {
+    const c = createDslCompleter('en', { contextFieldNames: ['user_id', 'field2', 'field-3'] })
+    const refItems = complete(c, '"$ref": "user_')
+    const pathItems = complete(c, '"$path": "state.field2')
+    const refHyphenItems = complete(c, '"$ref": "field-')
+    const pathHyphenItems = complete(c, '"$path": "state.field-')
+    expect(refItems.map((i) => i.caption)).toContain('user_id')
+    expect(pathItems.map((i) => i.caption)).toContain('state.field2')
+    expect(refHyphenItems.map((i) => i.caption)).toContain('field-3')
+    expect(pathHyphenItems.map((i) => i.caption)).toContain('state.field-3')
+  })
+
+  it('returns no context completions when contextFieldNames is empty', () => {
+    const c = createDslCompleter('en', { contextFieldNames: [] })
+    const refItems = complete(c, '"$ref": "')
+    const pathItems = complete(c, '"$path": "state.')
+    expect(refItems).toEqual([])
+    expect(pathItems).toEqual([])
+  })
+
+  it('context completions are independent of other contexts', () => {
+    const c = createDslCompleter('en', { contextFieldNames: ['userId'] })
+    const items = complete(c, '{ ')
+    expect(items.every((i) => i.meta !== 'context')).toBe(true)
+  })
+
+  it('omits $path construct from DSL suggestions when listed in omitConstructs', () => {
+    const c = createDslCompleter('en', { omitConstructs: ['$path'] })
+    const items = complete(c, '{ ')
+    const captions = items.map((i) => i.caption)
+    expect(captions).not.toContain('$path')
+    expect(captions).toContain('$ref')
+    expect(captions).toContain('$fn')
+  })
+
+  it('skips $path value-position completions when omitted', () => {
+    const c = createDslCompleter('en', {
+      contextFieldNames: ['userId'],
+      omitConstructs: ['$path'],
+    })
+    const items = complete(c, '"$path": "state.')
+    expect(items).toEqual([])
+  })
 })

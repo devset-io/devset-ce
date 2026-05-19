@@ -10,7 +10,6 @@
 
 package io.devset.ce.be.singlestep.api.dto;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
 import io.devset.ce.be.common.domain.WorkflowContentType;
 import io.devset.ce.be.common.domain.WorkflowMessageType;
 
@@ -33,7 +32,11 @@ import java.util.Map;
  * @param executions          number of executions
  * @param stage               pipeline stage name
  * @param event               event name
- * @param state               initial set-layer state
+ * @param state               state map seeded before the stage runs — typically the
+ *                            parent collection's {@code collectionContext}; available
+ *                            for {@code $ref}/{@code $path} references from {@code set}
+ * @param set                 event-payload definition (currentEvent.*); the actual
+ *                            outgoing message body, may reference {@code state.*}
  * @param headers             message headers
  * @param wireFormat          wire-format configuration
  * @param workflowState       workflow-level state overrides
@@ -53,6 +56,7 @@ public record SingleStepExecuteRequestDto(
         String stage,
         String event,
         Map<String, Object> state,
+        Map<String, Object> set,
         Object key,
         Map<String, Object> headers,
         Map<String, Object> wireFormat,

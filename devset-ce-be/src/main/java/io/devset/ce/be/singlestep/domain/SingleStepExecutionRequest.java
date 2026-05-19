@@ -29,7 +29,8 @@ import java.util.UUID;
  * <ul>
  *   <li>{@code producerName} must be non-blank</li>
  *   <li>{@code executions} must be &gt; 0</li>
- *   <li>{@code state} (the set layer) must not be empty</li>
+ *   <li>{@code set} (event payload definitions, compiled to {@code currentEvent.*})
+ *       must not be empty</li>
  * </ul>
  *
  * @param workflowId          workflow identifier; generated when blank
@@ -42,7 +43,11 @@ import java.util.UUID;
  * @param executions          number of executions; must be &gt; 0
  * @param stageName           pipeline stage name; defaulted when blank
  * @param eventName           event name; defaulted when blank
- * @param state               initial set-layer state; must not be empty
+ * @param state               state map seeded before the stage runs — typically the
+ *                            parent collection's {@code collectionContext}; available
+ *                            for {@code $ref}/{@code $path} references from {@code set}
+ * @param set                 event-payload definitions (currentEvent.*); the actual
+ *                            outgoing message body; must not be empty
  * @param headers             message headers
  * @param wireFormat          wire-format configuration
  * @param workflowState       workflow-level state overrides
@@ -62,6 +67,7 @@ public record SingleStepExecutionRequest(
         String stageName,
         String eventName,
         Map<String, Object> state,
+        Map<String, Object> set,
         Object key,
         Map<String, Object> headers,
         Map<String, Object> wireFormat,
@@ -102,8 +108,9 @@ public record SingleStepExecutionRequest(
         }
 
         state = state == null ? Map.of() : new LinkedHashMap<>(state);
-        if (state.isEmpty()) {
-            throw new WorkflowEngineException("state (set layer) must not be empty");
+        set = set == null ? Map.of() : new LinkedHashMap<>(set);
+        if (set.isEmpty()) {
+            throw new WorkflowEngineException("set (event payload) must not be empty");
         }
         headers = headers == null ? Map.of() : new LinkedHashMap<>(headers);
         wireFormat = wireFormat == null ? Map.of() : new LinkedHashMap<>(wireFormat);

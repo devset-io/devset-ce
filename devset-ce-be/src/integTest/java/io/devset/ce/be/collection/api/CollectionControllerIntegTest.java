@@ -30,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -119,6 +120,145 @@ class CollectionControllerIntegTest {
                 .andExpect(status().isNoContent());
     }
     
+    @Test
+    void shouldUpdateCollectionContext() throws Exception {
+        String collectionName = "single-message-collection-" + UUID.randomUUID().toString().replace("-", "");
+
+        Map<String, Object> initialContext = new LinkedHashMap<>();
+        initialContext.put("userName", "alice");
+
+        Map<String, Object> createRequest = new LinkedHashMap<>();
+        createRequest.put("collectionName", collectionName);
+        createRequest.put("collectionContext", initialContext);
+
+        mockMvc.perform(post("/api/collection")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createRequest)))
+                .andExpect(status().isCreated());
+
+        Map<String, Object> updatedContext = new LinkedHashMap<>();
+        updatedContext.put("userName", "bob");
+        updatedContext.put("retries", 5);
+
+        Map<String, Object> patchRequest = new LinkedHashMap<>();
+        patchRequest.put("collectionContext", updatedContext);
+
+        MvcResult patchedResult = mockMvc.perform(patch("/api/collection/{collectionName}", collectionName)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(patchRequest)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        JsonNode patched = objectMapper.readTree(patchedResult.getResponse().getContentAsString());
+        assertEquals(collectionName, patched.path("collectionName").asText());
+        assertEquals("bob", patched.path("collectionContext").path("userName").asText());
+        assertEquals(5, patched.path("collectionContext").path("retries").asInt());
+
+        JsonNode fetched = objectMapper.readTree(mockMvc.perform(get("/api/collection/{collectionName}", collectionName))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString());
+        assertEquals("bob", fetched.path("collectionContext").path("userName").asText());
+        assertEquals(5, fetched.path("collectionContext").path("retries").asInt());
+
+        mockMvc.perform(delete("/api/collection/{collectionName}", collectionName))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void shouldDefaultEmptyMapWhenPatchOmitsCollectionContext() throws Exception {
+        String collectionName = "single-message-collection-" + UUID.randomUUID().toString().replace("-", "");
+
+        Map<String, Object> initialContext = new LinkedHashMap<>();
+        initialContext.put("userName", "alice");
+
+        Map<String, Object> createRequest = new LinkedHashMap<>();
+        createRequest.put("collectionName", collectionName);
+        createRequest.put("collectionContext", initialContext);
+
+        mockMvc.perform(post("/api/collection")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createRequest)))
+                .andExpect(status().isCreated());
+
+        MvcResult patchedResult = mockMvc.perform(patch("/api/collection/{collectionName}", collectionName)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        JsonNode patched = objectMapper.readTree(patchedResult.getResponse().getContentAsString());
+        assertTrue(patched.path("collectionContext").isObject());
+        assertEquals(0, patched.path("collectionContext").size());
+
+        JsonNode fetched = objectMapper.readTree(mockMvc.perform(get("/api/collection/{collectionName}", collectionName))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString());
+        assertTrue(fetched.path("collectionContext").isObject());
+        assertEquals(0, fetched.path("collectionContext").size());
+
+        mockMvc.perform(delete("/api/collection/{collectionName}", collectionName))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void shouldDefaultEmptyMapWhenPatchSendsNullCollectionContext() throws Exception {
+        String collectionName = "single-message-collection-" + UUID.randomUUID().toString().replace("-", "");
+
+        Map<String, Object> initialContext = new LinkedHashMap<>();
+        initialContext.put("userName", "alice");
+
+        Map<String, Object> createRequest = new LinkedHashMap<>();
+        createRequest.put("collectionName", collectionName);
+        createRequest.put("collectionContext", initialContext);
+
+        mockMvc.perform(post("/api/collection")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createRequest)))
+                .andExpect(status().isCreated());
+
+        MvcResult patchedResult = mockMvc.perform(patch("/api/collection/{collectionName}", collectionName)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"collectionContext\": null}"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        JsonNode patched = objectMapper.readTree(patchedResult.getResponse().getContentAsString());
+        assertTrue(patched.path("collectionContext").isObject());
+        assertEquals(0, patched.path("collectionContext").size());
+
+        JsonNode fetched = objectMapper.readTree(mockMvc.perform(get("/api/collection/{collectionName}", collectionName))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString());
+        assertTrue(fetched.path("collectionContext").isObject());
+        assertEquals(0, fetched.path("collectionContext").size());
+
+        mockMvc.perform(delete("/api/collection/{collectionName}", collectionName))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void shouldRejectUpdateForMissingCollection() throws Exception {
+        String collectionName = "missing-collection-" + UUID.randomUUID().toString().replace("-", "");
+
+        Map<String, Object> patchRequest = new LinkedHashMap<>();
+        patchRequest.put("collectionContext", Map.of("k", "v"));
+
+        MvcResult result = mockMvc.perform(patch("/api/collection/{collectionName}", collectionName)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(patchRequest)))
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        JsonNode error = objectMapper.readTree(result.getResponse().getContentAsString());
+        assertTrue(error.path("message").asText().contains("Collection not found"));
+    }
+
     private boolean containsCollectionName(JsonNode entries, String collectionName) {
         for (JsonNode entry : entries) {
             if (collectionName.equals(entry.path("collectionName").asText())) {

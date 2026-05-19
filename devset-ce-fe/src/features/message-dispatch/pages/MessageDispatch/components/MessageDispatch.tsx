@@ -9,6 +9,7 @@
  */
 
 import React from 'react'
+import { DispatchCollectionContextModal } from './DispatchCollectionContextModal'
 import { DispatchCollectionsPanel } from './DispatchCollectionsPanel'
 import { DispatchHistoryPanel } from './DispatchHistoryPanel'
 import { DispatchHistoryPreviewModal } from './DispatchHistoryPreviewModal'
@@ -18,6 +19,7 @@ import type { MessageDispatchProps } from '../../../types/messageDispatch.view.t
 export const MessageDispatch = React.memo(function MessageDispatch({
   isHistoryPanelOpen,
   collectionsPanel,
+  collectionContextModal,
   requestCard,
   historyPanel,
   historyPreviewModal,
@@ -34,6 +36,7 @@ export const MessageDispatch = React.memo(function MessageDispatch({
       {isHistoryPanelOpen ? <DispatchHistoryPanel {...historyPanel} /> : null}
 
       <DispatchHistoryPreviewModal {...historyPreviewModal} />
+      <DispatchCollectionContextModal {...collectionContextModal} />
     </div>
   )
 })

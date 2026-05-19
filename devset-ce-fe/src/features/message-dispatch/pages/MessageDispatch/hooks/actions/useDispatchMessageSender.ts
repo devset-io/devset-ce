@@ -29,6 +29,7 @@ import type { MessageDispatchAction, MessageDispatchState } from '../../state/Me
 import {
   isRecord,
   parseStepState,
+  resolveCollectionContext,
   resolveDispatchWireFormat,
   resolveExecutionCount,
   toHeadersRecord,
@@ -175,6 +176,22 @@ export function useDispatchMessageSender({
     try {
       const draft = resolveDispatchDraft()
       const state = stateRef.current
+
+      // Send the parent collection's context as request.state — it seeds
+      // `state.*` paths in the BE engine so `$ref`s inside `set` can resolve.
+      // The user's Raw DSL JSON is the event payload → goes to `set`
+      // (compiled to `currentEvent.*`, the actual outgoing body).
+      const activeCollectionName =
+        state.loadedSingleRequestCollectionName || state.selectedCollectionName
+      const { context: collectionContext, missing: collectionContextMissing } =
+        resolveCollectionContext(state.collections, activeCollectionName)
+      if (collectionContextMissing) {
+        const warning = t('dispatch.execution.collectionContextMissing', {
+          collectionName: activeCollectionName,
+        })
+        toast.warning(warning)
+      }
+
       const request: SingleStepExecuteRequest = {
         workflowId: draft.normalizedWorkflowId || undefined,
         messageType: draft.selectedConnector.type,
@@ -187,7 +204,8 @@ export function useDispatchMessageSender({
         executions: draft.executions,
         stage: draft.normalizedStage,
         event: draft.normalizedEvent,
-        state: draft.stepState,
+        state: collectionContext,
+        set: draft.stepState,
         headers:
           draft.selectedConnector.type === 'kafka'
             ? Object.keys(draft.normalizedKafkaHeaders).length > 0

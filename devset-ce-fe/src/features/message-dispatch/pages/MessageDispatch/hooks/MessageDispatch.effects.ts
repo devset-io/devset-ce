@@ -38,7 +38,7 @@ import {
   getSingleStepHistory,
 } from '../../../services/message-dispatch.service'
 import { normalizeError } from '../../../../../shared/utils/error'
-import { sortCollections, sortSingleRequests, toSavedRequestsErrorMessage } from './utils/dispatchSavedRequests.utils'
+import { sortCollections, sortSingleRequests } from './utils/dispatchSavedRequests.utils'
 import type {
   MessageDispatchAction,
   MessageDispatchState,
@@ -209,7 +209,7 @@ export function useDispatchEffects(
         if (!cancelled) {
           dispatch({
             type: 'collectionsLoadFailed',
-            error: toSavedRequestsErrorMessage(error, t('dispatch.vm.loadCollectionsAndRequestsFailed')),
+            error: normalizeError(error, t('dispatch.vm.loadCollectionsAndRequestsFailed')),
           })
         }
       }

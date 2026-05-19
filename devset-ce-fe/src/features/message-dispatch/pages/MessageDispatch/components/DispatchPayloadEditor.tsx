@@ -32,6 +32,7 @@ interface DispatchPayloadEditorProps {
   isProtoEditingBlocked: boolean
   payloadEditorMode: PayloadEditorMode
   stepStateRaw: string
+  contextFieldNames: string[]
   studioScopePath: string
   studioSelectedField: string
   studioComputed: DispatchStudioComputedViewModel
@@ -57,6 +58,7 @@ export const DispatchPayloadEditor = React.memo(function DispatchPayloadEditor({
   isProtoEditingBlocked,
   payloadEditorMode,
   stepStateRaw,
+  contextFieldNames,
   studioScopePath,
   studioSelectedField,
   studioComputed,
@@ -72,7 +74,12 @@ export const DispatchPayloadEditor = React.memo(function DispatchPayloadEditor({
   wireFormatSection,
 }: DispatchPayloadEditorProps) {
   const { locale } = useI18n()
-  const completers = useMemo(() => [createDslCompleter(locale)], [locale])
+  const completers = useMemo(
+    // `$path` (absolute path) is intentionally omitted here — in message-dispatch
+    // only the relative `$ref` makes sense for referencing collection-context values.
+    () => [createDslCompleter(locale, { contextFieldNames, omitConstructs: ['$path'] })],
+    [locale, contextFieldNames],
+  )
 
   return (
     <div className="dispatch-editor-block">

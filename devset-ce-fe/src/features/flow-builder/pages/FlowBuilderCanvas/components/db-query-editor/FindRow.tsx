@@ -8,21 +8,14 @@
  * You may obtain a copy of the License in the LICENSE file at the root of this repository.
  */
 
-import React, { useCallback, useMemo } from 'react'
+import React, { useMemo } from 'react'
 import { useI18n } from '../../../../../../core/i18n/I18nProvider'
-import { FnHintInput } from '../../../../../../shared/components/FnHintInput'
-import { HintInput } from '../../../../../../shared/components/HintInput'
+import { QueryValueEditor } from '../../../../../../shared/components/QueryValueEditor'
 import type { HintItem } from '../../../../../../shared/components/HintInput'
 import type { QueryFindEntry, QueryValue } from '../../../../types'
-import { FIND_OPS, valueToRaw, parseLiteralText, valueToText, parseValueText } from './db-query.utils'
+import { FIND_OPS, valueToText, parseValueText } from './db-query.utils'
 
 const INPUT_CLS = 'w-full rounded-lg border border-[var(--line-300)] bg-[var(--panel-soft)] px-2 py-1 font-mono text-xs text-[var(--ink-900)] outline-none focus:border-[var(--brand)]'
-
-const MODE_BTN = 'rounded px-1.5 py-0.5 text-[10px] font-semibold transition-colors'
-const MODE_BTN_ACTIVE = `${MODE_BTN} bg-[var(--brand)] text-white`
-const MODE_BTN_INACTIVE = `${MODE_BTN} text-[var(--ink-500)] hover:bg-[var(--panel-soft)] hover:text-[var(--ink-900)]`
-
-type ValueKind = QueryValue['kind']
 
 export const FindRow = React.memo(function FindRow({
   entry,
@@ -39,22 +32,20 @@ export const FindRow = React.memo(function FindRow({
 }) {
   const { t } = useI18n()
   const kind = entry.value?.kind ?? 'literal'
-  const rawValue = valueToRaw(entry.value)
 
   const pathItems: HintItem[] = useMemo(
     () => stateKeys.map((k) => ({ value: k, label: k })),
     [stateKeys],
   )
 
-  const switchKind = useCallback((newKind: ValueKind) => {
-    if (newKind === kind) return
-    const cleared: QueryValue = { kind: newKind, value: '' }
-    if (newKind === 'literal') {
-      onUpdate({ value: cleared, default: undefined })
-    } else {
-      onUpdate({ value: cleared })
+  const handleValueChange = (next: QueryValue) => {
+    // Switching to literal clears the `default` (fallback) — fallbacks only apply to path.
+    if (next.kind === 'literal' && entry.value?.kind !== 'literal') {
+      onUpdate({ value: next, default: undefined })
+      return
     }
-  }, [kind, onUpdate])
+    onUpdate({ value: next })
+  }
 
   return (
     <div className="border-b border-[var(--line-300)] px-2.5 py-1.5 last:border-b-0">
@@ -78,42 +69,22 @@ export const FindRow = React.memo(function FindRow({
             <option key={op} value={op}>{op}</option>
           ))}
         </select>
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-1">
-            <button type="button" className={kind === 'literal' ? MODE_BTN_ACTIVE : MODE_BTN_INACTIVE} onClick={() => switchKind('literal')}>
-              {t('flow.query.modeLiteral')}
-            </button>
-            <button type="button" className={kind === 'path' ? MODE_BTN_ACTIVE : MODE_BTN_INACTIVE} onClick={() => switchKind('path')}>
-              {t('flow.query.modePath')}
-            </button>
-            <button type="button" className={kind === 'fn' ? MODE_BTN_ACTIVE : MODE_BTN_INACTIVE} onClick={() => switchKind('fn')}>
-              {t('flow.query.modeFn')}
-            </button>
-          </div>
-          {kind === 'fn' ? (
-            <FnHintInput
-              value={rawValue}
-              onChange={(v) => onUpdate({ value: { kind: 'fn', value: v } })}
-              placeholder="choice(A,B,C)"
-              className={INPUT_CLS}
-            />
-          ) : kind === 'path' ? (
-            <HintInput
-              value={rawValue}
-              onChange={(v) => onUpdate({ value: { kind: 'path', value: v } })}
-              items={pathItems}
-              placeholder="steps.prev-step.status"
-              className={INPUT_CLS}
-            />
-          ) : (
-            <input
-              value={rawValue}
-              onChange={(e) => onUpdate({ value: parseLiteralText(e.target.value) })}
-              placeholder={t('flow.query.value')}
-              className={INPUT_CLS}
-            />
-          )}
-        </div>
+        <QueryValueEditor
+          value={entry.value ?? { kind: 'literal', value: '' }}
+          onChange={handleValueChange}
+          labels={{
+            modeLiteral: t('flow.query.modeLiteral'),
+            modePath: t('flow.query.modePath'),
+            modeFn: t('flow.query.modeFn'),
+          }}
+          placeholders={{
+            literal: t('flow.query.value'),
+            path: 'steps.prev-step.status',
+            fn: 'choice(A,B,C)',
+          }}
+          pathHints={pathItems}
+          inputClassName={INPUT_CLS}
+        />
         <button
           type="button"
           onClick={onRemove}

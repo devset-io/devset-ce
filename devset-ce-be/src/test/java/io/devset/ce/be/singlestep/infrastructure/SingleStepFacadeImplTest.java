@@ -27,6 +27,7 @@ import io.devset.ce.be.singlestep.infrastructure.persistence.SingleStepHistoryPe
 import io.devset.ce.be.singlestep.infrastructure.persistence.SingleStepRequestHistoryEntity;
 import io.devset.ce.be.singlestep.infrastructure.persistence.SingleStepRequestHistoryRepository;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import java.util.List;
 import java.util.Map;
@@ -72,6 +73,28 @@ class SingleStepFacadeImplTest {
 
         assertEquals(1, output.size());
         assertEquals("history-1", output.getFirst().id());
+    }
+
+    @Test
+    void shouldLetWorkflowStateOverrideCollectionContextOnKeyCollision() {
+        Fixture fixture = new Fixture();
+        SingleStepExecutionRequest request = fixture.kafkaJsonRequestWithStates(
+                Map.of("tenant", "from-collection", "env", "stage"),
+                Map.of("tenant", "from-override")
+        );
+        ExecutionPlanInput compiled = compiledPlan();
+        when(fixture.pipelineCompiler.compile(any(Workflow.class))).thenReturn(compiled);
+        when(fixture.executionPlanFacade.execute(compiled, 1))
+                .thenReturn(new ExecutionPlanRunSubmission("run-1", "PENDING", 1));
+        fixture.mockHistoryRoundTrip(historyRecord("history-1", "run-1", null, null));
+
+        fixture.object.execute(request);
+
+        ArgumentCaptor<Workflow> workflowCaptor = ArgumentCaptor.forClass(Workflow.class);
+        verify(fixture.pipelineCompiler).compile(workflowCaptor.capture());
+        Map<String, Object> seedState = workflowCaptor.getValue().state();
+        assertEquals("from-override", seedState.get("tenant"));
+        assertEquals("stage", seedState.get("env"));
     }
 
     @Test
@@ -140,8 +163,26 @@ class SingleStepFacadeImplTest {
                     WorkflowContentType.JSON,
                     "producer-1", "workflow-topic", null, null, 1,
                     "open", "started",
+                    Map.of(),
                     Map.of("payload", "x"),
                     null, Map.of(), Map.of(), Map.of(),
+                    null, null, null
+            );
+        }
+
+        SingleStepExecutionRequest kafkaJsonRequestWithStates(
+                Map<String, Object> state,
+                Map<String, Object> workflowState
+        ) {
+            return new SingleStepExecutionRequest(
+                    "workflow-1",
+                    WorkflowMessageType.KAFKA,
+                    WorkflowContentType.JSON,
+                    "producer-1", "workflow-topic", null, null, 1,
+                    "open", "started",
+                    state,
+                    Map.of("payload", "x"),
+                    null, Map.of(), Map.of(), workflowState,
                     null, null, null
             );
         }
@@ -153,6 +194,7 @@ class SingleStepFacadeImplTest {
                     WorkflowContentType.PROTOBUF,
                     "producer-1", "workflow-topic", null, null, 1,
                     "open", "started",
+                    Map.of(),
                     Map.of("payload", "x"),
                     null, Map.of(), Map.of(), Map.of(),
                     null, "proto-schema-text", "Root"
