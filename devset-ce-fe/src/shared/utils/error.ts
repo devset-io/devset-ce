@@ -8,7 +8,7 @@
  * You may obtain a copy of the License in the LICENSE file at the root of this repository.
  */
 
-/** Extracts error message or returns fallback for unknown errors. */
+/** Extracts error message or returns fallback for unknown errors and empty messages. */
 export function normalizeError(error: unknown, fallback = 'Unknown error'): string {
-  return error instanceof Error ? error.message : fallback
+  return error instanceof Error && error.message.trim().length > 0 ? error.message : fallback
 }

@@ -48,6 +48,7 @@ export function useMessageDispatchCollectionsPanel({
         return {
           collectionName: collection.collectionName,
           requestCount: derived.singleRequestCountsByCollection[collection.collectionName] ?? 0,
+          contextFieldCount: Object.keys(collection.collectionContext ?? {}).length,
           isExpanded,
           isMenuOpen:
             state.openCollectionsMenuKey === toCollectionMenuKey(collection.collectionName),
@@ -107,6 +108,11 @@ export function useMessageDispatchCollectionsPanel({
     void callbacks.deleteCollection(collectionName)
   }
 
+  const handleEditCollectionContext = (collectionName: string) => {
+    callbacks.closeCollectionsMenu()
+    callbacks.openCollectionContextModal(collectionName)
+  }
+
   const handleRequestMenuToggle = (requestName: string, collectionName: string) => {
     callbacks.toggleCollectionsMenu(toRequestMenuKey(collectionName, requestName))
   }
@@ -158,6 +164,7 @@ export function useMessageDispatchCollectionsPanel({
     onCollectionMenuToggle: handleCollectionMenuToggle,
     onCloneCollection: handleCloneCollection,
     onDeleteCollection: handleDeleteCollection,
+    onEditCollectionContext: handleEditCollectionContext,
     onRequestSelect: (requestName: string, collectionName: string) => {
       void callbacks.loadSingleRequest(requestName, collectionName)
     },

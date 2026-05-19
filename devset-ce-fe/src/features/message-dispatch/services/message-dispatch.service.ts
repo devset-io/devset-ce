@@ -18,6 +18,7 @@ export type SingleRequestWireFormat = StageWireFormat | { type: 'none' }
 
 export type CollectionSummary = {
   collectionName: string
+  collectionContext: Record<string, unknown>
 }
 
 export type SingleRequestPayload = {
@@ -51,7 +52,18 @@ export type SingleStepExecuteRequest = {
   executions?: number
   stage?: string
   event?: string
+  /**
+   * Reference-only context (e.g. parent collection's `collectionContext`)
+   * seeded as `state.*` paths before the stage runs. Available for `$ref`
+   * / `$path` references from inside `set`. Does NOT end up in the outgoing
+   * message body.
+   */
   state: Record<string, unknown>
+  /**
+   * Event-payload definitions compiled to `currentEvent.*` — the actual
+   * outgoing message body. May reference `state.*` via `{$ref:"name"}`.
+   */
+  set: Record<string, unknown>
   headers?: Record<string, unknown>
   workflowState?: Record<string, unknown>
   schemaId?: string
@@ -283,7 +295,7 @@ const toHistoryEntry = (payload: unknown): SingleStepHistoryEntry | null => {
 
 const toCollectionSummary = (payload: unknown): CollectionSummary | null => {
   if (typeof payload === 'string' && payload.trim().length > 0) {
-    return { collectionName: payload.trim() }
+    return { collectionName: payload.trim(), collectionContext: {} }
   }
   if (!isRecord(payload)) {
     return null
@@ -292,7 +304,10 @@ const toCollectionSummary = (payload: unknown): CollectionSummary | null => {
   if (!collectionName) {
     return null
   }
-  return { collectionName }
+  return {
+    collectionName,
+    collectionContext: isRecord(payload.collectionContext) ? payload.collectionContext : {},
+  }
 }
 
 const toSingleRequestPayload = (payload: unknown): SingleRequestPayload | null => {
@@ -428,19 +443,40 @@ export const waitForDispatchCompletion = async (
   return latest
 }
 
-export const createCollection = async (collectionName: string): Promise<CollectionSummary> => {
+export const createCollection = async (
+  collectionName: string,
+  collectionContext?: Record<string, unknown>,
+): Promise<CollectionSummary> => {
   const response = await fetchApi('/collection', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json',
     },
-    body: JSON.stringify({ collectionName }),
+    body: JSON.stringify({ collectionName, collectionContext: collectionContext ?? {} }),
     errorLabel: msg('Utworzenie kolekcji nie powiodlo sie', 'create collection failed'),
   })
 
   const raw = await readOptionalJson(response)
-  return toCollectionSummary(raw) ?? { collectionName: collectionName.trim() }
+  return toCollectionSummary(raw) ?? { collectionName: collectionName.trim(), collectionContext: collectionContext ?? {} }
+}
+
+export const patchCollectionContext = async (
+  collectionName: string,
+  collectionContext: Record<string, unknown>,
+): Promise<CollectionSummary> => {
+  const response = await fetchApi(`/collection/${encodeURIComponent(collectionName)}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: JSON.stringify({ collectionContext }),
+    errorLabel: msg('Aktualizacja kontekstu kolekcji nie powiodla sie', 'update collection context failed'),
+  })
+
+  const raw = await readOptionalJson(response)
+  return toCollectionSummary(raw) ?? { collectionName: collectionName.trim(), collectionContext }
 }
 
 export const getCollections = async (): Promise<CollectionSummary[]> => {
@@ -476,7 +512,7 @@ export const getCollectionByName = async (collectionName: string): Promise<{
   })
 
   const raw = await readOptionalJson(response)
-  const collection = toCollectionSummary(raw) ?? { collectionName: collectionName.trim() }
+  const collection = toCollectionSummary(raw) ?? { collectionName: collectionName.trim(), collectionContext: {} }
   return {
     collection,
     singleRequests: readSingleRequestsArray(raw),

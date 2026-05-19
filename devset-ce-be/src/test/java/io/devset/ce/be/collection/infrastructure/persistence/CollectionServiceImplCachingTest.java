@@ -122,6 +122,19 @@ class CollectionServiceImplCachingTest {
     }
 
     @Test
+    void shouldEvictGetByNameCacheOnUpdate() {
+        var entity = collectionEntity(COLLECTION_ALPHA);
+        when(collectionRepository.findById(COLLECTION_ALPHA)).thenReturn(Optional.of(entity));
+        when(collectionRepository.save(any(CollectionEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        collectionService.get(COLLECTION_ALPHA);
+        collectionService.update(new CollectionDefinition(COLLECTION_ALPHA, Map.of("k", "v")));
+        collectionService.get(COLLECTION_ALPHA);
+
+        verify(collectionRepository, times(3)).findById(COLLECTION_ALPHA);
+    }
+
+    @Test
     void shouldUseCacheForGetAllAndEvictOnRemove() {
         when(collectionRepository.findAll())
                 .thenReturn(List.of(collectionEntity(COLLECTION_ALPHA)));

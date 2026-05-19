@@ -138,6 +138,10 @@ export function useDispatchDraftHydration({
           useRepoSchema: false,
         })
 
+    // No merge with collectionContext here — the saved request's `state` is the
+    // user's event payload (Raw DSL JSON, becomes `set` at send time). Context
+    // values are fetched live from the parent collection and sent separately
+    // as the request's `state` field.
     dispatch({
       type: 'draftHydratedFromSavedRequest',
       patch: {

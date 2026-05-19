@@ -82,6 +82,38 @@ class CollectionServiceImplTest {
     }
 
     @Test
+    void shouldUpdateCollectionContextWhenCollectionExists() {
+        var existing = collectionEntity("alpha");
+        existing.setCollectionContext(Map.of("oldKey", "oldValue"));
+        var nextContext = Map.<String, Object>of("userName", "alice", "retries", 3);
+        var requested = new CollectionDefinition("alpha", nextContext);
+        var expectedDomain = new CollectionDefinition("alpha", nextContext);
+
+        when(repository.findById("alpha")).thenReturn(Optional.of(existing));
+        when(repository.save(existing)).thenReturn(existing);
+        when(mapper.toDomain(existing)).thenReturn(expectedDomain);
+
+        CollectionDefinition result = service.update(requested);
+
+        assertEquals(nextContext, existing.getCollectionContext());
+        assertEquals(expectedDomain, result);
+        verify(repository).save(existing);
+    }
+
+    @Test
+    void shouldThrowWhenUpdatingMissingCollection() {
+        when(repository.findById("missing")).thenReturn(Optional.empty());
+
+        WorkflowEngineException ex = assertThrows(
+                WorkflowEngineException.class,
+                () -> service.update(new CollectionDefinition("missing", Map.of("x", "y")))
+        );
+
+        assertEquals("Collection not found: missing", ex.getMessage());
+        verify(repository, never()).save(any());
+    }
+
+    @Test
     void shouldReturnCollectionByName() {
         var entity = collectionEntity("alpha");
         var definition = new CollectionDefinition("alpha", Map.of());

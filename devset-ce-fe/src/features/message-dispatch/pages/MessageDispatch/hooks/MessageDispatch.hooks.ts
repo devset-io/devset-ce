@@ -33,7 +33,7 @@ import {
 import type { MessageDispatchCallbacks } from '../../../types/dispatch.adapter.types'
 import type { MessageDispatchLabels, MessageDispatchProps } from '../../../types/messageDispatch.view.types'
 import { normalizeError } from '../../../../../shared/utils/error'
-import { sortCollections, sortSingleRequests, toSavedRequestsErrorMessage } from './utils/dispatchSavedRequests.utils'
+import { sortCollections, sortSingleRequests } from './utils/dispatchSavedRequests.utils'
 import { reducer, createInitialState } from '../state/MessageDispatch.reducer'
 import type { DispatchKeyKind } from '../../../types/messageDispatch.types'
 
@@ -117,7 +117,7 @@ export function useMessageDispatch({ labels }: UseMessageDispatchOptions): Messa
       } catch (error) {
         dispatch({
           type: 'collectionsLoadFailed',
-          error: toSavedRequestsErrorMessage(error, t('dispatch.vm.loadCollectionsAndRequestsFailed')),
+          error: normalizeError(error, t('dispatch.vm.loadCollectionsAndRequestsFailed')),
         })
       }
     },
@@ -288,6 +288,16 @@ export function useMessageDispatch({ labels }: UseMessageDispatchOptions): Messa
         dispatch({ type: 'saveCollectionNameChanged', value }),
       setSaveRequestName: (value: string) =>
         dispatch({ type: 'saveRequestNameChanged', value }),
+
+      // Collection context modal
+      openCollectionContextModal: collectionActions.openCollectionContextModal,
+      closeCollectionContextModal: () => dispatch({ type: 'collectionContextModalClosed' }),
+      addCollectionContextEntry: () => dispatch({ type: 'collectionContextEntryAdded' }),
+      updateCollectionContextEntry: (id, patch) =>
+        dispatch({ type: 'collectionContextEntryUpdated', id, patch }),
+      removeCollectionContextEntry: (id) =>
+        dispatch({ type: 'collectionContextEntryRemoved', id }),
+      submitCollectionContextModal: collectionActions.saveCollectionContext,
     }),
     [
       schemaActions, collectionActions, singleRequestActions,
@@ -343,9 +353,35 @@ export function useMessageDispatch({ labels }: UseMessageDispatchOptions): Messa
   // Return props
   // ──────────────────────────────────────────────────────────────
 
+  const collectionContextModal = useMemo(
+    () => ({
+      labels: labels.collectionContext,
+      isOpen: state.isCollectionContextModalOpen,
+      isSaving: state.isSavingCollectionContext,
+      collectionName: state.collectionContextModalCollectionName,
+      entries: state.collectionContextModalEntries,
+      error: state.collectionContextModalError,
+      onClose: callbacks.closeCollectionContextModal,
+      onAddEntry: callbacks.addCollectionContextEntry,
+      onUpdateEntry: callbacks.updateCollectionContextEntry,
+      onRemoveEntry: callbacks.removeCollectionContextEntry,
+      onSubmit: callbacks.submitCollectionContextModal,
+    }),
+    [
+      labels.collectionContext,
+      state.isCollectionContextModalOpen,
+      state.isSavingCollectionContext,
+      state.collectionContextModalCollectionName,
+      state.collectionContextModalEntries,
+      state.collectionContextModalError,
+      callbacks,
+    ],
+  )
+
   return {
     isHistoryPanelOpen: state.isHistoryPanelOpen,
     collectionsPanel,
+    collectionContextModal,
     requestCard,
     historyPanel,
     historyPreviewModal,

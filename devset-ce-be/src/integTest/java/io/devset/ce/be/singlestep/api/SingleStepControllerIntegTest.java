@@ -75,7 +75,7 @@ class SingleStepControllerIntegTest {
         request.put("workflowId", "single-step-json-it");
         request.put("producerName", "local");
         request.put("topic", "devset.single.json.it");
-        request.put("state", Map.of(
+        request.put("set", Map.of(
                 "status", "OPEN",
                 "value", Map.of("$fn", "int(1,10)")
         ));
@@ -135,7 +135,7 @@ class SingleStepControllerIntegTest {
         request.put("contentType", "application/x-protobuf");
         request.put("producerName", producerName);
         request.put("topic", queueName);
-        request.put("state", Map.of(
+        request.put("set", Map.of(
                 "userId", "user-1",
                 "action", "OPEN"
         ));

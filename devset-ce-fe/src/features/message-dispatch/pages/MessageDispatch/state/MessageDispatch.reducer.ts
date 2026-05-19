@@ -108,6 +108,13 @@ export function createInitialState(): MessageDispatchState {
     isSaveModalOpen: false,
     saveCollectionName: '',
     saveRequestName: '',
+
+    // ── Collection context modal ──
+    isCollectionContextModalOpen: false,
+    collectionContextModalCollectionName: '',
+    collectionContextModalEntries: [],
+    collectionContextModalError: null,
+    isSavingCollectionContext: false,
   }
 }
 
@@ -700,6 +707,65 @@ export function reducer(
     // User typed in the request name field inside the save modal.
     case 'saveRequestNameChanged':
       return { ...state, saveRequestName: action.value }
+
+    // ────────────────────────────────────────────────
+    // Collection context modal
+    // ────────────────────────────────────────────────
+
+    case 'collectionContextModalOpened':
+      return {
+        ...state,
+        isCollectionContextModalOpen: true,
+        collectionContextModalCollectionName: action.collectionName,
+        collectionContextModalEntries: action.entries,
+        collectionContextModalError: null,
+      }
+
+    case 'collectionContextModalClosed':
+      return {
+        ...state,
+        isCollectionContextModalOpen: false,
+        collectionContextModalCollectionName: '',
+        collectionContextModalEntries: [],
+        collectionContextModalError: null,
+      }
+
+    case 'collectionContextEntryAdded':
+      return {
+        ...state,
+        collectionContextModalEntries: [
+          ...state.collectionContextModalEntries,
+          { id: generateId(), field: '', value: { kind: 'literal', value: '' } },
+        ],
+        collectionContextModalError: null,
+      }
+
+    case 'collectionContextEntryUpdated':
+      return {
+        ...state,
+        collectionContextModalEntries: state.collectionContextModalEntries.map((entry) =>
+          entry.id === action.id ? { ...entry, ...action.patch } : entry,
+        ),
+        collectionContextModalError: null,
+      }
+
+    case 'collectionContextEntryRemoved':
+      return {
+        ...state,
+        collectionContextModalEntries: state.collectionContextModalEntries.filter(
+          (entry) => entry.id !== action.id,
+        ),
+        collectionContextModalError: null,
+      }
+
+    case 'collectionContextModalErrorSet':
+      return { ...state, collectionContextModalError: action.error }
+
+    case 'savingCollectionContextStarted':
+      return { ...state, isSavingCollectionContext: true }
+
+    case 'savingCollectionContextCompleted':
+      return { ...state, isSavingCollectionContext: false }
 
     // ────────────────────────────────────────────────
     // Bulk state hydration

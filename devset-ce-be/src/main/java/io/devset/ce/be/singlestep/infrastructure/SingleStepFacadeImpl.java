@@ -33,6 +33,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -110,14 +111,31 @@ public class SingleStepFacadeImpl implements SingleStepFacade {
     }
 
     private SingleStepExecutionHistory persistHistory(SingleStepExecutionRequest request, String schemaId, ProtobufInlineMetadata protobufInlineMetadata, String runId) {
-        SingleStepExecutionHistory history = new SingleStepExecutionHistory(UUID.randomUUID().toString().replace("-", ""), Instant.now().toEpochMilli(), runId, request.workflowId(), request.messageType(), request.contentType(), request.producerName(), request.topic(), request.exchange(), request.routingKey(), request.executions(), request.stageName(), request.eventName(), request.state(), request.key(), request.headers(), request.wireFormat(), request.workflowState(), schemaId, protobufInlineMetadata == null ? null : request.protoSchema(), protobufInlineMetadata == null ? null : protobufInlineMetadata.protobufRootMessage());
+        // History keeps the event payload (request.set) under the legacy `state`
+        // column so existing replay/preview UI keeps working. The reference-only
+        // `state` map (collectionContext-style) is intentionally not persisted —
+        // it's reconstructed from the parent collection on the FE when needed.
+        SingleStepExecutionHistory history = new SingleStepExecutionHistory(UUID.randomUUID().toString().replace("-", ""), Instant.now().toEpochMilli(), runId, request.workflowId(), request.messageType(), request.contentType(), request.producerName(), request.topic(), request.exchange(), request.routingKey(), request.executions(), request.stageName(), request.eventName(), request.set(), request.key(), request.headers(), request.wireFormat(), request.workflowState(), schemaId, protobufInlineMetadata == null ? null : request.protoSchema(), protobufInlineMetadata == null ? null : protobufInlineMetadata.protobufRootMessage());
         return historyPersistenceMapper.toDomain(historyRepository.save(historyPersistenceMapper.toEntity(history)));
     }
 
     private Workflow toSingleStepWorkflow(SingleStepExecutionRequest request, String schemaId) {
-        Stage stage = new Stage(request.stageName(), request.eventName(), "none", 1, Map.of(), Map.of(), request.headers(), request.key(), request.state(), Map.of(), true, null, request.wireFormat(), schemaId, null);
+        // Stage canonical arg order: stage, event, source, repeat, repeatWhile,
+        // repeatUntil, headers, key, set, state, emit, wait, wireFormat, schemaId, query.
+        // request.set() → Stage.set (event payload, compiled to currentEvent.*).
+        // request.state() — caller-supplied reference context — is merged into the
+        // Workflow.state seed (NOT Stage.state) because Workflow.state is written to
+        // the engine's state.* paths BEFORE any stage runs. Stage.state assignments
+        // run AFTER Stage.set assignments inside a stage, so placing context there
+        // would be too late for a `$ref` inside `set` to resolve via the state-path
+        // fallback in SetFieldStepHandler.
+        Map<String, Object> workflowSeedState = new LinkedHashMap<>();
+        workflowSeedState.putAll(request.state());
+        workflowSeedState.putAll(request.workflowState());
 
-        return new Workflow(request.workflowId(), request.messageType(), request.contentType(), request.producerName(), request.topic(), request.exchange(), request.routingKey(), schemaId, request.executions(), request.workflowState(), List.of(stage));
+        Stage stage = new Stage(request.stageName(), request.eventName(), "none", 1, Map.of(), Map.of(), request.headers(), request.key(), request.set(), Map.of(), true, null, request.wireFormat(), schemaId, null);
+
+        return new Workflow(request.workflowId(), request.messageType(), request.contentType(), request.producerName(), request.topic(), request.exchange(), request.routingKey(), schemaId, request.executions(), workflowSeedState, List.of(stage));
     }
 
     private String resolveSchemaId(String requestedSchemaId, String workflowId, boolean protobufExecution) {

@@ -16,9 +16,12 @@ import {
   createSingleRequest as createSingleRequestApi,
   deleteCollectionByName,
   getCollectionByName,
+  patchCollectionContext,
 } from '../../../../services/message-dispatch.service'
 import type { MessageDispatchAction, MessageDispatchState } from '../../state/MessageDispatch.types'
-import { toSavedRequestsErrorMessage } from '../utils/dispatchSavedRequests.utils'
+import { normalizeError } from '../../../../../../shared/utils/error'
+import { mapToEntries } from '../utils/collectionContext.utils'
+import { performSaveCollectionContext } from '../utils/saveCollectionContext'
 
 type UseDispatchCollectionActionsParams = {
   dispatch: Dispatch<MessageDispatchAction>
@@ -54,7 +57,7 @@ export function useDispatchCollectionActions({
       toast.success(t('dispatch.vm.collectionCreated', { collectionName: nextSelectedCollection }))
       await refreshCollections(false)
     } catch (error) {
-      failCollection(toSavedRequestsErrorMessage(error, t('dispatch.vm.createCollectionFailed')))
+      failCollection(normalizeError(error, t('dispatch.vm.createCollectionFailed')))
     }
   }
 
@@ -69,7 +72,7 @@ export function useDispatchCollectionActions({
       dispatch({ type: 'collectionSelected', name: details.collection.collectionName || normalizedName })
       dispatch({ type: 'loadedSelectionCleared' })
     } catch (error) {
-      failCollection(toSavedRequestsErrorMessage(error, t('dispatch.vm.loadCollectionFailed')))
+      failCollection(normalizeError(error, t('dispatch.vm.loadCollectionFailed')))
     }
   }
 
@@ -92,7 +95,7 @@ export function useDispatchCollectionActions({
       toast.success(t('dispatch.vm.collectionDeleted', { collectionName: normalizedName }))
       await refreshCollections(false)
     } catch (error) {
-      failCollection(toSavedRequestsErrorMessage(error, t('dispatch.vm.deleteCollectionFailed')))
+      failCollection(normalizeError(error, t('dispatch.vm.deleteCollectionFailed')))
     }
   }
 
@@ -136,16 +139,45 @@ export function useDispatchCollectionActions({
       )
       await refreshCollections(false)
     } catch (error) {
-      failCollection(toSavedRequestsErrorMessage(error, t('dispatch.vm.cloneCollectionFailed')))
+      failCollection(normalizeError(error, t('dispatch.vm.cloneCollectionFailed')))
     } finally {
       dispatch({ type: 'savingSingleRequestCompleted' })
     }
   }
+
+  const openCollectionContextModal = (collectionName: string) => {
+    const normalizedName = collectionName.trim()
+    if (!normalizedName) {
+      return
+    }
+    const parent = stateRef.current.collections.find(
+      (entry) => entry.collectionName === normalizedName,
+    )
+    const entries = mapToEntries(parent?.collectionContext ?? {})
+    // Select the collection too: editing context is a strong signal that this is
+    // the "active" collection, so the Raw DSL editor's autocomplete can pick up
+    // its context paths even when the user never expanded it in the panel.
+    dispatch({ type: 'collectionSelected', name: normalizedName })
+    dispatch({ type: 'collectionContextModalOpened', collectionName: normalizedName, entries })
+  }
+
+  const saveCollectionContext = () =>
+    performSaveCollectionContext({
+      state: stateRef.current,
+      dispatch,
+      t,
+      patchCollectionContextApi: patchCollectionContext,
+      refreshCollections,
+      onSuccess: toast.success,
+      onError: toast.error,
+    })
 
   return {
     createCollection,
     loadCollection,
     deleteCollection,
     cloneCollection,
+    openCollectionContextModal,
+    saveCollectionContext,
   }
 }

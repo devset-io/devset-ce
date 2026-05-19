@@ -52,14 +52,14 @@ const DSL_CONSTRUCTS: { name: string; labelKey: string; hintKey: string; snippet
     labelKey: 'dsl.$ref.label',
     hintKey: 'dsl.$ref.hint',
     snippet: '{ "\\$ref": "${1:fieldName}" }',
-    example: '{ "$ref": "id" }',
+    example: '{ "$ref": "userId" }',
   },
   {
     name: '$path',
     labelKey: 'dsl.$path.label',
     hintKey: 'dsl.$path.hint',
-    snippet: '{ "\\$path": "state.${1:entity.id}" }',
-    example: '{ "$path": "state.entity.id" }',
+    snippet: '{ "\\$path": "state.${1:fieldName}" }',
+    example: '{ "$path": "state.userId" }',
   },
   {
     name: '.field',
@@ -109,6 +109,36 @@ function buildDslCompletions(locale: Locale): AceCompletion[] {
   }))
 }
 
+function buildContextCompletions(prefix: string, fieldNames: string[]): AceCompletion[] {
+  return fieldNames.map((name, idx) => ({
+    caption: prefix + name,
+    snippet: prefix + name,
+    meta: 'context',
+    type: 'value',
+    score: 3000 - idx,
+  }))
+}
+
+export type DslCompleterOptions = {
+  /**
+   * Bare field names available in the surrounding stage state — typically
+   * derived from the loaded request's parent collection context.
+   *
+   * Surfaced as value-position completions:
+   * - inside `"$ref": "..."` as bare names (e.g. `userId`) — `$ref` is
+   *   resolved relative to the current state scope.
+   * - inside `"$path": "..."` as `state.<name>` (e.g. `state.userId`) —
+   *   `$path` is an absolute path from the workflow root.
+   */
+  contextFieldNames?: string[]
+  /**
+   * DSL construct captions to drop from autocomplete (e.g. `['$path']` for
+   * message-dispatch, where only the relative `$ref` construct is allowed).
+   * When a construct is omitted its value-position regex match is skipped too.
+   */
+  omitConstructs?: string[]
+}
+
 // ── Factory ────────────────────────────────────────────────────────────────────
 
 /**
@@ -117,13 +147,21 @@ function buildDslCompletions(locale: Locale): AceCompletion[] {
  *
  * Context detection:
  * - Inside `"$fn": "..."` → raw function names + `.field` hint
+ * - Inside `"$ref": "..."` → bare context field names (relative to current scope)
+ * - Inside `"$path": "..."` → `state.<name>` paths (absolute from workflow root)
  * - After `{`, `,`, `:` or line start → DSL constructs + wrapped `{ "$fn": "..." }` functions
  */
-export function createDslCompleter(locale: Locale) {
+export function createDslCompleter(locale: Locale, options?: DslCompleterOptions) {
   const fn = buildFnCompletions(locale)
   const wrappedFn = buildWrappedFnCompletions(locale)
-  const dsl = buildDslCompletions(locale)
+  const omitted = new Set(options?.omitConstructs ?? [])
+  const dsl = buildDslCompletions(locale).filter((d) => !omitted.has(d.caption))
   const dotField = dsl.find((d) => d.caption === '.field')
+  const contextFieldNames = options?.contextFieldNames ?? []
+  const refCompletions = buildContextCompletions('', contextFieldNames)
+  const pathCompletions = buildContextCompletions('state.', contextFieldNames)
+  const isRefOmitted = omitted.has('$ref')
+  const isPathOmitted = omitted.has('$path')
 
   return {
     // Second regex enables Ace to trigger on bare words (when, repeatWhile, etc.) after { , :
@@ -138,8 +176,16 @@ export function createDslCompleter(locale: Locale) {
     ) {
       const line = session.getLine(pos.row).slice(0, pos.column)
 
-      if (/"\$fn"\s*:\s*"([A-Za-z.]*)$/.test(line)) {
+      if (/"\$fn"\s*:\s*"([\w.]*)$/.test(line)) {
         callback(null, dotField ? [dotField, ...fn] : fn)
+        return
+      }
+      if (!isRefOmitted && /"\$ref"\s*:\s*"([\w.-]*)$/.test(line)) {
+        callback(null, refCompletions)
+        return
+      }
+      if (!isPathOmitted && /"\$path"\s*:\s*"([\w.-]*)$/.test(line)) {
+        callback(null, pathCompletions)
         return
       }
       if (/(?:^|[{,:])\s*\$?([A-Za-z]*)$/.test(line)) {

@@ -43,6 +43,16 @@ public interface CollectionFacade {
     CollectionDefinition create(CollectionDefinition request);
 
     /**
+     * Replaces the {@code collectionContext} of an existing collection.
+     * The {@code collectionName} on the request must match an existing collection.
+     *
+     * @param request the collection definition with the new context
+     * @return the persisted collection definition
+     * @throws WorkflowEngineException if the collection is not found
+     */
+    CollectionDefinition update(CollectionDefinition request);
+
+    /**
      * Retrieves a collection by its unique name.
      *
      * @param collectionName the collection name

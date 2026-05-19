@@ -16,7 +16,7 @@
 // scattered across 3 type files and 9 hooks with 57 useState.
 // ──────────────────────────────────────────────────────────────
 
-import type { FieldOverridePayload, LoadedSchema, StageWireFormat } from '../../../../flow-builder/types'
+import type { FieldOverridePayload, LoadedSchema, QueryValue, StageWireFormat } from '../../../../flow-builder/types'
 import type { ConnectorStatus } from '../../../../../shared/services/kafka-connectors.service'
 import type { DispatchKeyKind } from '../../../types/messageDispatch.types'
 import type {
@@ -50,6 +50,17 @@ export type EditingRequestState = {
   collectionName: string
   currentName: string
   nextName: string
+}
+
+/**
+ * A single row in the collection-context editor.
+ * Mirrors the shape of a Database Query Filter row (field + value)
+ * minus the operator column.
+ */
+export type CollectionContextEntry = {
+  id: string
+  field: string
+  value: QueryValue
 }
 
 export type { ServiceCollectionSummary as CollectionSummary }
@@ -141,6 +152,15 @@ export interface MessageDispatchState {
   isSaveModalOpen: boolean
   saveCollectionName: string
   saveRequestName: string
+
+  // ── Collection context modal ──
+  // When open, edits the collectionContext template for the given collection
+  // as a list of field+value rows (literal/path/fn).
+  isCollectionContextModalOpen: boolean
+  collectionContextModalCollectionName: string
+  collectionContextModalEntries: CollectionContextEntry[]
+  collectionContextModalError: string | null
+  isSavingCollectionContext: boolean
 }
 
 // ──────────────────────────────────────────────────────────────
@@ -241,6 +261,16 @@ export type MessageDispatchAction =
   | { type: 'saveModalClosed' }
   | { type: 'saveCollectionNameChanged'; value: string }
   | { type: 'saveRequestNameChanged'; value: string }
+
+  // ── Collection context modal ──
+  | { type: 'collectionContextModalOpened'; collectionName: string; entries: CollectionContextEntry[] }
+  | { type: 'collectionContextModalClosed' }
+  | { type: 'collectionContextEntryAdded' }
+  | { type: 'collectionContextEntryUpdated'; id: string; patch: Partial<CollectionContextEntry> }
+  | { type: 'collectionContextEntryRemoved'; id: string }
+  | { type: 'collectionContextModalErrorSet'; error: string | null }
+  | { type: 'savingCollectionContextStarted' }
+  | { type: 'savingCollectionContextCompleted' }
 
   // ── Bulk state hydration (loading from history/saved request) ──
   | { type: 'draftHydratedFromHistory'; patch: Partial<MessageDispatchState> }

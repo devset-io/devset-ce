@@ -11,7 +11,8 @@
 // Callback interfaces used by view-transform hooks.
 // State is read directly from MessageDispatchState and derived values.
 
-import type { FieldOverridePayload } from '../../flow-builder/types'
+import type { FieldOverridePayload, QueryValue } from '../../flow-builder/types'
+import type { CollectionContextEntry } from '../pages/MessageDispatch/state/MessageDispatch.types'
 import type { SingleStepHistoryEntry } from '../services/message-dispatch.service'
 import type {
   ContentMode,
@@ -87,4 +88,14 @@ export interface MessageDispatchCallbacks {
   closeSaveModal: () => void
   setSaveCollectionName: (value: string) => void
   setSaveRequestName: (value: string) => void
+  // Collection context modal
+  openCollectionContextModal: (collectionName: string) => void
+  closeCollectionContextModal: () => void
+  addCollectionContextEntry: () => void
+  updateCollectionContextEntry: (id: string, patch: { field?: string; value?: QueryValue }) => void
+  removeCollectionContextEntry: (id: string) => void
+  submitCollectionContextModal: () => Promise<void> | void
 }
+
+// Re-export to keep view-layer imports concise.
+export type { CollectionContextEntry }

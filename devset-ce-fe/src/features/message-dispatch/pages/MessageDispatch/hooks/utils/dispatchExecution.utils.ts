@@ -11,6 +11,7 @@
 import { parseWireFormatPrefixValue } from '../../../../message-dispatch.utils'
 import type { StageWireFormat } from '../../../../../flow-builder/types'
 import type {
+  CollectionSummary,
   SingleRequestPayload,
   SingleStepExecuteRequest,
 } from '../../../../services/message-dispatch.service'
@@ -93,6 +94,25 @@ export const isRecord = (value: unknown): value is Record<string, unknown> =>
 
 export const resolveExecutionCount = (value: number | null | undefined): number =>
   typeof value === 'number' && Number.isInteger(value) && value > 0 ? value : 1
+
+export type ResolvedCollectionContext = {
+  context: Record<string, unknown>
+  missing: boolean
+}
+
+export const resolveCollectionContext = (
+  collections: CollectionSummary[],
+  activeCollectionName: string | null | undefined,
+): ResolvedCollectionContext => {
+  if (!activeCollectionName) {
+    return { context: {}, missing: false }
+  }
+  const found = collections.find((c) => c.collectionName === activeCollectionName)
+  if (!found) {
+    return { context: {}, missing: true }
+  }
+  return { context: found.collectionContext ?? {}, missing: false }
+}
 
 export const resolveDispatchWireFormat = ({
   isProtobuf,

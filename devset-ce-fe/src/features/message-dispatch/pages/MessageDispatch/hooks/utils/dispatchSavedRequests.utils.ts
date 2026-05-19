@@ -13,9 +13,6 @@ import type {
   SingleRequestPayload,
 } from '../../../../services/message-dispatch.service'
 
-export const toSavedRequestsErrorMessage = (error: unknown, fallback: string): string =>
-  error instanceof Error && error.message.trim().length > 0 ? error.message : fallback
-
 export const sortCollections = (items: CollectionSummary[]): CollectionSummary[] =>
   [...items].sort((left, right) => left.collectionName.localeCompare(right.collectionName))
 

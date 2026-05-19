@@ -16,6 +16,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -37,6 +38,10 @@ public class CollectionEntity {
     @Convert(converter = MapStringObjectJsonConverter.class)
     @Column(name = "collection_context_json", columnDefinition = "TEXT")
     private Map<String, Object> collectionContext;
+
+    @Version
+    @Column(name = "entity_version", nullable = false, columnDefinition = "INTEGER NOT NULL DEFAULT 0")
+    private long entityVersion;
 
     protected CollectionEntity() {
     }
