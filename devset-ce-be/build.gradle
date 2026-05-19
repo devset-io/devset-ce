@@ -6,6 +6,8 @@ plugins {
 }
 apply from: rootProject.file("gradle/constants.gradle")
 
+ext['tomcat.version'] = '10.1.55' // CVE-2026-42498, 43513, 43514, 43515
+
 group = "io.devset"
 version = "0.1.0"
 
@@ -109,8 +111,8 @@ configurations.configureEach {
             details.because 'CVE-2025-48924 - Uncontrolled Recursion'
         }
         if (details.requested.group == 'org.apache.commons' && details.requested.name == 'commons-compress') {
-            details.useVersion '1.26.2'
-            details.because 'Security patch'
+            details.useVersion '1.28.0'
+            details.because 'CVE-2024-25710, CVE-2024-26308'
         }
     }
 }
