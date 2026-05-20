@@ -9,6 +9,7 @@
  */
 
 import React from 'react'
+import { Link } from 'react-router-dom'
 import { useI18n } from '../../../../core/i18n/I18nProvider'
 import { FB_TOOLBAR } from '../../ui/ui-classes'
 
@@ -31,6 +32,17 @@ export const BuilderCanvasHeader = React.memo(function BuilderCanvasHeader({
         <p className={FB_TOOLBAR.barSubtitle}>{t('flow.canvas.description')}</p>
       </div>
       <div className={FB_TOOLBAR.actions}>
+        {!canAddStep && (
+          <span className="flex items-center gap-1.5 text-sm text-[#557097] dark:text-[var(--ink-700)]">
+            {t('flow.canvas.noSchemasHint')}
+            <Link
+              to="/schema-repo"
+              className="font-semibold text-[var(--brand)] underline-offset-2 hover:underline dark:text-[var(--brand-ink)]"
+            >
+              {t('flow.canvas.openSchemaRepo')}
+            </Link>
+          </span>
+        )}
         <button
           type="button"
           className={FB_TOOLBAR.button}
