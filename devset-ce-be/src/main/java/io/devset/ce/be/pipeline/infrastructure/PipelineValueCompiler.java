@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Compiles DSL value forms into the {@code Map<String,Object>} config shape consumed
@@ -33,6 +34,14 @@ import java.util.Map;
  *   <li>Conditional {@code when} guards with {@code default} fallbacks</li>
  *   <li>Function condition maps ({@code $fn}) used by {@code emit}, {@code repeatWhile}, {@code repeatUntil}</li>
  * </ul>
+ * <p>
+ * {@code $ref} resolution rules: a reference starting with one of the absolute
+ * state roots ({@code state.}, {@code currentEvent.}, {@code lastAppendedEvent.},
+ * {@code context.}, {@code meta.}) is treated as an absolute state path;
+ * otherwise the {@code currentEvent.} prefix is added automatically (the common
+ * case in {@code set} where references point to sibling fields of the event
+ * payload). The whitelist must stay in sync with
+ * {@code ExpressionParser.isStatePath}.
  */
 @Component
 final class PipelineValueCompiler {
@@ -53,6 +62,18 @@ final class PipelineValueCompiler {
     static final String PATH = "$path";
     static final String CURRENT_EVENT_ROOT = ExecutionStateKeys.CURRENT_EVENT;
     static final String STATE_ROOT = "state";
+
+    /**
+     * Reference prefixes treated as absolute state paths — kept in sync with
+     * {@code ExpressionParser.isStatePath} on the runtime side.
+     */
+    private static final Set<String> ABSOLUTE_REF_PREFIXES = Set.of(
+            STATE_ROOT + ".",
+            CURRENT_EVENT_ROOT + ".",
+            ExecutionStateKeys.LAST_APPENDED_EVENT_PREFIX,
+            "context.",
+            ExecutionStateKeys.META_PREFIX
+    );
 
     // ── assignments ──────────────────────────────────────────────────────────
 
@@ -219,6 +240,11 @@ final class PipelineValueCompiler {
                 referenceName == null ? null : String.valueOf(referenceName),
                 "reference"
         );
+        for (String prefix : ABSOLUTE_REF_PREFIXES) {
+            if (normalized.startsWith(prefix)) {
+                return normalized;
+            }
+        }
         return CURRENT_EVENT_ROOT + "." + normalized;
     }
 

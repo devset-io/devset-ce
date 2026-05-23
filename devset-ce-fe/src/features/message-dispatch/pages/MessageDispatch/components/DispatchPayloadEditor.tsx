@@ -32,6 +32,7 @@ interface DispatchPayloadEditorProps {
   isProtoEditingBlocked: boolean
   payloadEditorMode: PayloadEditorMode
   stepStateRaw: string
+  stepStateSourceCollectionName: string | null
   contextFieldNames: string[]
   studioScopePath: string
   studioSelectedField: string
@@ -58,6 +59,7 @@ export const DispatchPayloadEditor = React.memo(function DispatchPayloadEditor({
   isProtoEditingBlocked,
   payloadEditorMode,
   stepStateRaw,
+  stepStateSourceCollectionName,
   contextFieldNames,
   studioScopePath,
   studioSelectedField,
@@ -84,7 +86,13 @@ export const DispatchPayloadEditor = React.memo(function DispatchPayloadEditor({
   return (
     <div className="dispatch-editor-block">
       <div className="dispatch-editor-head">
-        <strong>{labels.stepStateTitle}</strong>
+        {stepStateSourceCollectionName ? (
+          <span className="dispatch-state-source">
+            {labels.stateFromCollection}: <code>{stepStateSourceCollectionName}</code>
+          </span>
+        ) : (
+          <strong>{labels.noSelectedState}</strong>
+        )}
         {contentMode === 'json' ? (
           <div className="dispatch-schemas-menu-wrap">
             <button

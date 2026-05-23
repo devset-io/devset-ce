@@ -1186,6 +1186,26 @@
   padding: 9px;
 }
 
+.dispatch-state-source {
+  padding: 2px 8px;
+  border-left: 3px solid var(--brand);
+  background: var(--brand-soft);
+  border-radius: 4px;
+  color: var(--brand-ink);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.dispatch-state-source code {
+  margin-left: 4px;
+  font-weight: 700;
+  color: var(--brand-strong);
+}
+
+.dispatch-editor-head .dispatch-schemas-menu-wrap {
+  margin-left: auto;
+}
+
 .dispatch-editor-head {
   display: flex;
   align-items: baseline;

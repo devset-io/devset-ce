@@ -27,8 +27,11 @@ export const DispatchKafkaEnvelopeCard = React.memo(function DispatchKafkaEnvelo
   onRemoveKafkaHeaderRow,
 }: DispatchKafkaEnvelopeCardProps) {
   const handleKeyChange = useCallback((kv: KeyValue) => {
+    // KeyModeInput emits { kind, value: '' } on kind switch; suppress that empty
+    // value so kafkaKeyRaw is preserved across literal/$ref/$function toggles.
     if (kv.kind !== kafkaKeyKind) {
       onKafkaKeyKindChange(kv.kind)
+      return
     }
     onKafkaKeyChange(kv.value)
   }, [kafkaKeyKind, onKafkaKeyChange, onKafkaKeyKindChange])

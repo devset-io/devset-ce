@@ -8,7 +8,7 @@
  * You may obtain a copy of the License in the LICENSE file at the root of this repository.
  */
 
-import React from 'react'
+import React, { useCallback } from 'react'
 import { useI18n } from '../../../core/i18n/I18nProvider.tsx'
 import type { BuilderNode, FnOverrides, LoadedSchema } from '../../flow-builder/types.ts'
 import { FunctionBuilder } from './FunctionBuilder.tsx'
@@ -36,6 +36,12 @@ export const FunctionStudioTasksPanel = React.memo(function FunctionStudioTasksP
 }: FunctionStudioTasksPanelProps) {
   const { t } = useI18n()
   const isProtobufSchema = selectedSchema?.schemaType === 'protobuf'
+  const { dispatch } = drawerApi
+
+  const handleTargetStatePathChange = useCallback(
+    (value: string) => dispatch({ type: 'stateTaskFormChanged', patch: { targetStatePath: value } }),
+    [dispatch],
+  )
 
   return (
     <section className={`${FB_STUDIO.panel} h-full min-h-0 overflow-auto rounded-xl border border-[var(--line-200)] bg-[var(--panel)] p-3`}>
@@ -159,12 +165,13 @@ export const FunctionStudioTasksPanel = React.memo(function FunctionStudioTasksP
           selectedNode={!!selectedNode}
           sourceFieldTree={drawerApi.sourceFieldTree}
           selectedStageState={drawerApi.draftSelectedStageState}
+          workflowState={drawerApi.workflowState}
           stateSourceField={drawerApi.state.stateTaskForm.sourceField}
           targetStatePath={drawerApi.state.stateTaskForm.targetStatePath}
           stateTaskMode={drawerApi.state.stateTaskForm.mode}
           stateFnExpression={drawerApi.state.stateTaskForm.fnExpression}
           onStateSourceFieldChange={(value) => drawerApi.dispatch({ type: 'stateTaskFormChanged', patch: { sourceField: value } })}
-          onTargetStatePathChange={(value) => drawerApi.dispatch({ type: 'stateTaskFormChanged', patch: { targetStatePath: value } })}
+          onTargetStatePathChange={handleTargetStatePathChange}
           onStateTaskModeChange={(mode) => drawerApi.dispatch({ type: 'stateTaskModeChanged', mode, sourceFieldOptions: drawerApi.sourceFieldOptions })}
           onStateFnExpressionChange={(nextExpression) => {
             drawerApi.dispatch({ type: 'stateTaskFormChanged', patch: { fnExpression: nextExpression, isFnDirty: true } })

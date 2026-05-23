@@ -47,6 +47,7 @@ export type FunctionStudioDrawerProps = {
   selectedFieldValue: string | null
   selectedFieldRawValue: unknown
   selectedStageState: Record<string, unknown>
+  workflowState: Record<string, unknown>
   selectedStageWireFormat: StageWireFormat | null
   onApplyFunction: (field: string, payload: FieldOverridePayload) => void
   onAddStateMapping: (

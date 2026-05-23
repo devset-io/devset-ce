@@ -98,7 +98,8 @@ export type DispatchRequestCardLabels = {
   collapseProtoSchema: string
   expand: string
   collapse: string
-  stepStateTitle: string
+  stateFromCollection: string
+  noSelectedState: string
   importSchema: string
   noJsonSchemas: string
   lockedTitle: string
@@ -309,6 +310,11 @@ export type DispatchRequestCardProps = {
   isProtoEditingBlocked: boolean
   payloadEditorMode: PayloadEditorMode
   stepStateRaw: string
+  /**
+   * Name of the collection whose context template is the source of the
+   * current step state. Null when the request is not tied to a collection.
+   */
+  stepStateSourceCollectionName: string | null
   /**
    * Bare field names from the loaded request's parent collection context,
    * surfaced as Raw JSON editor completions: as-is inside `"$ref": "..."`,

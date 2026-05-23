@@ -47,3 +47,12 @@
   font-family: 'JetBrains Mono', 'Fira Code', monospace;
   opacity: 1;
 }
+
+.key-mode-input > div.relative {
+  flex: 1;
+  display: flex;
+}
+
+.key-mode-input > div.relative > .key-mode-input-field {
+  width: 100%;
+}

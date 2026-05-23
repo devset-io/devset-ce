@@ -117,6 +117,7 @@ export const FlowBuilderCanvasView = React.memo(function FlowBuilderCanvasView({
         selectedFieldValue={builderState.selectedFieldEntry?.preview ?? null}
         selectedFieldRawValue={builderState.selectedFieldRawValue}
         selectedStageState={builderState.selectedStageState}
+        workflowState={builderState.workflowState}
         selectedStageWireFormat={builderState.selectedStageWireFormat}
         onApplyFunction={builderState.applyFunctionOverride}
         onAddStateMapping={builderState.addStateMappingFromField}
