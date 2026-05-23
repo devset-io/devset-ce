@@ -14,6 +14,7 @@ import { WHEN_CONDITION_FUNCTION_NAMES, type FnKind } from '../../flow-builder/c
 import { FunctionExpressionBuilder } from '../../flow-builder/components/FunctionExpressionBuilder.tsx'
 import { FB_FN, FB_SIDEBAR, FB_UI } from '../../flow-builder/ui/ui-classes.ts'
 import { useFunctionBuilderState } from '../hooks/useFunctionBuilderState.ts'
+import { PathAutocomplete } from './PathAutocomplete.tsx'
 import type { FunctionBuilderProps, LiteralKind, ValueMode } from '../types/function-builder.types.ts'
 
 export const FunctionBuilder = React.memo(function FunctionBuilder(props: FunctionBuilderProps) {
@@ -85,18 +86,13 @@ export const FunctionBuilder = React.memo(function FunctionBuilder(props: Functi
       <fieldset className={FB_FN.fieldset} disabled={disabled}>
         <label className={FB_FN.label}>
           {labels.targetField}
-          <input
-            className={FB_FN.input}
-            list="target-field-options"
+          <PathAutocomplete
             value={effectiveTargetField}
-            onChange={(event) => setTargetField(event.target.value)}
+            onChange={setTargetField}
+            options={fields}
             placeholder={t('flow.fnBuilder.targetPlaceholder')}
+            inputClassName="w-full rounded-lg border border-[#cbd5e1] bg-[#f8fafc] p-2 font-[inherit] dark:border-[var(--line-300)] dark:bg-[var(--panel-soft)] dark:text-[var(--ink-900)] dark:placeholder:text-[var(--ink-600)]"
           />
-          <datalist id="target-field-options">
-            {fields.map((field) => (
-              <option key={field} value={field} />
-            ))}
-          </datalist>
         </label>
 
         {valueMode === 'fn' ? (

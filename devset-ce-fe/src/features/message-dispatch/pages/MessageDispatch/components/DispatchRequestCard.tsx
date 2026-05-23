@@ -94,6 +94,7 @@ export const DispatchRequestCard = React.memo(function DispatchRequestCard(props
         isProtoEditingBlocked={props.isProtoEditingBlocked}
         payloadEditorMode={props.payloadEditorMode}
         stepStateRaw={props.stepStateRaw}
+        stepStateSourceCollectionName={props.stepStateSourceCollectionName}
         contextFieldNames={props.contextFieldNames}
         studioScopePath={props.studioScopePath}
         studioSelectedField={props.studioSelectedField}

@@ -85,6 +85,7 @@ export const useFunctionStudioDrawerState = (props: FunctionStudioDrawerProps) =
     selectedFieldValue,
     selectedFieldRawValue,
     selectedStageState,
+    workflowState,
     selectedStageWireFormat,
   } = props
 
@@ -367,13 +368,14 @@ export const useFunctionStudioDrawerState = (props: FunctionStudioDrawerProps) =
     snapshotEntries: computed.snapshotEntries,
     sourceFieldOptions: computed.sourceFieldOptions,
     sourceFieldTree: computed.sourceFieldTree,
+    workflowState,
 
     // Key for FunctionBuilder reset
     functionBuilderKey,
 
     // Draft DSL with pending ops applied
     draftStageDsl,
-  }), [state, dispatchWithEffects, draftSelectedSchema, computed, functionBuilderKey, draftStageDsl])
+  }), [state, dispatchWithEffects, draftSelectedSchema, computed, functionBuilderKey, draftStageDsl, workflowState])
 }
 
 // Convenience type for the hook's return value.

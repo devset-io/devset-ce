@@ -144,6 +144,39 @@ class PipelineCompilerImplTest {
     }
 
     @Test
+    void shouldKeepAbsoluteRefPathsForKnownStateRootsAsIs() {
+        LinkedHashMap<String, Object> set = new LinkedHashMap<>();
+        set.put("fromState", Map.of("$ref", "state.amount"));
+        set.put("fromCurrentEvent", Map.of("$ref", "currentEvent.userId"));
+        set.put("fromLastAppended", Map.of("$ref", "lastAppendedEvent.payload.id"));
+        set.put("fromContext", Map.of("$ref", "context.tenantId"));
+        set.put("fromMeta", Map.of("$ref", "meta.lastSend.topic"));
+        set.put("bareName", Map.of("$ref", "userId"));
+        set.put("nestedTemplate", Map.of("body", Map.of("$ref", "state.fallbackEmail")));
+
+        ExecutionPlanInput input = compiler().compile(workflow(stage().set(set)));
+
+        Map<String, Object> fromStateConfig = input.definition().steps().get(3).config();
+        Map<String, Object> fromCurrentEventConfig = input.definition().steps().get(4).config();
+        Map<String, Object> fromLastAppendedConfig = input.definition().steps().get(5).config();
+        Map<String, Object> fromContextConfig = input.definition().steps().get(6).config();
+        Map<String, Object> fromMetaConfig = input.definition().steps().get(7).config();
+        Map<String, Object> bareNameConfig = input.definition().steps().get(8).config();
+        Map<String, Object> nestedTemplateConfig = input.definition().steps().get(9).config();
+
+        assertEquals("state.amount", fromStateConfig.get("valuePath"));
+        assertEquals("currentEvent.userId", fromCurrentEventConfig.get("valuePath"));
+        assertEquals("lastAppendedEvent.payload.id", fromLastAppendedConfig.get("valuePath"));
+        assertEquals("context.tenantId", fromContextConfig.get("valuePath"));
+        assertEquals("meta.lastSend.topic", fromMetaConfig.get("valuePath"));
+        assertEquals("currentEvent.userId", bareNameConfig.get("valuePath"));
+        assertEquals(
+                Map.of("body", Map.of("$path", "state.fallbackEmail")),
+                nestedTemplateConfig.get("valueTemplate")
+        );
+    }
+
+    @Test
     void shouldCompileEmitConditionAndRepeatConditions() {
         ExecutionPlanInput input = compiler().compile(workflow(stage()
                 .repeat(5)

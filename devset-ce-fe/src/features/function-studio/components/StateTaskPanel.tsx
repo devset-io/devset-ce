@@ -8,17 +8,19 @@
  * You may obtain a copy of the License in the LICENSE file at the root of this repository.
  */
 
-import React from 'react'
+import React, { useMemo } from 'react'
 import { useI18n } from '../../../core/i18n/I18nProvider.tsx'
 import type { SchemaFieldNode } from '../../flow-builder/utils/schema-extraction.utils.ts'
 import { FunctionExpressionBuilder } from '../../flow-builder/components/FunctionExpressionBuilder.tsx'
 import { FieldTreePicker } from './FieldTreePicker.tsx'
+import { PathAutocomplete } from './PathAutocomplete.tsx'
 import { FB_UI } from '../../flow-builder/ui/ui-classes.ts'
 
 type StateTaskPanelProps = {
   selectedNode: boolean
   sourceFieldTree: SchemaFieldNode[]
   selectedStageState: Record<string, unknown>
+  workflowState: Record<string, unknown>
   stateSourceField: string
   targetStatePath: string
   stateTaskMode: 'assign' | 'fn' | 'when'
@@ -45,6 +47,7 @@ export const StateTaskPanel = React.memo(function StateTaskPanel({
   selectedNode,
   sourceFieldTree,
   selectedStageState,
+  workflowState,
   stateSourceField,
   targetStatePath,
   stateTaskMode,
@@ -82,6 +85,10 @@ export const StateTaskPanel = React.memo(function StateTaskPanel({
     apply: t('flow.stateTask.apply'),
     remove: t('flow.stateTask.remove'),
   }
+  const targetStatePathOptions = useMemo(
+    () => Array.from(new Set([...Object.keys(workflowState), ...Object.keys(selectedStageState)])),
+    [workflowState, selectedStageState],
+  )
   return (
     <div className="mb-2 rounded-xl border border-slate-200 bg-white p-2.5">
       <h5 className="mb-1 text-sm font-semibold text-slate-800">{labels.title}</h5>
@@ -98,10 +105,10 @@ export const StateTaskPanel = React.memo(function StateTaskPanel({
       </label>
       <label className={`${FB_UI.label} mb-2`}>
         {labels.targetPath}
-        <input
-          className={FB_UI.input}
+        <PathAutocomplete
           value={targetStatePath}
-          onChange={(event) => onTargetStatePathChange(event.target.value)}
+          onChange={onTargetStatePathChange}
+          options={targetStatePathOptions}
           placeholder="entity.totalMileage"
         />
       </label>

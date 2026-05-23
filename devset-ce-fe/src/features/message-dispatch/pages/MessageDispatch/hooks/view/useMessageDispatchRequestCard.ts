@@ -74,13 +74,16 @@ export function useMessageDispatchRequestCard({
     [state.connectors],
   )
 
+  const stepStateSourceCollectionName: string | null =
+    state.loadedSingleRequestCollectionName || state.selectedCollectionName || null
+
   const contextFieldNames = useMemo<string[]>(() => {
-    const collectionName =
-      state.loadedSingleRequestCollectionName ?? state.selectedCollectionName
-    if (!collectionName) return []
-    const collection = state.collections.find((entry) => entry.collectionName === collectionName)
+    if (!stepStateSourceCollectionName) return []
+    const collection = state.collections.find(
+      (entry) => entry.collectionName === stepStateSourceCollectionName,
+    )
     return collection ? collectionContextFieldNames(collection.collectionContext) : []
-  }, [state.collections, state.loadedSingleRequestCollectionName, state.selectedCollectionName])
+  }, [state.collections, stepStateSourceCollectionName])
 
   const availableSchemaOptions = useMemo<DispatchSchemaOptionViewModel[]>(
     () =>
@@ -176,6 +179,7 @@ export function useMessageDispatchRequestCard({
     isProtoEditingBlocked: derived.isProtoEditingBlocked,
     payloadEditorMode: state.payloadEditorMode,
     stepStateRaw: state.stepStateRaw,
+    stepStateSourceCollectionName,
     contextFieldNames,
     studioScopePath: state.studioScopePath,
     studioSelectedField: state.studioSelectedField,
