@@ -1,0 +1,69 @@
+services:
+
+  kafka:
+    image: confluentinc/cp-kafka:7.9.0@sha256:02170e46da5c36b1581cd42ebfbf2a55edae6348c62bc772bc2166841db745b2
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,CONTROLLER://kafka:9093
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_PROCESS_ROLES: broker,controller
+      CLUSTER_ID: devset-e2e-cluster-01
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_LOG_RETENTION_HOURS: 1
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:29092"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  rabbitmq:
+    image: rabbitmq:4.1-management-alpine@sha256:0d88635671da34346fef2a29bd4c8a85e83044411c8d71b1702b2079709a5e9f
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  devset:
+    build:
+      context: ../devset-ce-be
+      dockerfile: Dockerfile
+    depends_on:
+      kafka:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - DEVSET_CORS_ALLOWED_ORIGINS=http://devset:8082
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c '</dev/tcp/127.0.0.1/8082'"]
+      interval: 5s
+      timeout: 3s
+      retries: 60
+      start_period: 20s
+
+  e2e:
+    image: mcr.microsoft.com/playwright:v1.59.0-noble@sha256:11707c5282fec52f0705aad3a23f46b3409b3de4aed378b3dbe118d8b8c87b67
+    working_dir: /work
+    init: true
+    ipc: host
+    volumes:
+      - .:/work
+      - /work/node_modules
+    ports:
+      - "127.0.0.1:9323:9323"
+    depends_on:
+      devset:
+        condition: service_healthy
+    environment:
+      - E2E_BASE_URL=http://devset:8082
+      - CI=${CI:-}
+    command: ["sh", "-c", "npm ci --no-audit --no-fund && npx playwright test"]
