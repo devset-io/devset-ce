@@ -25,3 +25,8 @@ dist-ssr
 *.sw?
 *.iml
 .claude/
+
+# Playwright
+/playwright-report/
+/test-results/
+/playwright/.cache/

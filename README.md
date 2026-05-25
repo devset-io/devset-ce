@@ -10,6 +10,9 @@
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-FSL--1.1--Apache--2.0-4eb58a?style=flat-square"/></a>
   <a href="https://github.com/devset-io/devset-ce/releases"><img alt="Release" src="https://img.shields.io/github/v/release/devset-io/devset-ce?color=4eb58a&style=flat-square"/></a>
   <a href="https://github.com/devset-io/devset-ce/stargazers"><img alt="Stars" src="https://img.shields.io/github/stars/devset-io/devset-ce?color=4eb58a&style=flat-square"/></a>
+  <a href="https://github.com/devset-io/devset-ce/actions/workflows/ci.yml?query=branch%3Amain"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/devset-io/devset-ce/ci.yml?branch=main&label=ci&style=flat-square"/></a>
+  <a href="https://github.com/devset-io/devset-ce/actions/workflows/e2e.yml?query=branch%3Amain"><img alt="E2E" src="https://img.shields.io/github/actions/workflow/status/devset-io/devset-ce/e2e.yml?branch=main&label=e2e&style=flat-square"/></a>
+  <a href="https://github.com/devset-io/devset-ce/actions/workflows/release.yml"><img alt="Release" src="https://img.shields.io/github/actions/workflow/status/devset-io/devset-ce/release.yml?label=release&style=flat-square"/></a>
   <img alt="Java" src="https://img.shields.io/badge/java-25-4eb58a?style=flat-square"/>
   <img alt="React" src="https://img.shields.io/badge/react-19-4eb58a?style=flat-square"/>
 </p>
@@ -184,7 +187,6 @@ Each item below maps to code that exists on this branch.
 | `devset-ce-fe/` | Frontend (UI) | React 19, TypeScript 5.9, Vite 8 |
 | `landing-page/` | Static landing page | HTML/CSS |
 | `docs/images/` | Banner and product screenshots | — |
-| `docker-compose.yml` | Local Kafka + RabbitMQ stack | Confluent cp-kafka 7.9, RabbitMQ 4.1 |
 
 ---
 
@@ -195,7 +197,7 @@ Each item below maps to code that exists on this branch.
 - **Java 25** (Eclipse Temurin recommended) — backend toolchain pinned in
   `devset-ce-be/build.gradle`.
 - **Node.js 22** — what release CI uses; older 20.x will likely work, untested.
-- **Docker** — only required for the prebuilt image or local Kafka/RabbitMQ.
+- **Docker** — only required for the prebuilt image.
 - **protoc 34.1** — only needed if you compile Protobuf descriptors outside the Docker
   image (the image ships its own protoc).
 
@@ -253,29 +255,6 @@ docker run -p 8082:8082 -v devset-data:/data devset-ce
 The resulting image is based on `eclipse-temurin:25-jdk`, runs as a non-root `app` user,
 bundles `protoc 34.1`, and persists data to the `/data` volume.
 
-### Local Kafka and RabbitMQ via Docker Compose
-
-The bundled `docker-compose.yml` brings up:
-
-- Confluent `cp-kafka:7.9.0` — host port `9092`, in-network `kafka:29092`
-- `rabbitmq:4.1-management-alpine` — AMQP on `5672`, management UI on `15672`
-- A `devset` service entry that expects a locally built image
-
-The `devset` service uses `build: devset-ce`, which is **not** the actual backend folder
-(`devset-ce-be`). The simplest path is to ignore that service and run Devset from the
-published image alongside compose's brokers:
-
-```bash
-# Brokers only
-docker compose up kafka rabbitmq
-
-# Then in a separate shell
-docker run -p 8082:8082 -v devset-data:/data \
-  --network devset-ce_default \
-  -e SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092 \
-  ghcr.io/devset-io/devset-ce:latest
-```
-
 ---
 
 ## Configuration
@@ -329,9 +308,17 @@ cd devset-ce-be && ./gradlew test
 # Backend — integration tests (uses Testcontainers, requires Docker)
 cd devset-ce-be && ./gradlew integTest
 
-# Frontend
+# Frontend — unit tests
 cd devset-ce-fe && npm test
+
+# End-to-end — Playwright against the bundled FE+BE stack (requires Docker)
+cd devset-ce-fe && npm run e2e:full
 ```
+
+`e2e:full` builds the frontend, embeds it into the backend jar, spins up Kafka +
+RabbitMQ + Devset in Docker Compose, and runs Playwright smoke tests against the live
+stack. The same flow runs in CI on every pull request to `main` and on every push to
+`main` (`.github/workflows/e2e.yml`).
 
 ---
 
