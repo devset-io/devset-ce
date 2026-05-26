@@ -113,7 +113,8 @@ test('send: dispatching without a Kafka topic surfaces the topic-required error'
   await sendBtn.click()
 
   // Kafka topic required → sendFailed dispatched → sendError shown inline.
-  await expect(page.getByText('Kafka topic is required.')).toBeVisible({ timeout: 5_000 })
+  // Scope to main to exclude the toast notification that mirrors the same text.
+  await expect(page.getByRole('main').getByText('Kafka topic is required.')).toBeVisible({ timeout: 5_000 })
 })
 
 test('history panel: the History head button toggles the panel open and closed', async ({ page }) => {
