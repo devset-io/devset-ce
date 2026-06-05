@@ -8,7 +8,7 @@
  * You may obtain a copy of the License in the LICENSE file at the root of this repository.
  */
 
-import React, { useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useI18n } from '../../../core/i18n/I18nProvider.tsx'
 import type { DslStage } from '../../flow-builder/types.ts'
 import { JsonCodeEditor } from '../../flow-builder/components/JsonCodeEditor.tsx'
@@ -17,18 +17,41 @@ import { buildTabButtonClass, FB_STUDIO, FB_UI } from '../../flow-builder/ui/ui-
 type FunctionStudioDslPanelProps = {
   selectedStageDsl: DslStage | null
   hasPendingChanges: boolean
-  onApplySelectedStageDslRaw: (setRaw: string, stateRaw: string) => void
+  // Fingerprint of the dispatched dsl-raw op (length proxy). Surfaced as a
+  // data attribute on the badge so e2e tests can wait for the debounce to
+  // actually flush instead of relying on a wall-clock waitForTimeout.
+  pendingDslRawFingerprint: number
+  // Snapshot of the currently-queued dsl-raw op, read ONLY at mount. Restores
+  // the typed draft after a mode-toggle remount; updates to it during the
+  // panel's lifetime are intentionally ignored to avoid clobbering active edits.
+  pendingDslRawSnapshot: { setRaw: string; stateRaw: string } | null
+  onDslRawChanged: (setRaw: string, stateRaw: string) => void
+  onDslRawCleared: () => void
+  onDslRawErrorChanged: (hasError: boolean) => void
 }
+
+// Debounce window for piping editor drafts up to the reducer. Short enough
+// that the top Save button reflects intent quickly, long enough to avoid
+// thrashing pendingOps on every keystroke.
+const DSL_DISPATCH_DEBOUNCE_MS = 400
 
 export const FunctionStudioDslPanel = React.memo(function FunctionStudioDslPanel({
   selectedStageDsl,
   hasPendingChanges,
-  onApplySelectedStageDslRaw,
+  pendingDslRawFingerprint,
+  pendingDslRawSnapshot,
+  onDslRawChanged,
+  onDslRawCleared,
+  onDslRawErrorChanged,
 }: FunctionStudioDslPanelProps) {
   const { t } = useI18n()
   const [activeRootTab, setActiveRootTab] = useState<'set' | 'state'>('set')
   const sourceSetRaw = JSON.stringify(selectedStageDsl?.set ?? {}, null, 2)
   const sourceStateRaw = JSON.stringify(selectedStageDsl?.state ?? {}, null, 2)
+  // Lazy initializer reads pendingDslRawSnapshot once. After mount, snapshot
+  // updates from upstream are intentionally NOT mirrored back into draft state —
+  // doing so would clobber edits in progress (the op in flight is, by definition,
+  // the value the panel just dispatched).
   const [rawDraftState, setRawDraftState] = useState<{
     sourceSetRaw: string
     draftSetRaw: string
@@ -36,25 +59,19 @@ export const FunctionStudioDslPanel = React.memo(function FunctionStudioDslPanel
     sourceStateRaw: string
     draftStateRaw: string
     stateError: string | null
-    applyError: string | null
-  }>({
+  }>(() => ({
     sourceSetRaw,
-    draftSetRaw: sourceSetRaw,
+    draftSetRaw: pendingDslRawSnapshot?.setRaw ?? sourceSetRaw,
     setError: null,
     sourceStateRaw,
-    draftStateRaw: sourceStateRaw,
+    draftStateRaw: pendingDslRawSnapshot?.stateRaw ?? sourceStateRaw,
     stateError: null,
-    applyError: null,
-  })
+  }))
   const draftSetRaw = rawDraftState.sourceSetRaw === sourceSetRaw ? rawDraftState.draftSetRaw : sourceSetRaw
   const draftStateRaw =
     rawDraftState.sourceStateRaw === sourceStateRaw ? rawDraftState.draftStateRaw : sourceStateRaw
   const setError = rawDraftState.sourceSetRaw === sourceSetRaw ? rawDraftState.setError : null
   const stateError = rawDraftState.sourceStateRaw === sourceStateRaw ? rawDraftState.stateError : null
-  const applyError =
-    rawDraftState.sourceSetRaw === sourceSetRaw && rawDraftState.sourceStateRaw === sourceStateRaw
-      ? rawDraftState.applyError
-      : null
   const hasLocalChanges = draftSetRaw !== sourceSetRaw || draftStateRaw !== sourceStateRaw
   const activeDraftRaw = activeRootTab === 'set' ? draftSetRaw : draftStateRaw
   const activeRootError = activeRootTab === 'set' ? setError : stateError
@@ -67,7 +84,6 @@ export const FunctionStudioDslPanel = React.memo(function FunctionStudioDslPanel
       sourceStateRaw,
       draftStateRaw,
       stateError,
-      applyError: null,
     })
   }
 
@@ -79,7 +95,6 @@ export const FunctionStudioDslPanel = React.memo(function FunctionStudioDslPanel
       sourceStateRaw,
       draftStateRaw: nextRaw,
       stateError: null,
-      applyError: null,
     })
   }
 
@@ -108,57 +123,66 @@ export const FunctionStudioDslPanel = React.memo(function FunctionStudioDslPanel
       sourceStateRaw,
       draftStateRaw: nextStateRaw,
       stateError: nextStateError,
-      applyError: null,
     })
   }
 
-  const handleApply = () => {
-    if (!selectedStageDsl) {
-      return
-    }
-    if (hasPendingChanges) {
-      setRawDraftState({
-        sourceSetRaw,
-        draftSetRaw,
-        setError,
-        sourceStateRaw,
-        draftStateRaw,
-        stateError,
-        applyError: t('flow.drawer.dslApplyBlocked'),
-      })
-      return
-    }
+  // ── Debounced bridge: drafts → reducer ──
+  // Callback refs keep the debounce useEffect deps stable across drawer
+  // re-renders (the parent passes inline arrows that change identity every
+  // render). Without this, every dispatch that re-renders the drawer would
+  // re-arm the timeout and the bridge would never actually fire.
+  const lastDispatchedRef = useRef<{ setRaw: string; stateRaw: string } | null>(null)
+  const lastErrorRef = useRef<boolean>(false)
+  const onChangedRef = useRef(onDslRawChanged)
+  const onClearedRef = useRef(onDslRawCleared)
+  const onErrorRef = useRef(onDslRawErrorChanged)
+  useEffect(() => { onChangedRef.current = onDslRawChanged }, [onDslRawChanged])
+  useEffect(() => { onClearedRef.current = onDslRawCleared }, [onDslRawCleared])
+  useEffect(() => { onErrorRef.current = onDslRawErrorChanged }, [onDslRawErrorChanged])
 
-    try {
-      onApplySelectedStageDslRaw(draftSetRaw, draftStateRaw)
-      setRawDraftState({
-        sourceSetRaw: draftSetRaw,
-        draftSetRaw,
-        setError: null,
-        sourceStateRaw: draftStateRaw,
-        draftStateRaw,
-        stateError: null,
-        applyError: null,
-      })
-    } catch (error) {
-      setRawDraftState({
-        sourceSetRaw,
-        draftSetRaw,
-        setError,
-        sourceStateRaw,
-        draftStateRaw,
-        stateError,
-        applyError: error instanceof Error ? error.message : t('flow.drawer.dslApplyError'),
-      })
-    }
-  }
+  useEffect(() => {
+    const handle = window.setTimeout(() => {
+      // Live parse — surface error flag to the reducer regardless of dirty state.
+      // The user could revert to a clean source while error was set; only what's
+      // currently in the editor counts.
+      let setIsValid = true
+      let stateIsValid = true
+      try { JSON.parse(draftSetRaw) } catch { setIsValid = false }
+      try { JSON.parse(draftStateRaw) } catch { stateIsValid = false }
+      const hasError = !setIsValid || !stateIsValid
+      if (hasError !== lastErrorRef.current) {
+        lastErrorRef.current = hasError
+        onErrorRef.current(hasError)
+      }
+
+      // No dirty changes vs source → make sure no dsl-raw op is queued.
+      if (!hasLocalChanges) {
+        if (lastDispatchedRef.current !== null) {
+          lastDispatchedRef.current = null
+          onClearedRef.current()
+        }
+        return
+      }
+      if (hasError) return
+
+      const prev = lastDispatchedRef.current
+      if (prev && prev.setRaw === draftSetRaw && prev.stateRaw === draftStateRaw) return
+      lastDispatchedRef.current = { setRaw: draftSetRaw, stateRaw: draftStateRaw }
+      onChangedRef.current(draftSetRaw, draftStateRaw)
+    }, DSL_DISPATCH_DEBOUNCE_MS)
+    return () => window.clearTimeout(handle)
+  }, [draftSetRaw, draftStateRaw, hasLocalChanges])
 
   return (
     <section className={`${FB_STUDIO.panel} h-full min-h-0 overflow-auto rounded-xl border border-[var(--line-200)] bg-[var(--panel)] p-3`}>
       <div className="mb-2 flex items-center justify-between gap-2">
         <h4 className="m-0 text-sm font-semibold text-slate-800">{t('flow.drawer.dslTitle')}</h4>
         {hasPendingChanges ? (
-          <span className="rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-800">
+          <span
+            data-testid="dsl-pending-badge"
+            data-pending-fingerprint={pendingDslRawFingerprint}
+            className="rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-800"
+          >
             {t('flow.drawer.dslPending')}
           </span>
         ) : null}
@@ -168,17 +192,8 @@ export const FunctionStudioDslPanel = React.memo(function FunctionStudioDslPanel
         <button type="button" className={`${FB_UI.secondaryButton} py-1.5 text-xs`} onClick={handleBeautify}>
           {t('flow.drawer.dslBeautify')}
         </button>
-        <button
-          type="button"
-          className={`${FB_UI.primaryButton} py-1.5 text-xs`}
-          onClick={handleApply}
-          disabled={!selectedStageDsl || !hasLocalChanges || hasPendingChanges}
-        >
-          {t('flow.drawer.dslApply')}
-        </button>
       </div>
       {hasLocalChanges ? <p className="m-0 mb-1 text-xs text-slate-500">{t('flow.drawer.dslDirty')}</p> : null}
-      {applyError ? <p className="m-0 mb-1 text-xs text-red-700">{applyError}</p> : null}
       <div
         className="mb-2 flex gap-1.5"
         role="tablist"
@@ -195,6 +210,14 @@ export const FunctionStudioDslPanel = React.memo(function FunctionStudioDslPanel
           onClick={() => setActiveRootTab('set')}
         >
           {t('flow.drawer.dslSetLabel')}
+          {setError ? (
+            // Inline marker so the user can locate the broken tab while Save
+            // is gated. aria-label gives screen readers an explicit error cue.
+            <span
+              aria-label={t('flow.drawer.dslInvalidJson')}
+              className="ml-1 inline-block h-1.5 w-1.5 rounded-full bg-red-600"
+            />
+          ) : null}
         </button>
         <button
           type="button"
@@ -207,6 +230,12 @@ export const FunctionStudioDslPanel = React.memo(function FunctionStudioDslPanel
           onClick={() => setActiveRootTab('state')}
         >
           {t('flow.drawer.dslStateLabel')}
+          {stateError ? (
+            <span
+              aria-label={t('flow.drawer.dslInvalidJson')}
+              className="ml-1 inline-block h-1.5 w-1.5 rounded-full bg-red-600"
+            />
+          ) : null}
         </button>
       </div>
       <div role="tabpanel" id={`dsl-panel-${activeRootTab}`} aria-labelledby={`dsl-tab-${activeRootTab}`}>

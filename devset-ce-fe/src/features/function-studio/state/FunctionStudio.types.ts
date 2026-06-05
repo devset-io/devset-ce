@@ -50,6 +50,11 @@ export interface FunctionStudioState {
   wireFormatPrefixSource: 'messagePrefix'
   wireFormatPrefixValue: string
   wireFormatPrefixValueError: 'invalid-range' | null
+
+  // Raw DSL parse error flag — set by the DSL panel via dslRawErrorChanged
+  // when the user types invalid JSON. While true the top-level Save is
+  // disabled so we never persist an unparseable draft.
+  dslRawHasParseError: boolean
 }
 
 // ──────────────────────────────────────────────────────────────
@@ -97,6 +102,11 @@ export type FunctionStudioAction =
   | { type: 'wireFormatSourceChanged'; source: 'messagePrefix'; enabled: boolean; currentPrefixValue: string }
   | { type: 'wireFormatPrefixValueChanged'; value: string; enabled: boolean }
   | { type: 'wireFormatResetForNonProtobuf' }
+
+  // --- Raw DSL draft (auto-queued by the DSL panel on debounced edits) ---
+  | { type: 'dslRawChanged'; setRaw: string; stateRaw: string }
+  | { type: 'dslRawCleared' }
+  | { type: 'dslRawErrorChanged'; hasError: boolean }
 
   // --- Lifecycle ---
   | { type: 'resetDraft'; selectedEvent: string; selectedSource: SourceMode; wireFormat: StageWireFormat | null }
