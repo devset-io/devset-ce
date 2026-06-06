@@ -60,6 +60,19 @@ const buildWireFormatSetOp = (prefixValue: string) => {
 const withoutWireFormatOps = (ops: FunctionStudioState['pendingOps']) =>
   ops.filter((op) => op.type !== 'wire-format-set' && op.type !== 'wire-format-clear')
 
+// ── Remove existing dsl-raw ops from pendingOps (upsert semantics) ──
+
+const withoutDslRawOps = (ops: FunctionStudioState['pendingOps']) =>
+  ops.filter((op) => op.type !== 'dsl-raw')
+
+// ── Remove function/state-add/state-remove ops from pendingOps ──
+// dsl-raw represents a full snapshot of set+state, so once the user queues a
+// raw-DSL draft the per-field overrides it would coexist with are subsumed —
+// keeping them would let dsl-raw silently wipe a function override on save.
+
+const withoutFunctionOrStateOps = (ops: FunctionStudioState['pendingOps']) =>
+  ops.filter((op) => op.type !== 'function' && op.type !== 'state-add' && op.type !== 'state-remove')
+
 // ── Reducer ──
 
 /** Pure reducer for function studio state transitions. */
@@ -85,16 +98,24 @@ export function reducer(state: FunctionStudioState, action: FunctionStudioAction
     // ── Pending operations queue ──
 
     case 'queueFunctionApply':
-      return {
-        ...state,
-        pendingOps: [...state.pendingOps, { type: 'function', field: action.field, payload: action.payload }],
-      }
-
-    case 'queueStateAdd':
+      // Drop any pending dsl-raw op: the user just expressed a per-field
+      // intent, which is incompatible with the full-snapshot semantics of
+      // dsl-raw. Saving both would let dsl-raw silently overwrite this op.
       return {
         ...state,
         pendingOps: [
-          ...state.pendingOps,
+          ...withoutDslRawOps(state.pendingOps),
+          { type: 'function', field: action.field, payload: action.payload },
+        ],
+      }
+
+    case 'queueStateAdd':
+      // Same rationale as queueFunctionApply: state-add is a per-path edit
+      // that doesn't compose with a dsl-raw snapshot.
+      return {
+        ...state,
+        pendingOps: [
+          ...withoutDslRawOps(state.pendingOps),
           {
             type: 'state-add',
             sourceField: action.sourceField,
@@ -111,7 +132,7 @@ export function reducer(state: FunctionStudioState, action: FunctionStudioAction
     case 'queueStateRemove':
       return {
         ...state,
-        pendingOps: [...state.pendingOps, { type: 'state-remove', statePath: action.statePath }],
+        pendingOps: [...withoutDslRawOps(state.pendingOps), { type: 'state-remove', statePath: action.statePath }],
       }
 
     // ── Schema/source draft ──
@@ -235,6 +256,33 @@ export function reducer(state: FunctionStudioState, action: FunctionStudioAction
         pendingOps: withoutWireFormatOps(state.pendingOps),
       }
 
+    // ── Raw DSL draft ──
+
+    case 'dslRawChanged':
+      // dsl-raw is a full set+state snapshot — drop any pending function or
+      // state-add/remove ops because they would either be silently
+      // overwritten on save or, if applied after dsl-raw, contradict what the
+      // user typed in raw DSL.
+      return {
+        ...state,
+        pendingOps: [
+          ...withoutFunctionOrStateOps(withoutDslRawOps(state.pendingOps)),
+          { type: 'dsl-raw', setRaw: action.setRaw, stateRaw: action.stateRaw },
+        ],
+      }
+
+    case 'dslRawCleared':
+      return {
+        ...state,
+        pendingOps: withoutDslRawOps(state.pendingOps),
+      }
+
+    case 'dslRawErrorChanged':
+      return {
+        ...state,
+        dslRawHasParseError: action.hasError,
+      }
+
     // ── Lifecycle ──
 
     case 'resetDraft': {
@@ -254,6 +302,7 @@ export function reducer(state: FunctionStudioState, action: FunctionStudioAction
         wireFormatPrefixSource: wfDraft.source,
         wireFormatPrefixValue: wfDraft.value,
         wireFormatPrefixValueError: null,
+        dslRawHasParseError: false,
       }
     }
 
@@ -261,7 +310,7 @@ export function reducer(state: FunctionStudioState, action: FunctionStudioAction
       return { ...state, isSavingDraft: true }
 
     case 'saveCompleted':
-      return { ...state, isSavingDraft: false, pendingOps: [] }
+      return { ...state, isSavingDraft: false, pendingOps: [], dslRawHasParseError: false }
 
     case 'saveFailed':
       return { ...state, isSavingDraft: false }

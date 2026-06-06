@@ -11,10 +11,11 @@
 // ──────────────────────────────────────────────────────────────
 // useFunctionStudioDrawerState — orchestration hook
 //
-// Uses useReducer for all state. Side effects are handled
-// synchronously in dispatchWithEffects (same pattern as
-// FlowBuilderCanvas). Replaces the previous version that had
-// 7 useState + 2 absorbed sub-hooks (stateTaskForm + wireFormat).
+// Uses useReducer for all state. Side effects are triggered inline
+// from dispatchWithEffects (same pattern as FlowBuilderCanvas): cheap
+// cases run synchronously, save runs via an async IIFE that dispatches
+// follow-up actions when it settles. Replaces the previous version that
+// had 7 useState + 2 absorbed sub-hooks (stateTaskForm + wireFormat).
 // ──────────────────────────────────────────────────────────────
 
 import { useCallback, useEffect, useMemo, useReducer, useRef } from 'react'
@@ -60,6 +61,7 @@ function createInitialState(props: {
     wireFormatPrefixSource: 'messagePrefix',
     wireFormatPrefixValue: wfValue,
     wireFormatPrefixValueError: null,
+    dslRawHasParseError: false,
   }
 }
 
@@ -219,12 +221,15 @@ export const useFunctionStudioDrawerState = (props: FunctionStudioDrawerProps) =
   }, [draftSelectedSchema?.schemaType])
 
   // ──────────────────────────────────────────────────────────────
-  // dispatchWithEffects — side effects handled synchronously.
+  // dispatchWithEffects — side effects triggered inline next to dispatch.
   //
   // Actions that return `state` unchanged from the reducer
   // (requestClose, discardAndClose, save, selectField) would not
-  // trigger a re-render, so useEffect can't handle them. We run
-  // their side effects here instead.
+  // trigger a re-render, so useEffect can't handle them. We trigger
+  // their side effects here instead — synchronously for fire-and-forget
+  // cases (close, discard) and via an async IIFE for awaitable work
+  // (save, which dispatches saveStarted/saveCompleted/saveFailed as it
+  // progresses).
   // ──────────────────────────────────────────────────────────────
 
   const dispatchWithEffects = useCallback((action: FunctionStudioAction): void => {
@@ -234,7 +239,8 @@ export const useFunctionStudioDrawerState = (props: FunctionStudioDrawerProps) =
     // Dispatch to reducer for state changes
     dispatch(action)
 
-    // Handle side effects synchronously
+    // Handle side effects inline. Note: `save` is async (IIFE below);
+    // every other case runs to completion synchronously.
     switch (action.type) {
       case 'requestClose':
         if (s.pendingOps.length > 0) {
@@ -256,6 +262,7 @@ export const useFunctionStudioDrawerState = (props: FunctionStudioDrawerProps) =
 
       case 'save':
         if (s.pendingOps.length === 0) return
+        if (s.dslRawHasParseError) return
         dispatch({ type: 'saveStarted' })
         void (async () => {
           try {
@@ -272,6 +279,7 @@ export const useFunctionStudioDrawerState = (props: FunctionStudioDrawerProps) =
                 })
               },
               onClearStageWireFormat: p.onClearStageWireFormat,
+              onApplyDslRaw: p.onApplySelectedStageDslRaw,
             })
             await new Promise<void>((resolve) => { window.setTimeout(resolve, 0) })
             await p.onSaveDraftChanges()
@@ -324,11 +332,21 @@ export const useFunctionStudioDrawerState = (props: FunctionStudioDrawerProps) =
 
   const draftStageDsl = useMemo(() => {
     const base = props.selectedStageDsl
-    if (!base || state.pendingOps.length === 0) return base
+    if (!base) return base
+
+    // The DSL panel must see the SAVED set/state here. Reflecting the pending
+    // dsl-raw op would cause `sourceSetRaw` to update after each dispatch, the
+    // panel's source-snap-back guard would discard the local draft, hasLocalChanges
+    // would flip to false, and the debounced bridge would fire dslRawCleared —
+    // wiping the op we just queued. The panel reads dsl-raw content separately
+    // via `pendingDslRawSnapshot` on mount, which restores the typed draft after
+    // a mode toggle without contaminating the source comparison.
+    const nonDslRawOps = state.pendingOps.filter((op) => op.type !== 'dsl-raw')
+    if (nonDslRawOps.length === 0) return base
 
     const pendingFnOverrides: FnOverrides = {}
     let hasFnOps = false
-    state.pendingOps.forEach((op) => {
+    nonDslRawOps.forEach((op) => {
       if (op.type === 'function') {
         pendingFnOverrides[op.field] = op.payload
         hasFnOps = true
@@ -338,10 +356,19 @@ export const useFunctionStudioDrawerState = (props: FunctionStudioDrawerProps) =
     const draftSet = hasFnOps
       ? applyFnOverrides(base.set ?? {}, pendingFnOverrides)
       : (base.set ?? {})
-    const draftState = buildDraftSelectedStageState(base.state ?? {}, state.pendingOps)
+    const draftState = buildDraftSelectedStageState(base.state ?? {}, nonDslRawOps)
 
     return { ...base, set: draftSet, state: draftState }
   }, [props.selectedStageDsl, state.pendingOps])
+
+  // Snapshot of the pending dsl-raw op (if any). Used by the DSL panel to
+  // restore the typed draft when it remounts after a mode toggle. Reading this
+  // only on mount avoids the source-snap-back oscillation that we'd hit if
+  // `draftStageDsl` carried the op's content.
+  const pendingDslRawSnapshot = useMemo(() => {
+    const op = state.pendingOps.find((o) => o.type === 'dsl-raw')
+    return op && op.type === 'dsl-raw' ? { setRaw: op.setRaw, stateRaw: op.stateRaw } : null
+  }, [state.pendingOps])
 
   // ── Public API ──
   // Returns everything needed by FunctionStudioDrawer and its children.
@@ -356,6 +383,7 @@ export const useFunctionStudioDrawerState = (props: FunctionStudioDrawerProps) =
 
     // Computed values (from useFunctionStudioComputed)
     hasPendingChanges: computed.hasPendingChanges,
+    dslRawHasParseError: state.dslRawHasParseError,
     draftSelectedFieldExpression: computed.draftSelectedFieldExpression,
     draftSelectedFieldMode: computed.draftSelectedFieldMode,
     draftSelectedFieldRawValue: computed.draftSelectedFieldRawValue,
@@ -375,7 +403,10 @@ export const useFunctionStudioDrawerState = (props: FunctionStudioDrawerProps) =
 
     // Draft DSL with pending ops applied
     draftStageDsl,
-  }), [state, dispatchWithEffects, draftSelectedSchema, computed, functionBuilderKey, draftStageDsl, workflowState])
+
+    // Pending dsl-raw op snapshot for DSL-panel mount-time hydration
+    pendingDslRawSnapshot,
+  }), [state, dispatchWithEffects, draftSelectedSchema, computed, functionBuilderKey, draftStageDsl, pendingDslRawSnapshot, workflowState])
 }
 
 // Convenience type for the hook's return value.

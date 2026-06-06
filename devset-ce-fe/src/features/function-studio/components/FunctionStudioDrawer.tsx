@@ -15,6 +15,7 @@ import { FunctionStudioHeader } from './FunctionStudioHeader.tsx'
 import { SetFieldsSnapshotPanel } from './SetFieldsSnapshotPanel.tsx'
 import { FunctionStudioTasksPanel } from './FunctionStudioTasksPanel.tsx'
 import type { FunctionStudioDrawerProps } from '../types/function-studio-drawer.types.ts'
+import type { PendingOperation } from '../utils/function-studio-draft.ts'
 import { buildPillButtonClass, FB_STUDIO } from '../../flow-builder/ui/ui-classes.ts'
 import { useFunctionStudioDrawerState } from '../hooks/useFunctionStudioDrawerState.ts'
 import { useI18n } from '../../../core/i18n/I18nProvider.tsx'
@@ -54,6 +55,7 @@ export const FunctionStudioDrawer = React.memo(function FunctionStudioDrawer(pro
             selectedNode={props.selectedNode}
             hasPendingChanges={drawerApi.hasPendingChanges}
             isSavingDraft={drawerApi.state.isSavingDraft}
+            isSaveBlocked={drawerApi.dslRawHasParseError}
             onReset={() => drawerApi.dispatch({ type: 'resetDraft', selectedEvent: props.selectedEvent, selectedSource: props.selectedSource, wireFormat: props.selectedStageWireFormat })}
             onSave={() => drawerApi.dispatch({ type: 'save' })}
             onClose={() => drawerApi.dispatch({ type: 'requestClose' })}
@@ -118,7 +120,11 @@ export const FunctionStudioDrawer = React.memo(function FunctionStudioDrawer(pro
                   <FunctionStudioDslPanel
                     selectedStageDsl={drawerApi.draftStageDsl}
                     hasPendingChanges={drawerApi.hasPendingChanges}
-                    onApplySelectedStageDslRaw={props.onApplySelectedStageDslRaw}
+                    pendingDslRawFingerprint={computeDslRawFingerprint(drawerApi.state.pendingOps)}
+                    pendingDslRawSnapshot={drawerApi.pendingDslRawSnapshot}
+                    onDslRawChanged={(setRaw, stateRaw) => drawerApi.dispatch({ type: 'dslRawChanged', setRaw, stateRaw })}
+                    onDslRawCleared={() => drawerApi.dispatch({ type: 'dslRawCleared' })}
+                    onDslRawErrorChanged={(hasError) => drawerApi.dispatch({ type: 'dslRawErrorChanged', hasError })}
                   />
                 )}
               </div>
@@ -134,3 +140,12 @@ export const FunctionStudioDrawer = React.memo(function FunctionStudioDrawer(pro
     </>
   )
 })
+
+// Length proxy over the dispatched dsl-raw op. Changes whenever the debounced
+// editor bridge upserts a new setRaw/stateRaw — gives e2e tests a deterministic
+// signal to wait for instead of a wall-clock timer.
+function computeDslRawFingerprint(pendingOps: readonly PendingOperation[]): number {
+  const op = pendingOps.find((o) => o.type === 'dsl-raw')
+  if (!op || op.type !== 'dsl-raw') return 0
+  return op.setRaw.length + op.stateRaw.length
+}

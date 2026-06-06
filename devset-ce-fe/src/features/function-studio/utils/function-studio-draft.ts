@@ -32,6 +32,7 @@ export type PendingOperation =
       whenDefaultRaw?: string
     }
   | { type: 'state-remove'; statePath: string }
+  | { type: 'dsl-raw'; setRaw: string; stateRaw: string }
 
 export type StateTaskForm = {
   targetStatePath: string
@@ -71,6 +72,17 @@ export const buildDraftSelectedStageState = (
   selectedStageState: Record<string, unknown>,
   pendingOps: PendingOperation[],
 ): Record<string, unknown> => {
+  // dsl-raw is authoritative when present (reducer enforces mutual exclusion
+  // with state-add / state-remove ops). Parsing it here keeps the
+  // function-task UI in sync with what the raw-DSL editor showed.
+  const dslRawOp = pendingOps.find((op) => op.type === 'dsl-raw')
+  if (dslRawOp && dslRawOp.type === 'dsl-raw') {
+    try {
+      return JSON.parse(dslRawOp.stateRaw) as Record<string, unknown>
+    } catch {
+      return { ...selectedStageState }
+    }
+  }
   const draft = { ...selectedStageState }
   pendingOps.forEach((operation) => {
     if (operation.type === 'state-add') {
@@ -162,9 +174,17 @@ export const applyPendingOperations = async (
     onRemoveStateMapping: (statePath: string) => void
     onSetStageWireFormat: (source: StageWireFormatPrefixSource, value?: number) => void
     onClearStageWireFormat: () => void
+    onApplyDslRaw: (setRaw: string, stateRaw: string) => void
   },
 ): Promise<void> => {
+  // dsl-raw is mutually exclusive with function / state-add / state-remove ops:
+  // the reducer drops one whenever the other is dispatched (see
+  // FunctionStudio.reducer.ts). So at apply time at most one branch runs for
+  // set/state. We still run dsl-raw last as a belt-and-braces guard against
+  // any future reducer change that lets them coexist.
+  const dslRawOp = pendingOps.find((op) => op.type === 'dsl-raw')
   pendingOps.forEach((operation) => {
+    if (operation.type === 'dsl-raw') return
     if (operation.type === 'schema') {
       handlers.onSchemaChange(operation.event)
       return
@@ -199,6 +219,9 @@ export const applyPendingOperations = async (
     }
     handlers.onRemoveStateMapping(operation.statePath)
   })
+  if (dslRawOp && dslRawOp.type === 'dsl-raw') {
+    handlers.onApplyDslRaw(dslRawOp.setRaw, dslRawOp.stateRaw)
+  }
 }
 
 export const getNodeLabel = (

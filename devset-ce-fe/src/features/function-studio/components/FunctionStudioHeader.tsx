@@ -18,6 +18,7 @@ type FunctionStudioHeaderProps = {
   selectedNode: BuilderNode | null
   hasPendingChanges: boolean
   isSavingDraft: boolean
+  isSaveBlocked: boolean
   onReset: () => void
   onSave: () => void
   onClose: () => void
@@ -27,11 +28,13 @@ export const FunctionStudioHeader = React.memo(function FunctionStudioHeader({
   selectedNode,
   hasPendingChanges,
   isSavingDraft,
+  isSaveBlocked,
   onReset,
   onSave,
   onClose,
 }: FunctionStudioHeaderProps) {
   const { t } = useI18n()
+  const saveDisabled = isSavingDraft || isSaveBlocked
   return (
     <header className="flex items-start justify-between gap-3 border-b border-[var(--brand-border)] bg-[var(--brand-soft)]/70 p-4">
       <div>
@@ -44,9 +47,22 @@ export const FunctionStudioHeader = React.memo(function FunctionStudioHeader({
             <button type="button" className={FB_UI.secondaryButton} onClick={onReset} disabled={isSavingDraft}>
               {t('flow.fnStudioHeader.reset')}
             </button>
-            <button type="button" className={FB_UI.primaryButton} onClick={onSave} disabled={isSavingDraft}>
+            <button
+              type="button"
+              data-testid="fn-studio-save"
+              className={FB_UI.primaryButton}
+              onClick={onSave}
+              disabled={saveDisabled}
+              title={isSaveBlocked ? t('flow.fnStudioHeader.saveBlockedDslError') : undefined}
+              aria-describedby={isSaveBlocked ? 'fn-studio-save-blocked' : undefined}
+            >
               {isSavingDraft ? t('flow.fnStudioHeader.saving') : t('flow.fnStudioHeader.save')}
             </button>
+            {isSaveBlocked ? (
+              <span id="fn-studio-save-blocked" className="sr-only">
+                {t('flow.fnStudioHeader.saveBlockedDslError')}
+              </span>
+            ) : null}
           </>
         ) : null}
         <button type="button" className={FB_UI.secondaryButton} onClick={onClose}>
