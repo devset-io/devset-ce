@@ -15,6 +15,7 @@
   <a href="https://github.com/devset-io/devset-ce/actions/workflows/release.yml"><img alt="Release" src="https://img.shields.io/github/actions/workflow/status/devset-io/devset-ce/release.yml?label=release&style=flat-square"/></a>
   <img alt="Java" src="https://img.shields.io/badge/java-25-4eb58a?style=flat-square"/>
   <img alt="React" src="https://img.shields.io/badge/react-19-4eb58a?style=flat-square"/>
+  <a href="https://sonarcloud.io/summary/new_code?id=devset-io_devset-ce"><img alt="SonarQube" src="https://img.shields.io/badge/scanned%20on-SonarQube-4e9bcd?style=flat-square&logo=sonarqube&logoColor=white"/></a>
 </p>
 
 # Devset
