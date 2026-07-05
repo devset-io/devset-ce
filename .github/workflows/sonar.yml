@@ -4,38 +4,49 @@ on:
   push:
     branches: [main]
   pull_request:
-    types: [opened, synchronize, reopened]
+    branches: [main]
+
+permissions:
+  contents: read
 
 jobs:
   sonar:
+    name: SonarQube Analysis
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Set up JDK 25
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         with:
-          java-version: '25'
-          distribution: 'temurin'
+          distribution: temurin
+          java-version: 25
+          cache: gradle
 
       - name: Build backend
         working-directory: devset-ce-be
         run: ./gradlew build -x test
 
-      - name: Set up Node
-        uses: actions/setup-node@v4
+      - name: Set up Node 22
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
-          node-version: 20
+          node-version: 22
+          cache: npm
+          cache-dependency-path: devset-ce-fe/package-lock.json
 
-      - name: Install & test frontend
+      - name: Install frontend dependencies
         working-directory: devset-ce-fe
-        run: |
-          npm install
-          npm test -- --coverage || true
+        run: npm ci
+
+      - name: Test frontend with coverage
+        working-directory: devset-ce-fe
+        run: npm run test -- --coverage
 
       - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@v4
+        uses: SonarSource/sonarqube-scan-action@713881670b6b3676cda39549040e2d88c70d582e # v8.2.0
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
