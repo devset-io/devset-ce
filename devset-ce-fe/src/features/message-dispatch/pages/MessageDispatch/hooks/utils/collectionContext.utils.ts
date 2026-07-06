@@ -10,16 +10,7 @@
 
 import type { QueryValue } from '../../../../../flow-builder'
 import type { CollectionContextEntry } from '../../state/MessageDispatch.types'
-
-function generateId(): string {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-    return crypto.randomUUID()
-  }
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-    const r = (Math.random() * 16) | 0
-    return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16)
-  })
-}
+import { generateUuid } from '../../../../../../shared/utils/random'
 
 /**
  * Converts a single context value into the JSON form persisted inside
@@ -70,7 +61,7 @@ function stringifyDslArg(raw: unknown): string {
 
 export function mapToEntries(map: Record<string, unknown>): CollectionContextEntry[] {
   return Object.entries(map).map(([field, raw]) => ({
-    id: generateId(),
+    id: generateUuid(),
     field,
     value: mapValueToEntryValue(raw),
   }))

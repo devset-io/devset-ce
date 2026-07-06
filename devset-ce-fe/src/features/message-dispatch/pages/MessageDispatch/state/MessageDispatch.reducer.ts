@@ -21,6 +21,7 @@
 
 import { DEFAULT_PROTO_SCHEMA, DEFAULT_STEP_STATE } from '../../../message-dispatch.constants'
 import { parseWireFormatPrefixValue } from '../../../message-dispatch.utils'
+import { generateUuid } from '../../../../../shared/utils/random'
 import type { MessageDispatchAction, MessageDispatchState } from './MessageDispatch.types'
 
 // ──────────────────────────────────────────────────────────────
@@ -122,20 +123,9 @@ export function createInitialState(): MessageDispatchState {
 // Pure helpers (used inside reducer — no side effects)
 // ──────────────────────────────────────────────────────────────
 
-/** Generates a UUID, falling back to a polyfill when crypto.randomUUID is unavailable (non-HTTPS). */
-function generateId(): string {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-    return crypto.randomUUID()
-  }
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-    const r = (Math.random() * 16) | 0
-    return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16)
-  })
-}
-
 /** Creates an empty Kafka header row with a unique ID. */
 function createEmptyHeaderRow() {
-  return { id: generateId(), key: '', value: '' }
+  return { id: generateUuid(), key: '', value: '' }
 }
 
 /**
@@ -154,7 +144,7 @@ export function toHeaderRows(
   }
 
   return entries.map(([key, value]) => ({
-    id: generateId(),
+    id: generateUuid(),
     key,
     value: String(value),
   }))
@@ -735,7 +725,7 @@ export function reducer(
         ...state,
         collectionContextModalEntries: [
           ...state.collectionContextModalEntries,
-          { id: generateId(), field: '', value: { kind: 'literal', value: '' } },
+          { id: generateUuid(), field: '', value: { kind: 'literal', value: '' } },
         ],
         collectionContextModalError: null,
       }
