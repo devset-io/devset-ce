@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'jacoco'
     id 'org.springframework.boot' version '3.5.14'
     id 'io.spring.dependency-management' version '1.1.7'
     id "idea"
@@ -136,6 +137,8 @@ tasks.register("integTest", Test) {
     }
 
     systemProperty("logging.level.root", "ERROR")
+
+    finalizedBy jacocoTestReport
 }
 
 tasks.named("processIntegTestResources") {
@@ -144,4 +147,17 @@ tasks.named("processIntegTestResources") {
 
 test {
     useJUnitPlatform()
+    finalizedBy jacocoTestReport
+}
+
+jacoco {
+    toolVersion = "0.8.14"
+}
+
+jacocoTestReport {
+    dependsOn test
+    executionData fileTree(layout.buildDirectory.dir("jacoco")) { include "*.exec" }
+    reports {
+        xml.required = true
+    }
 }

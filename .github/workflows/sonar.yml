@@ -27,9 +27,9 @@ jobs:
           java-version: 25
           cache: gradle
 
-      - name: Build backend
+      - name: Build backend with coverage
         working-directory: devset-ce-be
-        run: ./gradlew build -x test
+        run: ./gradlew build integTest jacocoTestReport
 
       - name: Set up Node 22
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
