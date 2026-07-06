@@ -42,9 +42,9 @@ jobs:
         working-directory: devset-ce-fe
         run: npm ci
 
-      - name: Test frontend
+      - name: Test frontend with coverage
         working-directory: devset-ce-fe
-        run: npm run test
+        run: npm run test:coverage
 
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@713881670b6b3676cda39549040e2d88c70d582e # v8.2.0 
