@@ -6,7 +6,7 @@ plugins {
 }
 apply from: rootProject.file("gradle/constants.gradle")
 
-ext['tomcat.version'] = '10.1.55' // CVE-2026-42498, 43513, 43514, 43515
+ext['tomcat.version'] = versions.tomcat // CVE-2026-42498, 43513, 43514, 43515
 
 group = "io.devset"
 version = "0.1.0"
@@ -72,14 +72,14 @@ dependencies {
         }
     }
     implementation "org.springframework.boot:spring-boot-starter-amqp"
-    implementation "org.springframework.kafka:spring-kafka"
+    implementation "org.springframework.kafka:spring-kafka:${versions.springKafka}"
     implementation "org.mongodb:bson:${versions.mongoDbDriver}"
     implementation "org.mongodb:mongodb-driver-core:${versions.mongoDbDriver}"
     implementation "org.mongodb:mongodb-driver-sync:${versions.mongoDbDriver}"
 
-    implementation "com.fasterxml.jackson.core:jackson-databind"
-    implementation "com.google.protobuf:protobuf-java:4.31.1"
-    implementation "com.google.protobuf:protobuf-java-util:4.31.1"
+    implementation "com.fasterxml.jackson.core:jackson-databind:${versions.jacksonDatabind}"
+    implementation "com.google.protobuf:protobuf-java:${versions.protobuf}"
+    implementation "com.google.protobuf:protobuf-java-util:${versions.protobuf}"
     implementation "org.apache.kafka:kafka-clients"
     implementation "org.mapstruct:mapstruct:${versions.mapstruct}"
     implementation "org.hibernate.orm:hibernate-community-dialects:${versions.hibernateDialect}"
@@ -107,11 +107,11 @@ dependencies {
 configurations.configureEach {
     resolutionStrategy.eachDependency { details ->
         if (details.requested.group == 'org.apache.commons' && details.requested.name == 'commons-lang3') {
-            details.useVersion '3.18.0'
+            details.useVersion "${versions.commonsLang3}"
             details.because 'CVE-2025-48924 - Uncontrolled Recursion'
         }
         if (details.requested.group == 'org.apache.commons' && details.requested.name == 'commons-compress') {
-            details.useVersion '1.28.0'
+            details.useVersion "${versions.commonsCompress}"
             details.because 'CVE-2024-25710, CVE-2024-26308'
         }
     }

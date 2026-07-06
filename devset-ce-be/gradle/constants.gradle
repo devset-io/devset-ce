@@ -26,7 +26,12 @@ ext {
             hibernateDialect      : "6.6.11.Final",
             ehcache               : "3.10.9",
             hibernateUtils55      : "3.8.1",
-            jacksonDatabind       : "2.16.0",
-            mongoDbDriver         : "5.6.1"
+            jacksonDatabind       : "2.21.4",
+            mongoDbDriver         : "5.6.1",
+            springKafka           : "3.3.16",
+            protobuf              : "4.31.1",
+            tomcat                : "10.1.55",
+            commonsLang3          : "3.18.0",
+            commonsCompress       : "1.28.0"
     ]
 }
