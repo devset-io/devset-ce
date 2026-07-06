@@ -8,13 +8,12 @@
  * You may obtain a copy of the License in the LICENSE file at the root of this repository.
  */
 
+import { randomLowercaseId } from '../../shared/utils/random'
+
 export const DEFAULT_WORKFLOW_ID_PREFIX = 'new-workflow'
 export const DEFAULT_PRODUCER_NAME = 'local'
 export const DEFAULT_TOPIC = ''
 export const DEFAULT_EXECUTIONS = 1
 
-export const generateDefaultWorkflowId = () => {
-  const alphabet = 'abcdefghijklmnopqrstuvwxyz0123456789'
-  const randomPart = Array.from({ length: 7 }, () => alphabet[Math.floor(Math.random() * alphabet.length)]).join('')
-  return `${DEFAULT_WORKFLOW_ID_PREFIX}-${randomPart}`
-}
+export const generateDefaultWorkflowId = () =>
+  `${DEFAULT_WORKFLOW_ID_PREFIX}-${randomLowercaseId(7)}`
