@@ -23,17 +23,13 @@ import {
   loadWorkflowById,
 } from '../../../services/workflow-library.service'
 import { normalizeError } from '../../../../../shared/utils/error'
+import { randomLowercaseId } from '../../../../../shared/utils/random'
 import type { FlowBuilderManageAction, FlowBuilderManageLabels, FlowBuilderManageState } from '../state/FlowBuilderManage.types'
 
 const FLOW_BUILDER_EDITOR_ROUTE = '/flow-builder/editor'
 
 export function buildCloneWorkflowId(workflowId: string): string {
-  const alphabet = 'abcdefghijklmnopqrstuvwxyz0123456789'
-  const suffix = Array.from(
-    { length: 3 },
-    () => alphabet[Math.floor(Math.random() * alphabet.length)],
-  ).join('')
-  return `${workflowId}-clone-${suffix}`
+  return `${workflowId}-clone-${randomLowercaseId(3)}`
 }
 
 export function useFlowBuilderManageEffects(

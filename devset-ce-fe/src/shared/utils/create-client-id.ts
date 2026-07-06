@@ -11,23 +11,15 @@
 const toHex = (value: number) => value.toString(16).padStart(2, '0')
 
 const randomBytesHex = (length: number): string => {
-  const runtimeCrypto = globalThis.crypto
-  if (runtimeCrypto?.getRandomValues) {
-    const bytes = new Uint8Array(length)
-    runtimeCrypto.getRandomValues(bytes)
-    return Array.from(bytes, (byte) => toHex(byte)).join('')
-  }
-  let fallback = ''
-  for (let index = 0; index < length; index += 1) {
-    fallback += toHex(Math.floor(Math.random() * 256))
-  }
-  return fallback
+  const bytes = new Uint8Array(length)
+  globalThis.crypto.getRandomValues(bytes)
+  return Array.from(bytes, (byte) => toHex(byte)).join('')
 }
 
 /** Generates a unique client identifier string. */
 export const createClientId = (): string => {
   const runtimeCrypto = globalThis.crypto
-  if (runtimeCrypto && typeof runtimeCrypto.randomUUID === 'function') {
+  if (typeof runtimeCrypto.randomUUID === 'function') {
     return runtimeCrypto.randomUUID()
   }
   return `id-${Date.now().toString(36)}-${randomBytesHex(8)}`
