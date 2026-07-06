@@ -31,8 +31,23 @@ public final class ProtoDescriptorUtils {
 
     private static final String DEFAULT_PROTO_FILE = "schema.proto";
     private static final String DEFAULT_DESCRIPTOR_FILE = "schema.desc";
+    private static final String PROTOC_PATH_PROPERTY = "devset.protoc.path";
+    private static final String PROTOC_PATH_ENV = "DEVSET_PROTOC_PATH";
 
     private ProtoDescriptorUtils() {
+    }
+
+    /**
+     * Resolves the {@code protoc} binary to invoke. Uses the {@code devset.protoc.path}
+     * system property or the {@code DEVSET_PROTOC_PATH} environment variable when set
+     * (an absolute path is recommended), otherwise falls back to {@code protoc}
+     * resolved from the system PATH.
+     *
+     * @return path or name of the {@code protoc} binary
+     */
+    private static String resolveProtocBinary() {
+        String configured = System.getProperty(PROTOC_PATH_PROPERTY, System.getenv(PROTOC_PATH_ENV));
+        return configured == null || configured.isBlank() ? "protoc" : configured;
     }
 
     /**
@@ -75,7 +90,7 @@ public final class ProtoDescriptorUtils {
             Files.writeString(protoPath, protoSchema, StandardCharsets.UTF_8);
 
             Process process = new ProcessBuilder(
-                    "protoc",
+                    resolveProtocBinary(),
                     "--include_imports",
                     "--descriptor_set_out=" + descriptorPath.toAbsolutePath(),
                     "--proto_path=" + workDir.toAbsolutePath(),
@@ -94,7 +109,7 @@ public final class ProtoDescriptorUtils {
             byte[] descriptor = Files.readAllBytes(descriptorPath);
             return Base64.getEncoder().encodeToString(descriptor);
         } catch (IOException exception) {
-            throw new WorkflowEngineException("Failed to generate protobuf descriptor. Ensure protoc is installed and available in PATH.");
+            throw new WorkflowEngineException("Failed to generate protobuf descriptor. Ensure protoc is installed and available in PATH, or set DEVSET_PROTOC_PATH.");
         } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
             throw new WorkflowEngineException("Descriptor generation interrupted");
@@ -104,13 +119,13 @@ public final class ProtoDescriptorUtils {
     }
 
     /**
-     * Checks whether the {@code protoc} compiler is available on the system PATH.
+     * Checks whether the {@code protoc} compiler is available.
      *
      * @return {@code true} if {@code protoc --version} executes successfully
      */
     public static boolean isProtocAvailable() {
         try {
-            Process process = new ProcessBuilder("protoc", "--version")
+            Process process = new ProcessBuilder(resolveProtocBinary(), "--version")
                     .redirectErrorStream(true)
                     .start();
             int exitCode = process.waitFor();
