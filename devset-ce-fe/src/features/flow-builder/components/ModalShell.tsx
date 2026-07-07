@@ -8,9 +8,10 @@
  * You may obtain a copy of the License in the LICENSE file at the root of this repository.
  */
 
-import { useEffect, useId, useRef } from 'react'
+import { useId, useRef } from 'react'
 import type { CSSProperties, ReactNode } from 'react'
 import { useI18n } from '../../../core/i18n/I18nProvider'
+import { useDialogDismiss } from '../../../shared/hooks/useDialogDismiss'
 import { useFocusTrap } from '../../../shared/hooks/useFocusTrap'
 import { FB_UI } from '../ui/ui-classes'
 
@@ -40,22 +41,7 @@ export function ModalShell({
   const titleId = useId()
 
   useFocusTrap(dialogRef, isOpen)
-
-  useEffect(() => {
-    if (!isOpen) return
-    const controller = new AbortController()
-    window.addEventListener(
-      'keydown',
-      (e) => {
-        // Only react when focus is inside this dialog, so stacked modals close one at a time.
-        if (e.key !== 'Escape') return
-        if (dialogRef.current && e.target instanceof Node && !dialogRef.current.contains(e.target)) return
-        onClose()
-      },
-      { signal: controller.signal },
-    )
-    return () => controller.abort()
-  }, [isOpen, onClose])
+  useDialogDismiss(dialogRef, isOpen, onClose)
 
   if (!isOpen) {
     return null

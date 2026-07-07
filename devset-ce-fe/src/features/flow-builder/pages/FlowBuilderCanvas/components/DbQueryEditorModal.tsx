@@ -8,8 +8,9 @@
  * You may obtain a copy of the License in the LICENSE file at the root of this repository.
  */
 
-import React, { useEffect, useId, useRef } from 'react'
+import React, { useId, useRef } from 'react'
 import { useI18n } from '../../../../../core/i18n/I18nProvider'
+import { useDialogDismiss } from '../../../../../shared/hooks/useDialogDismiss'
 import { useFocusTrap } from '../../../../../shared/hooks/useFocusTrap'
 import { FB_UI } from '../../../ui/ui-classes'
 import type { QueryConfig, WorkflowState } from '../../../types'
@@ -44,29 +45,7 @@ export const DbQueryEditorModal = React.memo(function DbQueryEditorModal({
   const dialogRef = useRef<HTMLDivElement>(null)
   const titleId = useId()
   useFocusTrap(dialogRef, isOpen)
-
-  useEffect(() => {
-    if (!isOpen) return
-    const controller = new AbortController()
-    window.addEventListener(
-      'keydown',
-      (e) => {
-        // Only react when focus is inside this dialog, so stacked modals close one at a time.
-        if (e.key !== 'Escape') return
-        if (dialogRef.current && e.target instanceof Node && !dialogRef.current.contains(e.target)) return
-        onClose()
-      },
-      { signal: controller.signal },
-    )
-    window.addEventListener(
-      'mousedown',
-      (e) => {
-        if (dialogRef.current && e.target instanceof Node && !dialogRef.current.contains(e.target)) onClose()
-      },
-      { signal: controller.signal },
-    )
-    return () => controller.abort()
-  }, [isOpen, onClose])
+  useDialogDismiss(dialogRef, isOpen, onClose, { closeOnOutsideClick: true })
 
   const {
     query,

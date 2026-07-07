@@ -8,7 +8,7 @@
  * You may obtain a copy of the License in the LICENSE file at the root of this repository.
  */
 
-import React, { useEffect, useRef } from 'react'
+import React, { useCallback, useRef } from 'react'
 import { FunctionStudioDiscardModal } from './FunctionStudioDiscardModal.tsx'
 import { FunctionStudioDslPanel } from './FunctionStudioDslPanel.tsx'
 import { FunctionStudioHeader } from './FunctionStudioHeader.tsx'
@@ -19,6 +19,7 @@ import type { PendingOperation } from '../utils/function-studio-draft.ts'
 import { buildPillButtonClass, FB_STUDIO } from '../../flow-builder/ui/ui-classes.ts'
 import { useFunctionStudioDrawerState } from '../hooks/useFunctionStudioDrawerState.ts'
 import { useI18n } from '../../../core/i18n/I18nProvider.tsx'
+import { useDialogDismiss } from '../../../shared/hooks/useDialogDismiss.ts'
 import { useFocusTrap } from '../../../shared/hooks/useFocusTrap.ts'
 
 export const FunctionStudioDrawer = React.memo(function FunctionStudioDrawer(props: FunctionStudioDrawerProps) {
@@ -28,22 +29,11 @@ export const FunctionStudioDrawer = React.memo(function FunctionStudioDrawer(pro
   const dialogRef = useRef<HTMLDivElement>(null)
   useFocusTrap(dialogRef, props.isOpen)
 
-  // Keyboard: close on Escape. Detached while the discard confirm modal is open —
+  // Keyboard: close on Escape. Inactive while the discard confirm modal is open —
   // Escape there is handled by the modal itself and must not re-trigger requestClose.
   const { dispatch } = drawerApi
-  const showDiscardConfirm = drawerApi.state.showDiscardConfirm
-  useEffect(() => {
-    if (!props.isOpen || showDiscardConfirm) return
-    const controller = new AbortController()
-    window.addEventListener(
-      'keydown',
-      (event) => {
-        if (event.key === 'Escape') dispatch({ type: 'requestClose' })
-      },
-      { signal: controller.signal },
-    )
-    return () => controller.abort()
-  }, [props.isOpen, showDiscardConfirm, dispatch])
+  const requestClose = useCallback(() => dispatch({ type: 'requestClose' }), [dispatch])
+  useDialogDismiss(dialogRef, props.isOpen && !drawerApi.state.showDiscardConfirm, requestClose)
 
   if (!props.isOpen) {
     return null

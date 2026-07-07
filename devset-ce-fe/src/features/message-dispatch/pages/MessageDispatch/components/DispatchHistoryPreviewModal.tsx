@@ -8,8 +8,9 @@
  * You may obtain a copy of the License in the LICENSE file at the root of this repository.
  */
 
-import React, { useEffect, useRef } from 'react'
+import React, { useRef } from 'react'
 import type { DispatchHistoryPreviewModalProps } from '../../../types/messageDispatch.view.types'
+import { useDialogDismiss } from '../../../../../shared/hooks/useDialogDismiss'
 import { useFocusTrap } from '../../../../../shared/hooks/useFocusTrap'
 
 export const DispatchHistoryPreviewModal = React.memo(function DispatchHistoryPreviewModal({
@@ -20,29 +21,7 @@ export const DispatchHistoryPreviewModal = React.memo(function DispatchHistoryPr
   const dialogRef = useRef<HTMLElement>(null)
   const isOpen = entry != null
   useFocusTrap(dialogRef, isOpen)
-
-  useEffect(() => {
-    if (!isOpen) return
-    const controller = new AbortController()
-    window.addEventListener(
-      'keydown',
-      (e) => {
-        // Only react when focus is inside this dialog, so stacked modals close one at a time.
-        if (e.key !== 'Escape') return
-        if (dialogRef.current && e.target instanceof Node && !dialogRef.current.contains(e.target)) return
-        onClose()
-      },
-      { signal: controller.signal },
-    )
-    window.addEventListener(
-      'mousedown',
-      (e) => {
-        if (dialogRef.current && e.target instanceof Node && !dialogRef.current.contains(e.target)) onClose()
-      },
-      { signal: controller.signal },
-    )
-    return () => controller.abort()
-  }, [isOpen, onClose])
+  useDialogDismiss(dialogRef, isOpen, onClose, { closeOnOutsideClick: true })
 
   if (!entry) {
     return null

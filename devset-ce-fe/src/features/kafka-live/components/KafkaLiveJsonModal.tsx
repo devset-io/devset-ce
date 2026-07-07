@@ -8,9 +8,11 @@
  * You may obtain a copy of the License in the LICENSE file at the root of this repository.
  */
 
-import React, { useCallback, useEffect, useRef } from 'react'
+import React, { useCallback, useRef } from 'react'
 import { useI18n } from '../../../core/i18n/I18nProvider'
 import { CodeEditor } from '../../../shared/components/CodeEditor'
+import { useDialogDismiss } from '../../../shared/hooks/useDialogDismiss'
+import { useFocusTrap } from '../../../shared/hooks/useFocusTrap'
 import type { KafkaMessage } from '../services/kafka-live.service'
 
 type KafkaLiveJsonModalProps = {
@@ -33,22 +35,9 @@ export const KafkaLiveJsonModal = React.memo(function KafkaLiveJsonModal({
 }: KafkaLiveJsonModalProps) {
   const { t } = useI18n()
   const modalRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (!isOpen) return
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    const onMouseDown = (e: MouseEvent) => {
-      if (modalRef.current && e.target instanceof Node && !modalRef.current.contains(e.target)) onClose()
-    }
-    window.addEventListener('keydown', onKey)
-    window.addEventListener('mousedown', onMouseDown)
-    return () => {
-      window.removeEventListener('keydown', onKey)
-      window.removeEventListener('mousedown', onMouseDown)
-    }
-  }, [isOpen, onClose])
+  const isDialogVisible = isOpen && message != null
+  useFocusTrap(modalRef, isDialogVisible)
+  useDialogDismiss(modalRef, isDialogVisible, onClose, { closeOnOutsideClick: true })
 
   const handleCopy = useCallback(() => {
     if (!formattedValue) return

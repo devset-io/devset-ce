@@ -8,11 +8,12 @@
  * You may obtain a copy of the License in the LICENSE file at the root of this repository.
  */
 
-import React, { useEffect, useRef } from 'react'
+import React, { useRef } from 'react'
 import type {
   DispatchRequestCardLabels,
   DispatchSaveModalViewModel,
 } from '../../../types/messageDispatch.view.types'
+import { useDialogDismiss } from '../../../../../shared/hooks/useDialogDismiss'
 import { useFocusTrap } from '../../../../../shared/hooks/useFocusTrap'
 
 interface DispatchSaveModalProps {
@@ -36,29 +37,7 @@ export const DispatchSaveModal = React.memo(function DispatchSaveModal({
 }: DispatchSaveModalProps) {
   const dialogRef = useRef<HTMLElement>(null)
   useFocusTrap(dialogRef, saveModal.isOpen)
-
-  useEffect(() => {
-    if (!saveModal.isOpen) return
-    const controller = new AbortController()
-    window.addEventListener(
-      'keydown',
-      (e) => {
-        // Only react when focus is inside this dialog, so stacked modals close one at a time.
-        if (e.key !== 'Escape') return
-        if (dialogRef.current && e.target instanceof Node && !dialogRef.current.contains(e.target)) return
-        onSaveModalClose()
-      },
-      { signal: controller.signal },
-    )
-    window.addEventListener(
-      'mousedown',
-      (e) => {
-        if (dialogRef.current && e.target instanceof Node && !dialogRef.current.contains(e.target)) onSaveModalClose()
-      },
-      { signal: controller.signal },
-    )
-    return () => controller.abort()
-  }, [saveModal.isOpen, onSaveModalClose])
+  useDialogDismiss(dialogRef, saveModal.isOpen, onSaveModalClose, { closeOnOutsideClick: true })
 
   if (!saveModal.isOpen) return null
 
