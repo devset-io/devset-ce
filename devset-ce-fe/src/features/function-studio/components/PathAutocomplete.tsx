@@ -8,7 +8,7 @@
  * You may obtain a copy of the License in the LICENSE file at the root of this repository.
  */
 
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useId, useRef, useState } from 'react'
 
 const DEFAULT_INPUT_CLASS =
   'w-full rounded-lg border border-[var(--line-300)] bg-[var(--panel-soft)] px-2.5 py-2 text-sm text-[var(--ink-900)] outline-none transition focus:border-[var(--brand)] focus:ring-2 focus:ring-[var(--brand-soft)]'
@@ -32,6 +32,7 @@ export const PathAutocomplete = React.memo(function PathAutocomplete({
   const [isOpen, setIsOpen] = useState(false)
   const [activeIndex, setActiveIndex] = useState(-1)
   const containerRef = useRef<HTMLDivElement>(null)
+  const listboxId = useId()
 
   const filtered = options.filter(
     (option) => option !== value && option.toLowerCase().includes(value.toLowerCase()),
@@ -92,6 +93,7 @@ export const PathAutocomplete = React.memo(function PathAutocomplete({
         autoComplete="off"
         role="combobox"
         aria-expanded={isOpen && filtered.length > 0}
+        aria-controls={listboxId}
         aria-autocomplete="list"
       />
       <span
@@ -102,6 +104,7 @@ export const PathAutocomplete = React.memo(function PathAutocomplete({
       </span>
       {isOpen && filtered.length > 0 ? (
         <ul
+          id={listboxId}
           role="listbox"
           className="absolute z-20 mt-1 max-h-56 w-full overflow-auto rounded-lg border border-[var(--line-300)] bg-[var(--panel)] py-1 shadow-lg"
         >

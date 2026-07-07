@@ -8,8 +8,9 @@
  * You may obtain a copy of the License in the LICENSE file at the root of this repository.
  */
 
-import React, { useEffect, useRef } from 'react'
+import React, { useRef } from 'react'
 import { QueryValueEditor } from '../../../../../shared/components/QueryValueEditor'
+import { useDialogDismiss } from '../../../../../shared/hooks/useDialogDismiss'
 import { useFocusTrap } from '../../../../../shared/hooks/useFocusTrap'
 import type { DispatchCollectionContextModalProps } from '../../../types/messageDispatch.view.types'
 
@@ -30,19 +31,7 @@ export const DispatchCollectionContextModal = React.memo(function DispatchCollec
 }: DispatchCollectionContextModalProps) {
   const dialogRef = useRef<HTMLElement>(null)
   useFocusTrap(dialogRef, isOpen)
-
-  useEffect(() => {
-    if (!isOpen) return
-    const controller = new AbortController()
-    window.addEventListener(
-      'keydown',
-      (e) => {
-        if (e.key === 'Escape') onClose()
-      },
-      { signal: controller.signal },
-    )
-    return () => controller.abort()
-  }, [isOpen, onClose])
+  useDialogDismiss(dialogRef, isOpen, onClose, { closeOnOutsideClick: true })
 
   if (!isOpen) return null
 
@@ -54,14 +43,10 @@ export const DispatchCollectionContextModal = React.memo(function DispatchCollec
   const editorPlaceholders = { literal: labels.valuePlaceholder }
 
   return (
-    <div
-      className="dispatch-save-modal-backdrop"
-      onClick={onClose}
-    >
+    <div className="dispatch-save-modal-backdrop">
       <section
         ref={dialogRef}
         className="dispatch-save-modal is-wide"
-        onClick={(event) => event.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-label={labels.modalAria}

@@ -8,7 +8,7 @@
  * You may obtain a copy of the License in the LICENSE file at the root of this repository.
  */
 
-import React, { useRef } from 'react'
+import React, { useCallback, useRef } from 'react'
 import { FunctionStudioDiscardModal } from './FunctionStudioDiscardModal.tsx'
 import { FunctionStudioDslPanel } from './FunctionStudioDslPanel.tsx'
 import { FunctionStudioHeader } from './FunctionStudioHeader.tsx'
@@ -19,6 +19,7 @@ import type { PendingOperation } from '../utils/function-studio-draft.ts'
 import { buildPillButtonClass, FB_STUDIO } from '../../flow-builder/ui/ui-classes.ts'
 import { useFunctionStudioDrawerState } from '../hooks/useFunctionStudioDrawerState.ts'
 import { useI18n } from '../../../core/i18n/I18nProvider.tsx'
+import { useDialogDismiss } from '../../../shared/hooks/useDialogDismiss.ts'
 import { useFocusTrap } from '../../../shared/hooks/useFocusTrap.ts'
 
 export const FunctionStudioDrawer = React.memo(function FunctionStudioDrawer(props: FunctionStudioDrawerProps) {
@@ -28,12 +29,11 @@ export const FunctionStudioDrawer = React.memo(function FunctionStudioDrawer(pro
   const dialogRef = useRef<HTMLDivElement>(null)
   useFocusTrap(dialogRef, props.isOpen)
 
-  // Keyboard: close on Escape
-  function handleKeyDown(event: React.KeyboardEvent) {
-    if (event.key === 'Escape') {
-      drawerApi.dispatch({ type: 'requestClose' })
-    }
-  }
+  // Keyboard: close on Escape. Inactive while the discard confirm modal is open —
+  // Escape there is handled by the modal itself and must not re-trigger requestClose.
+  const { dispatch } = drawerApi
+  const requestClose = useCallback(() => dispatch({ type: 'requestClose' }), [dispatch])
+  useDialogDismiss(dialogRef, props.isOpen && !drawerApi.state.showDiscardConfirm, requestClose)
 
   if (!props.isOpen) {
     return null
@@ -48,7 +48,6 @@ export const FunctionStudioDrawer = React.memo(function FunctionStudioDrawer(pro
         aria-modal="true"
         aria-labelledby="function-studio-dialog-title"
         tabIndex={-1}
-        onKeyDown={handleKeyDown}
       >
         <div className="relative flex h-[90vh] w-[min(94vw,1500px)] flex-col overflow-hidden rounded-2xl border border-[var(--line-200)] bg-[var(--panel)] shadow-[0_24px_70px_rgba(12,41,25,0.26)] dark:border-[var(--line-200)] dark:bg-[var(--panel)] dark:shadow-[var(--shadow-card)]">
           <FunctionStudioHeader

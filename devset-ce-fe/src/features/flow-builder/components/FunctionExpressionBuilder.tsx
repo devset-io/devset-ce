@@ -291,7 +291,7 @@ export const FunctionExpressionBuilder = React.memo(function FunctionExpressionB
         <div className={FB_FN.helpInline}>
           <span>{t('flow.fnExpr.helpTitle')}</span>
           <button type="button" className={`group ${FB_FN.helpTrigger}`} aria-label={labels.functionHelpAria} aria-describedby="fn-help-tooltip">
-            ?
+            {'?'}
             <span id="fn-help-tooltip" role="tooltip" className={FB_FN.tooltip}>
               <strong>{t('flow.fnExpr.helpDesc')}</strong> {t(FUNCTION_HINTS[kind])}
               <br />

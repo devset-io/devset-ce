@@ -10,6 +10,7 @@
 
 import React, { useRef } from 'react'
 import type { DispatchHistoryPreviewModalProps } from '../../../types/messageDispatch.view.types'
+import { useDialogDismiss } from '../../../../../shared/hooks/useDialogDismiss'
 import { useFocusTrap } from '../../../../../shared/hooks/useFocusTrap'
 
 export const DispatchHistoryPreviewModal = React.memo(function DispatchHistoryPreviewModal({
@@ -20,21 +21,17 @@ export const DispatchHistoryPreviewModal = React.memo(function DispatchHistoryPr
   const dialogRef = useRef<HTMLElement>(null)
   const isOpen = entry != null
   useFocusTrap(dialogRef, isOpen)
+  useDialogDismiss(dialogRef, isOpen, onClose, { closeOnOutsideClick: true })
 
   if (!entry) {
     return null
   }
 
   return (
-    <div
-      className="dispatch-history-modal-backdrop"
-      onClick={onClose}
-      onKeyDown={(e) => { if (e.key === 'Escape') onClose() }}
-    >
+    <div className="dispatch-history-modal-backdrop">
       <section
         ref={dialogRef}
         className="dispatch-history-modal"
-        onClick={(event) => event.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-label={labels.modalAria}

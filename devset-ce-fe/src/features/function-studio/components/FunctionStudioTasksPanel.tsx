@@ -51,13 +51,13 @@ export const FunctionStudioTasksPanel = React.memo(function FunctionStudioTasksP
             <div className="flex items-center gap-1.5">
               <h4 className="m-0 text-sm font-semibold text-slate-800">{t('flow.wireFormat.title')}</h4>
               <span className="group relative inline-flex">
-                <span
+                <button
+                  type="button"
                   className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-slate-300 bg-white text-[10px] font-semibold text-slate-600"
                   aria-label={t('flow.wireFormat.tooltipAria')}
-                  tabIndex={0}
                 >
                   i
-                </span>
+                </button>
                 <span className="pointer-events-none absolute left-0 top-5 z-20 hidden w-[320px] rounded-lg border border-slate-200 bg-white p-2 text-[11px] leading-4 text-slate-700 shadow-[0_10px_24px_rgba(15,23,42,0.16)] group-hover:block group-focus-within:block">
                   {t('flow.wireFormat.tooltip')}
                 </span>

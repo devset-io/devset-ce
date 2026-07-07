@@ -22,6 +22,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.handler.ConcurrentWebSocketSessionDecorator;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -49,6 +50,8 @@ import java.util.concurrent.Future;
 public class KafkaTopicStreamService {
 
     private static final Duration POLL_TIMEOUT = Duration.ofMillis(500);
+    private static final int SEND_TIME_LIMIT_MS = 10_000;
+    private static final int SEND_BUFFER_SIZE_LIMIT = 1024 * 1024;
 
     private final DynamicKafkaProducerManager dynamicKafkaProducerManager;
     private final ObjectMapper objectMapper;
@@ -73,17 +76,22 @@ public class KafkaTopicStreamService {
             String topic,
             String offsetMode
     ) {
+        // Events are sent from both the caller thread and the poll thread; the decorator
+        // serializes concurrent writes to the underlying WebSocket session.
+        WebSocketSession session = new ConcurrentWebSocketSessionDecorator(
+                webSocketSession, SEND_TIME_LIMIT_MS, SEND_BUFFER_SIZE_LIMIT);
+
         KafkaConsumer<String, String> consumer = dynamicKafkaProducerManager.createStreamingConsumer(connectionName, offsetMode);
         consumer.subscribe(List.of(topic));
 
-        sendEvent(webSocketSession, KafkaTopicStreamEvent.connected(connectionName, topic));
+        sendEvent(session, KafkaTopicStreamEvent.connected(connectionName, topic));
 
         Future<?> consumerTask = streamExecutor.submit(() -> {
             try {
-                while (webSocketSession.isOpen() && !Thread.currentThread().isInterrupted()) {
+                while (session.isOpen() && !Thread.currentThread().isInterrupted()) {
                     var records = consumer.poll(POLL_TIMEOUT);
                     for (ConsumerRecord<String, String> record : records) {
-                        sendEvent(webSocketSession, KafkaTopicStreamEvent.message(
+                        sendEvent(session, KafkaTopicStreamEvent.message(
                                 connectionName,
                                 topic,
                                 record.partition(),
@@ -98,20 +106,20 @@ public class KafkaTopicStreamService {
             } catch (Exception exception) {
                 log.warn(
                         "Kafka WS stream error. sessionId={}, connectionName={}, topic={}",
-                        webSocketSession.getId(),
+                        session.getId(),
                         connectionName,
                         topic,
                         exception
                 );
-                sendEvent(webSocketSession, KafkaTopicStreamEvent.error(connectionName, topic, exception.getMessage()));
-                closeSessionSilently(webSocketSession, CloseStatus.SERVER_ERROR);
+                sendEvent(session, KafkaTopicStreamEvent.error(connectionName, topic, exception.getMessage()));
+                closeSessionSilently(session, CloseStatus.SERVER_ERROR);
             } finally {
                 consumer.close();
-                streamSessions.remove(webSocketSession.getId());
+                streamSessions.remove(session.getId());
             }
         });
 
-        streamSessions.put(webSocketSession.getId(), new StreamSession(consumerTask));
+        streamSessions.put(session.getId(), new StreamSession(consumerTask));
     }
 
     /**
@@ -137,9 +145,7 @@ public class KafkaTopicStreamService {
         }
 
         try {
-            synchronized (webSocketSession) {
-                webSocketSession.sendMessage(new TextMessage(objectMapper.writeValueAsString(event)));
-            }
+            webSocketSession.sendMessage(new TextMessage(objectMapper.writeValueAsString(event)));
         } catch (JsonProcessingException exception) {
             throw new IllegalStateException("Cannot serialize Kafka WS event", exception);
         } catch (Exception exception) {

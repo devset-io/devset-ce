@@ -13,6 +13,7 @@ import type {
   DispatchRequestCardLabels,
   DispatchSaveModalViewModel,
 } from '../../../types/messageDispatch.view.types'
+import { useDialogDismiss } from '../../../../../shared/hooks/useDialogDismiss'
 import { useFocusTrap } from '../../../../../shared/hooks/useFocusTrap'
 
 interface DispatchSaveModalProps {
@@ -36,19 +37,15 @@ export const DispatchSaveModal = React.memo(function DispatchSaveModal({
 }: DispatchSaveModalProps) {
   const dialogRef = useRef<HTMLElement>(null)
   useFocusTrap(dialogRef, saveModal.isOpen)
+  useDialogDismiss(dialogRef, saveModal.isOpen, onSaveModalClose, { closeOnOutsideClick: true })
 
   if (!saveModal.isOpen) return null
 
   return (
-    <div
-      className="dispatch-save-modal-backdrop"
-      onClick={onSaveModalClose}
-      onKeyDown={(e) => { if (e.key === 'Escape') onSaveModalClose() }}
-    >
+    <div className="dispatch-save-modal-backdrop">
       <section
         ref={dialogRef}
         className="dispatch-save-modal"
-        onClick={(event) => event.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-label={labels.saveModalAria}

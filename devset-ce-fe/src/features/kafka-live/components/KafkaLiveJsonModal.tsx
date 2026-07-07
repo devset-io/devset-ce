@@ -8,9 +8,11 @@
  * You may obtain a copy of the License in the LICENSE file at the root of this repository.
  */
 
-import React, { useCallback, useEffect } from 'react'
+import React, { useCallback, useRef } from 'react'
 import { useI18n } from '../../../core/i18n/I18nProvider'
 import { CodeEditor } from '../../../shared/components/CodeEditor'
+import { useDialogDismiss } from '../../../shared/hooks/useDialogDismiss'
+import { useFocusTrap } from '../../../shared/hooks/useFocusTrap'
 import type { KafkaMessage } from '../services/kafka-live.service'
 
 type KafkaLiveJsonModalProps = {
@@ -32,15 +34,10 @@ export const KafkaLiveJsonModal = React.memo(function KafkaLiveJsonModal({
   onClose,
 }: KafkaLiveJsonModalProps) {
   const { t } = useI18n()
-
-  useEffect(() => {
-    if (!isOpen) return
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [isOpen, onClose])
+  const modalRef = useRef<HTMLDivElement>(null)
+  const isDialogVisible = isOpen && message != null
+  useFocusTrap(modalRef, isDialogVisible)
+  useDialogDismiss(modalRef, isDialogVisible, onClose, { closeOnOutsideClick: true })
 
   const handleCopy = useCallback(() => {
     if (!formattedValue) return
@@ -50,8 +47,8 @@ export const KafkaLiveJsonModal = React.memo(function KafkaLiveJsonModal({
   if (!isOpen || !message) return null
 
   return (
-    <div className="klive-modal-scrim" onClick={onClose} role="dialog" aria-modal="true">
-      <div className="klive-modal" onClick={(e) => e.stopPropagation()}>
+    <div className="klive-modal-scrim" role="dialog" aria-modal="true">
+      <div className="klive-modal" ref={modalRef}>
         <div className="klive-modal-header">
           <div>
             <h3 className="klive-modal-title">{t('kafkaLive.modal.title')}</h3>

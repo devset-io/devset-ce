@@ -41,7 +41,7 @@ const parseTableRow = (line: string): string[] =>
     .split('|')
     .map((cell) => cell.trim())
 
-const isLikelyTableSeparator = (line: string): boolean => /^\s*\|?[\s:-]+\|[\s|:-]*$/.test(line)
+const isLikelyTableSeparator = (line: string): boolean => /^[\s:-]*\|[\s|:-]*$/.test(line)
 
 const isUnorderedListLine = (line: string): boolean => /^\s*[-*]\s+/.test(line)
 const isOrderedListLine = (line: string): boolean => /^\s*\d+\.\s+/.test(line)
@@ -60,7 +60,7 @@ const isBlockStart = (line: string): boolean =>
   (line.includes('|') && line.trim().startsWith('|'))
 
 const parseBlocks = (markdown: string): MarkdownBlock[] => {
-  const lines = markdown.replace(/\r\n/g, '\n').split('\n')
+  const lines = markdown.replaceAll('\r\n', '\n').split('\n')
   const blocks: MarkdownBlock[] = []
   let index = 0
 
@@ -88,7 +88,7 @@ const parseBlocks = (markdown: string): MarkdownBlock[] => {
       continue
     }
 
-    const headingMatch = /^(#{1,6})\s+(.+)$/.exec(trimmed)
+    const headingMatch = /^(#{1,6})\s+(\S.*)$/.exec(trimmed)
     if (headingMatch) {
       const level = Math.min(6, headingMatch[1].length) as 1 | 2 | 3 | 4 | 5 | 6 // SAFETY: Math.min(6, ...) with minimum heading length 1 guarantees result is 1-6
       blocks.push({ type: 'heading', level, text: headingMatch[2].trim() })
@@ -165,7 +165,7 @@ const renderInline = (
   keyPrefix = 'inline',
 ): ReactNode[] => {
   const parts: ReactNode[] = []
-  const matcher = /(`[^`]+`)|(\*\*[^*]+\*\*)|(\[([^\]]+)\]\(([^)]+)\))/g
+  const matcher = /(`[^`]+`)|(\*\*[^*]+\*\*)|(\[([^\][]+)\]\(([^()]+)\))/g
   let cursor = 0
   let tokenIndex = 0
 

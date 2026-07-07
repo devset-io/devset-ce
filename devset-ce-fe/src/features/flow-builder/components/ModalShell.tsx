@@ -11,6 +11,7 @@
 import { useId, useRef } from 'react'
 import type { CSSProperties, ReactNode } from 'react'
 import { useI18n } from '../../../core/i18n/I18nProvider'
+import { useDialogDismiss } from '../../../shared/hooks/useDialogDismiss'
 import { useFocusTrap } from '../../../shared/hooks/useFocusTrap'
 import { FB_UI } from '../ui/ui-classes'
 
@@ -40,16 +41,14 @@ export function ModalShell({
   const titleId = useId()
 
   useFocusTrap(dialogRef, isOpen)
+  useDialogDismiss(dialogRef, isOpen, onClose)
 
   if (!isOpen) {
     return null
   }
 
   return (
-    <div
-      className={`${FB_UI.modalBackdrop} ${zIndexClassName}`}
-      onKeyDown={(e) => { if (e.key === 'Escape') onClose() }}
-    >
+    <div className={`${FB_UI.modalBackdrop} ${zIndexClassName}`}>
       <div
         ref={dialogRef}
         className={`${FB_UI.modalCard} ${containerClassName}`}

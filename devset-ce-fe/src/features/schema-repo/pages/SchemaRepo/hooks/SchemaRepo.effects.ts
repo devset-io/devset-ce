@@ -150,11 +150,7 @@ export function useSchemaRepoEffects(
   async function deleteSchema(schemaId: string): Promise<void> {
     try {
       await deleteSchemaRepoSchema(schemaId, { errorLabel: labels.deleteFailed })
-      if (state.selectedSchemaId === schemaId) {
-        dispatch({ type: 'deleteSucceeded' })
-      } else {
-        dispatch({ type: 'deleteSucceeded' })
-      }
+      dispatch({ type: 'deleteSucceeded' })
       const data = await loadSchemaRepoSchemas({ errorLabel: labels.schemaLoadError })
       const selectedSchemaId = resolveSelectedSchemaId(state.selectedSchemaId, undefined, data)
       dispatch({ type: 'schemasRefreshed', schemas: data, selectedSchemaId })
