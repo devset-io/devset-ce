@@ -433,8 +433,9 @@ public final class PipelineCompilerImpl implements PipelineCompiler {
         String normalized = requireStageName(stage)
                 .toLowerCase(Locale.ROOT)
                 .replaceAll("[^a-z0-9]+", "-")
-                .replaceAll("^-++", "")
-                .replaceAll("-++$", "");
+                // dash runs are already collapsed above, so at most one dash can lead/trail
+                .replaceAll("^-", "")
+                .replaceAll("-$", "");
         if (normalized.isEmpty()) {
             throw new WorkflowEngineException("stage must contain at least one letter or digit");
         }

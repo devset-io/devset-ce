@@ -29,7 +29,7 @@ jobs:
 
       - name: Build backend with coverage
         working-directory: devset-ce-be
-        run: ./gradlew build integTest jacocoTestReport
+        run: ./gradlew build integTest jacocoTestReport copySonarLibs
 
       - name: Set up Node 22
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0

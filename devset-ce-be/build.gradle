@@ -161,3 +161,14 @@ jacocoTestReport {
         xml.required = true
     }
 }
+
+/**
+ * Copies the compile/test classpath jars for SonarQube analysis.
+ * The scanner reads them via the sonar.java.libraries property.
+ */
+tasks.register("copySonarLibs", Copy) {
+    from configurations.compileClasspath
+    from configurations.testCompileClasspath
+    into layout.buildDirectory.dir("sonar-libs")
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
