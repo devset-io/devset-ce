@@ -50,7 +50,7 @@ type ProtoMessage = {
 
 const PROTO_MESSAGE_START_REGEX = /message\s+([A-Za-z_]\w*)\s*\{/g
 const PROTO_FIELD_LINE_REGEX =
-  /^\s*(?:(optional|required|repeated)\s+)?([A-Za-z_][\w.]*)\s+([A-Za-z_]\w*)\s*=\s*(\d+)\s*(?:\[[^\]]*\])?\s*;/gm
+  /^[ \t]*(?:(optional|required|repeated)\s+)?([A-Za-z_][\w.]*)\s+([A-Za-z_]\w*)\s*=\s*(\d+)\s*(?:\[[^\]]*\]\s*)?;/gm
 const PROTO_ENUM_BLOCK_REGEX = /enum\s+([A-Za-z_]\w*)\s*\{([\s\S]*?)\}/g
 const PROTO_NUMBER_TYPES = new Set([
   'double',

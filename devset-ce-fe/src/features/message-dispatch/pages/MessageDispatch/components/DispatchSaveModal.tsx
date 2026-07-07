@@ -8,7 +8,7 @@
  * You may obtain a copy of the License in the LICENSE file at the root of this repository.
  */
 
-import React, { useRef } from 'react'
+import React, { useEffect, useRef } from 'react'
 import type {
   DispatchRequestCardLabels,
   DispatchSaveModalViewModel,
@@ -37,18 +37,33 @@ export const DispatchSaveModal = React.memo(function DispatchSaveModal({
   const dialogRef = useRef<HTMLElement>(null)
   useFocusTrap(dialogRef, saveModal.isOpen)
 
+  useEffect(() => {
+    if (!saveModal.isOpen) return
+    const controller = new AbortController()
+    window.addEventListener(
+      'keydown',
+      (e) => {
+        if (e.key === 'Escape') onSaveModalClose()
+      },
+      { signal: controller.signal },
+    )
+    window.addEventListener(
+      'mousedown',
+      (e) => {
+        if (dialogRef.current && e.target instanceof Node && !dialogRef.current.contains(e.target)) onSaveModalClose()
+      },
+      { signal: controller.signal },
+    )
+    return () => controller.abort()
+  }, [saveModal.isOpen, onSaveModalClose])
+
   if (!saveModal.isOpen) return null
 
   return (
-    <div
-      className="dispatch-save-modal-backdrop"
-      onClick={onSaveModalClose}
-      onKeyDown={(e) => { if (e.key === 'Escape') onSaveModalClose() }}
-    >
+    <div className="dispatch-save-modal-backdrop">
       <section
         ref={dialogRef}
         className="dispatch-save-modal"
-        onClick={(event) => event.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-label={labels.saveModalAria}

@@ -103,7 +103,7 @@ const collectHeadings = (markdown: string): DocHeading[] => {
 
   const lines = markdown.split('\n')
   return lines.flatMap((line) => {
-    const match = /^(##|###)\s+(.+)$/.exec(line.trim())
+    const match = /^(##|###)\s+(\S.*)$/.exec(line.trim())
     if (!match) {
       return []
     }

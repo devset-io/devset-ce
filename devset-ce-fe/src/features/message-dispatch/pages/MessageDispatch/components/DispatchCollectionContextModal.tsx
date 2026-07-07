@@ -41,6 +41,13 @@ export const DispatchCollectionContextModal = React.memo(function DispatchCollec
       },
       { signal: controller.signal },
     )
+    window.addEventListener(
+      'mousedown',
+      (e) => {
+        if (dialogRef.current && e.target instanceof Node && !dialogRef.current.contains(e.target)) onClose()
+      },
+      { signal: controller.signal },
+    )
     return () => controller.abort()
   }, [isOpen, onClose])
 
@@ -54,14 +61,10 @@ export const DispatchCollectionContextModal = React.memo(function DispatchCollec
   const editorPlaceholders = { literal: labels.valuePlaceholder }
 
   return (
-    <div
-      className="dispatch-save-modal-backdrop"
-      onClick={onClose}
-    >
+    <div className="dispatch-save-modal-backdrop">
       <section
         ref={dialogRef}
         className="dispatch-save-modal is-wide"
-        onClick={(event) => event.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-label={labels.modalAria}

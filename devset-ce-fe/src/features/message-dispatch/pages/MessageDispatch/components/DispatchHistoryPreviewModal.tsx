@@ -8,7 +8,7 @@
  * You may obtain a copy of the License in the LICENSE file at the root of this repository.
  */
 
-import React, { useRef } from 'react'
+import React, { useEffect, useRef } from 'react'
 import type { DispatchHistoryPreviewModalProps } from '../../../types/messageDispatch.view.types'
 import { useFocusTrap } from '../../../../../shared/hooks/useFocusTrap'
 
@@ -21,20 +21,35 @@ export const DispatchHistoryPreviewModal = React.memo(function DispatchHistoryPr
   const isOpen = entry != null
   useFocusTrap(dialogRef, isOpen)
 
+  useEffect(() => {
+    if (!isOpen) return
+    const controller = new AbortController()
+    window.addEventListener(
+      'keydown',
+      (e) => {
+        if (e.key === 'Escape') onClose()
+      },
+      { signal: controller.signal },
+    )
+    window.addEventListener(
+      'mousedown',
+      (e) => {
+        if (dialogRef.current && e.target instanceof Node && !dialogRef.current.contains(e.target)) onClose()
+      },
+      { signal: controller.signal },
+    )
+    return () => controller.abort()
+  }, [isOpen, onClose])
+
   if (!entry) {
     return null
   }
 
   return (
-    <div
-      className="dispatch-history-modal-backdrop"
-      onClick={onClose}
-      onKeyDown={(e) => { if (e.key === 'Escape') onClose() }}
-    >
+    <div className="dispatch-history-modal-backdrop">
       <section
         ref={dialogRef}
         className="dispatch-history-modal"
-        onClick={(event) => event.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-label={labels.modalAria}

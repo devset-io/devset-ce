@@ -64,6 +64,7 @@ export const SettingsConnectorList = React.memo(function SettingsConnectorList({
               <div
                 key={connector.name}
                 className={`settings-connector-item ${isActive ? 'is-active' : ''} ${isEditing ? 'is-editing' : ''}`}
+                role="button"
                 tabIndex={0}
                 aria-label={connector.name}
                 onClick={() => onAction({ type: 'editConnector', connector })}

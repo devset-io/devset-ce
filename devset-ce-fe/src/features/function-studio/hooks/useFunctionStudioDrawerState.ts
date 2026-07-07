@@ -177,7 +177,7 @@ export const useFunctionStudioDrawerState = (props: FunctionStudioDrawerProps) =
 
   // Auto-update state task form when the selected field changes.
   useEffect(() => {
-    const leaf = studioSelectedField?.match(/[^.[\]]+$/)?.[0] ?? 'value'
+    const leaf = studioSelectedField?.split(/[.[\]]/).pop() || 'value'
     dispatch({
       type: 'syncStateTaskField',
       patch: {

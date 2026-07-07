@@ -8,7 +8,7 @@
  * You may obtain a copy of the License in the LICENSE file at the root of this repository.
  */
 
-import React, { useRef } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { FunctionStudioDiscardModal } from './FunctionStudioDiscardModal.tsx'
 import { FunctionStudioDslPanel } from './FunctionStudioDslPanel.tsx'
 import { FunctionStudioHeader } from './FunctionStudioHeader.tsx'
@@ -29,11 +29,19 @@ export const FunctionStudioDrawer = React.memo(function FunctionStudioDrawer(pro
   useFocusTrap(dialogRef, props.isOpen)
 
   // Keyboard: close on Escape
-  function handleKeyDown(event: React.KeyboardEvent) {
-    if (event.key === 'Escape') {
-      drawerApi.dispatch({ type: 'requestClose' })
-    }
-  }
+  const { dispatch } = drawerApi
+  useEffect(() => {
+    if (!props.isOpen) return
+    const controller = new AbortController()
+    window.addEventListener(
+      'keydown',
+      (event) => {
+        if (event.key === 'Escape') dispatch({ type: 'requestClose' })
+      },
+      { signal: controller.signal },
+    )
+    return () => controller.abort()
+  }, [props.isOpen, dispatch])
 
   if (!props.isOpen) {
     return null
@@ -48,7 +56,6 @@ export const FunctionStudioDrawer = React.memo(function FunctionStudioDrawer(pro
         aria-modal="true"
         aria-labelledby="function-studio-dialog-title"
         tabIndex={-1}
-        onKeyDown={handleKeyDown}
       >
         <div className="relative flex h-[90vh] w-[min(94vw,1500px)] flex-col overflow-hidden rounded-2xl border border-[var(--line-200)] bg-[var(--panel)] shadow-[0_24px_70px_rgba(12,41,25,0.26)] dark:border-[var(--line-200)] dark:bg-[var(--panel)] dark:shadow-[var(--shadow-card)]">
           <FunctionStudioHeader

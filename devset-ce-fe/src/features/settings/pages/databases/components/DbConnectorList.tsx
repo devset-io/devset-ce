@@ -73,6 +73,7 @@ export const DbConnectorList = React.memo(function DbConnectorList({
               <div
                 key={`${connector.type}-${connector.name}`}
                 className={`settings-connector-item ${isEditing ? 'is-editing' : ''}`}
+                role="button"
                 tabIndex={0}
                 aria-label={connector.name}
                 onClick={() => onAction({ type: 'editConnector', connector })}

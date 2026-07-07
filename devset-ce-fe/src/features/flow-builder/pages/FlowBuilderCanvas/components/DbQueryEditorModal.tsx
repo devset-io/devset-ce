@@ -8,7 +8,7 @@
  * You may obtain a copy of the License in the LICENSE file at the root of this repository.
  */
 
-import React, { useId, useRef } from 'react'
+import React, { useEffect, useId, useRef } from 'react'
 import { useI18n } from '../../../../../core/i18n/I18nProvider'
 import { useFocusTrap } from '../../../../../shared/hooks/useFocusTrap'
 import { FB_UI } from '../../../ui/ui-classes'
@@ -45,6 +45,26 @@ export const DbQueryEditorModal = React.memo(function DbQueryEditorModal({
   const titleId = useId()
   useFocusTrap(dialogRef, isOpen)
 
+  useEffect(() => {
+    if (!isOpen) return
+    const controller = new AbortController()
+    window.addEventListener(
+      'keydown',
+      (e) => {
+        if (e.key === 'Escape') onClose()
+      },
+      { signal: controller.signal },
+    )
+    window.addEventListener(
+      'mousedown',
+      (e) => {
+        if (dialogRef.current && e.target instanceof Node && !dialogRef.current.contains(e.target)) onClose()
+      },
+      { signal: controller.signal },
+    )
+    return () => controller.abort()
+  }, [isOpen, onClose])
+
   const {
     query,
     connectorNames,
@@ -71,11 +91,7 @@ export const DbQueryEditorModal = React.memo(function DbQueryEditorModal({
   if (!isOpen) return null
 
   return (
-    <div
-      className={`${FB_UI.modalBackdrop} z-50`}
-      onKeyDown={(e) => { if (e.key === 'Escape') onClose() }}
-      onClick={onClose}
-    >
+    <div className={`${FB_UI.modalBackdrop} z-50`}>
       <div
         ref={dialogRef}
         className="flex w-full max-w-[1080px] max-h-[calc(100vh-48px)] flex-col overflow-hidden rounded-2xl border border-[var(--line-200)] bg-[var(--panel)] shadow-[0_30px_80px_rgba(8,18,12,0.55)]"
@@ -83,7 +99,6 @@ export const DbQueryEditorModal = React.memo(function DbQueryEditorModal({
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
-        onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <header className="flex items-start justify-between gap-3 border-b border-[var(--line-200)] px-5 py-3.5">
