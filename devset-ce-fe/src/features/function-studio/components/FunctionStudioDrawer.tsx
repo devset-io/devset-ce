@@ -28,10 +28,12 @@ export const FunctionStudioDrawer = React.memo(function FunctionStudioDrawer(pro
   const dialogRef = useRef<HTMLDivElement>(null)
   useFocusTrap(dialogRef, props.isOpen)
 
-  // Keyboard: close on Escape
+  // Keyboard: close on Escape. Detached while the discard confirm modal is open —
+  // Escape there is handled by the modal itself and must not re-trigger requestClose.
   const { dispatch } = drawerApi
+  const showDiscardConfirm = drawerApi.state.showDiscardConfirm
   useEffect(() => {
-    if (!props.isOpen) return
+    if (!props.isOpen || showDiscardConfirm) return
     const controller = new AbortController()
     window.addEventListener(
       'keydown',
@@ -41,7 +43,7 @@ export const FunctionStudioDrawer = React.memo(function FunctionStudioDrawer(pro
       { signal: controller.signal },
     )
     return () => controller.abort()
-  }, [props.isOpen, dispatch])
+  }, [props.isOpen, showDiscardConfirm, dispatch])
 
   if (!props.isOpen) {
     return null

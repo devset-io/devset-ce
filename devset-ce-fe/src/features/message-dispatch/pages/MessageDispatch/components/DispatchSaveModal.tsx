@@ -43,7 +43,10 @@ export const DispatchSaveModal = React.memo(function DispatchSaveModal({
     window.addEventListener(
       'keydown',
       (e) => {
-        if (e.key === 'Escape') onSaveModalClose()
+        // Only react when focus is inside this dialog, so stacked modals close one at a time.
+        if (e.key !== 'Escape') return
+        if (dialogRef.current && e.target instanceof Node && !dialogRef.current.contains(e.target)) return
+        onSaveModalClose()
       },
       { signal: controller.signal },
     )

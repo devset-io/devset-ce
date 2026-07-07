@@ -47,7 +47,10 @@ export function ModalShell({
     window.addEventListener(
       'keydown',
       (e) => {
-        if (e.key === 'Escape') onClose()
+        // Only react when focus is inside this dialog, so stacked modals close one at a time.
+        if (e.key !== 'Escape') return
+        if (dialogRef.current && e.target instanceof Node && !dialogRef.current.contains(e.target)) return
+        onClose()
       },
       { signal: controller.signal },
     )
