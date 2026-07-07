@@ -115,6 +115,14 @@ configurations.configureEach {
             details.useVersion "${versions.commonsCompress}"
             details.because 'CVE-2024-25710, CVE-2024-26308'
         }
+        if (details.requested.group == 'com.fasterxml.jackson.core' && details.requested.name == 'jackson-databind') {
+            details.useVersion "${versions.jacksonDatabind}"
+            details.because 'CVE security fix - spring-boot BOM pins 2.21.2; force 2.21.4+'
+        }
+        if (details.requested.group == 'org.springframework.kafka' && details.requested.name == 'spring-kafka') {
+            details.useVersion "${versions.springKafka}"
+            details.because 'CVE security fix - JsonKafkaHeaderMapper arbitrary JDK type deserialization; force 3.3.16+'
+        }
     }
 }
 
