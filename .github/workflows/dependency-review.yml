@@ -37,3 +37,11 @@ jobs:
         uses: gradle/actions/dependency-submission@50e97c2cd7a37755bbfafc9c5b7cafaece252f6e # v6.1.0
         with:
           build-root-directory: devset-ce-be
+        env:
+          # Exclude the Gradle buildscript/plugin classpath (config name: "classpath").
+          # It pulls jackson-databind 2.21.2 via spring-boot-gradle-plugin ->
+          # spring-boot-buildpack-platform, a build-time-only dependency never shipped
+          # in the app. The project's BOM override (ext['jackson-bom.version']) cannot
+          # reach the buildscript classpath, so without this it leaks into the graph and
+          # triggers false Dependabot alerts.
+          DEPENDENCY_GRAPH_EXCLUDE_CONFIGURATIONS: '^classpath$'
