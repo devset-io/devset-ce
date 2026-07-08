@@ -8,6 +8,11 @@ plugins {
 apply from: rootProject.file("gradle/constants.gradle")
 
 ext['tomcat.version'] = versions.tomcat // CVE-2026-42498, 43513, 43514, 43515
+// Override the Spring Boot-managed BOM versions so the managed constraint itself is patched
+// (not just the resolved version). This removes the vulnerable 2.21.2 / 3.3.15 nodes from the
+// submitted dependency graph, which resolutionStrategy alone cannot do.
+ext['jackson-bom.version'] = versions.jacksonDatabind // CVE GHSA-j3rv-43j4-c7qm, GHSA-rmj7-2vxq-3g9f - PolymorphicTypeValidator bypass; force jackson-databind 2.21.4
+ext['spring-kafka.version'] = versions.springKafka // CVE - JsonKafkaHeaderMapper arbitrary JDK type deserialization; force spring-kafka 3.3.16
 
 group = "io.devset"
 version = "0.1.0"
@@ -114,14 +119,6 @@ configurations.configureEach {
         if (details.requested.group == 'org.apache.commons' && details.requested.name == 'commons-compress') {
             details.useVersion "${versions.commonsCompress}"
             details.because 'CVE-2024-25710, CVE-2024-26308'
-        }
-        if (details.requested.group == 'com.fasterxml.jackson.core' && details.requested.name == 'jackson-databind') {
-            details.useVersion "${versions.jacksonDatabind}"
-            details.because 'CVE security fix - spring-boot BOM pins 2.21.2; force 2.21.4+'
-        }
-        if (details.requested.group == 'org.springframework.kafka' && details.requested.name == 'spring-kafka') {
-            details.useVersion "${versions.springKafka}"
-            details.because 'CVE security fix - JsonKafkaHeaderMapper arbitrary JDK type deserialization; force 3.3.16+'
         }
     }
 }
