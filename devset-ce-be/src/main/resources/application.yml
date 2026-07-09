@@ -38,10 +38,10 @@ devset:
 #   external application.yml mounted at /app/config/application.yml (Docker)
 #   or ./config/application.yml. Credentials are optional and may reference
 #   environment variables, e.g. password: ${KAFKA_PASSWORD:}
-  predefined-connections:
-    kafka:
-      - name: local-kafka
-        bootstrap-servers: localhost:29092
+#  predefined-connections:
+#    kafka:
+#      - name: local-kafka
+#        bootstrap-servers: localhost:29092
 #    rabbit:
 #      - name: local-rabbit
 #        host: localhost
