@@ -65,6 +65,18 @@ Configuration is managed via `application.yml` and Spring profiles. Key properti
 | `devset.cors.allowed-origins` | `http://localhost:5173` | Comma-separated CORS origins |
 | `devset.engine.max-active-runs` | `10` | Maximum concurrent workflow runs |
 | `devset.engine.max-executions-per-run` | `10` | Maximum executions per single run |
+| `devset.predefined-connections.*` | empty | Kafka/RabbitMQ/database connections created automatically at startup |
+
+### Predefined connections
+
+Connections created from the UI live in memory and are lost on restart. Declare
+default connections under `devset.predefined-connections` (lists `kafka`, `rabbit`,
+`databases`) to have them recreated at startup — see the commented example in
+`src/main/resources/application.yml`. In Docker, mount a file containing only these
+entries at `/app/application.yml`; Spring Boot merges it with the bundled
+configuration. Credentials are optional and may reference environment variables
+(`password: ${KAFKA_PASSWORD:}`). Failed entries are logged and skipped, so an
+unreachable broker never blocks startup.
 
 ## Architecture
 
