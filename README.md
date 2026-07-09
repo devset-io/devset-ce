@@ -274,8 +274,50 @@ Spring profile overrides. Only the keys listed below are read by the application
 | `devset.monitoring.resources.enabled` | `true` | toggles `ResourceUsageLoggingTask` |
 | `devset.monitoring.resources.interval-ms` | `30000` | resource-usage log interval |
 | `devset.monitoring.resources.initial-delay-ms` | `10000` | resource-usage log startup delay |
+| `devset.predefined-connections.*` | empty | connections created automatically at startup; see below |
 
 All `devset.*` keys map to a real binding or `@ConditionalOnProperty` in the code.
+
+### Predefined connections
+
+Broker and database connections are normally created from the UI and live in memory,
+so they are lost on restart. To have default connections recreated automatically at
+startup, declare them under `devset.predefined-connections` — typically in an external
+`application.yml` mounted next to the image (Spring Boot merges it with the bundled
+configuration, so the file only needs the connection entries):
+
+```yaml
+devset:
+  predefined-connections:
+    kafka:
+      - name: local-kafka
+        bootstrap-servers: kafka:9092
+        username: ${KAFKA_USER:}      # credentials are optional
+        password: ${KAFKA_PASSWORD:}
+    rabbit:
+      - name: local-rabbit
+        host: rabbitmq
+        port: 5672
+        virtual-host: /
+    databases:
+      - name: local-mongo
+        type: mongodb
+        connection-string: mongodb://mongo:27017
+        database: devset
+```
+
+Mount the file at `/app/application.yml`:
+
+```bash
+docker run -p 8082:8082 -v devset-data:/data \
+  -v ./devset-config.yml:/app/application.yml:ro \
+  ghcr.io/devset-io/devset-ce:latest
+```
+
+Each entry is opened on startup through the same code path as the UI. An unreachable
+broker is logged as a warning and skipped — it never prevents the application from
+starting. Restarting with the same file is idempotent: existing identical connections
+are reused.
 
 ---
 

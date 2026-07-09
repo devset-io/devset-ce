@@ -29,3 +29,4 @@ coverage/
 # Tools
 /.claude/
 /doc/
+/docker-compose.dev.yml

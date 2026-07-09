@@ -34,3 +34,21 @@ devset:
   engine:
     max-active-runs: 10
     max-executions-per-run: 10
+#   Connections created automatically at startup. Typically supplied via an
+#   external application.yml mounted at /app/config/application.yml (Docker)
+#   or ./config/application.yml. Credentials are optional and may reference
+#   environment variables, e.g. password: ${KAFKA_PASSWORD:}
+  predefined-connections:
+    kafka:
+      - name: local-kafka
+        bootstrap-servers: localhost:29092
+#    rabbit:
+#      - name: local-rabbit
+#        host: localhost
+#        port: 5672
+#        virtual-host: /
+#    databases:
+#      - name: local-mongo
+#        type: mongodb
+#        connection-string: mongodb://localhost:27017
+#        database: devset
