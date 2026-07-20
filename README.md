@@ -319,6 +319,17 @@ broker is logged as a warning and skipped — it never prevents the application 
 starting. Restarting with the same file is idempotent: existing identical connections
 are reused.
 
+### Predefined examples
+
+A fresh instance (no schemas, workflows, collections or single requests yet) is seeded
+at startup with a working set of example data: an example JSON schema, an example
+Protobuf schema, a three-stage example workflow (`open → progress → close`), an
+`examples` collection and two example single requests (one JSON, one Protobuf). The
+definitions are bundled with the backend under `src/main/resources/predefined/`.
+Seeding is skipped as soon as the instance contains any data of these kinds, so user
+content is never touched; a failing entry is logged and skipped and never blocks
+startup.
+
 ---
 
 ## REST API surface

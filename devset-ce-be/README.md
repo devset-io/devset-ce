@@ -78,6 +78,16 @@ configuration. Credentials are optional and may reference environment variables
 (`password: ${KAFKA_PASSWORD:}`). Failed entries are logged and skipped, so an
 unreachable broker never blocks startup.
 
+### Predefined examples
+
+On a fresh instance (no schemas, workflows, collections or single requests) the
+backend seeds example data at startup: an example JSON schema, an example Protobuf
+schema, a three-stage example workflow, an `examples` collection and two example
+single requests (JSON and Protobuf). The definitions live under
+`src/main/resources/predefined/` and are created through the public facades by
+`PredefinedExamplesInitializer`. Seeding is skipped when the instance already
+contains data, and a failing entry is logged and skipped so it never blocks startup.
+
 ## Architecture
 
 ```

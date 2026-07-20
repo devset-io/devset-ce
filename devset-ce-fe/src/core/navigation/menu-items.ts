@@ -17,5 +17,4 @@ export const MENU_ITEMS: MenuItem[] = [
   { id: 'kafka-live' },
   { id: 'schema-repo' },
   { id: 'settings' },
-  { id: 'docs' },
 ]

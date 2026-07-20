@@ -60,10 +60,10 @@ test('Beautify on invalid JSON surfaces the parse error inline', async ({ page, 
   await setAceBody(page, DSL_EDITOR_LABEL, '{"a":}')
   await dialog.getByRole('button', { name: 'Beautify JSON' }).click()
 
-  // The error block sits above the editor; its exact phrasing comes from
-  // the JSON.parse SyntaxError, so we match on the substring rather than a
-  // localised string.
-  await expect(dialog.getByText(/JSON|Unexpected/i).first()).toBeVisible()
+  // The error block sits above the editor. It carries a stable testid so we
+  // target the parse-error slot directly — a text match on /JSON/ would also
+  // catch unrelated schema-name options (e.g. seeded "example-json-schema").
+  await expect(dialog.getByTestId('dsl-parse-error')).toBeVisible()
   await expect(dialog.getByTestId('fn-studio-save')).toHaveCount(0)
 })
 
