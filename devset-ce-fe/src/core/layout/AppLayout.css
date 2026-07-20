@@ -209,40 +209,6 @@
   background: rgba(255, 255, 255, 0.17);
 }
 
-.sidebar-feature {
-  margin-top: auto;
-  padding: 12px 12px 10px;
-  border-radius: 14px;
-  border: 1px solid color-mix(in srgb, #ffffff 10%, transparent);
-  background: color-mix(in srgb, #ffffff 4%, transparent);
-}
-
-.sidebar-feature-eyebrow {
-  margin: 0 0 6px;
-  color: var(--menu-brand-muted);
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.sidebar-feature-version {
-  margin: 0;
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 10px;
-  color: color-mix(in srgb, var(--nav-text) 82%, transparent);
-  font-size: 0.76rem;
-  line-height: 1.35;
-}
-
-.sidebar-feature-version strong {
-  color: #ffffff;
-  font-size: 0.84rem;
-  font-weight: 700;
-}
-
 @media (min-width: 901px) {
   .app-shell:not(.sidebar-collapsed) .sidebar {
     padding-left: 22px;
@@ -296,16 +262,6 @@
     transform: translateX(-8px);
   }
 
-  .app-shell.sidebar-collapsed .sidebar-feature-eyebrow {
-    width: 0;
-    height: 0;
-    margin: 0;
-    opacity: 0;
-    overflow: hidden;
-    pointer-events: none;
-    transform: translateX(-8px);
-  }
-
   .app-shell.sidebar-collapsed .menu-item {
     flex-direction: column;
     justify-content: center;
@@ -334,21 +290,6 @@
     right: 16px;
   }
 
-  .app-shell.sidebar-collapsed .sidebar-feature {
-    padding-inline: 8px;
-    padding-block: 8px;
-    text-align: center;
-  }
-
-  .app-shell.sidebar-collapsed .sidebar-feature-version {
-    justify-content: center;
-    gap: 6px;
-    font-size: 0.62rem;
-  }
-
-  .app-shell.sidebar-collapsed .sidebar-feature-version strong {
-    font-size: 0.66rem;
-  }
 }
 
 .content {

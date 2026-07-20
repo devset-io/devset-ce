@@ -1,0 +1,16 @@
+{
+  "singleRequestName": "example-protobuf-message",
+  "collectionName": "examples",
+  "messageType": "kafka",
+  "contentType": "application/x-protobuf",
+  "producerName": "local-kafka",
+  "topic": "devset.example.entity.proto",
+  "executions": 1,
+  "state": {
+    "id": "00000000-0000-0000-0000-000000000002",
+    "userId": 2,
+    "status": "OPEN"
+  },
+  "headers": { "eventType": "OPENED" },
+  "protoSchema": "syntax = \"proto3\";\n\npackage devset.example;\n\nmessage ExampleEntity {\n  string id = 1;\n  int64 userId = 2;\n  string status = 3;\n}\n"
+}

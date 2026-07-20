@@ -23,7 +23,6 @@ import './features/schema-repo/schema-repo.css'
 import './features/kafka-live/kafka-live.css'
 import './features/workflow-runs/workflow-runs.css'
 import './features/settings/settings.css'
-import './features/docs/docs.css'
 import App from './App.tsx'
 
 createRoot(document.getElementById('root')!).render(

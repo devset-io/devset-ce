@@ -1,0 +1,21 @@
+{
+  "singleRequestName": "example-json-message",
+  "collectionName": "examples",
+  "messageType": "kafka",
+  "contentType": "application/json",
+  "producerName": "local-kafka",
+  "topic": "devset.example.entity",
+  "executions": 1,
+  "state": {
+    "id": "00000000-0000-0000-0000-000000000002",
+    "userId": {
+      "$fn": "int(1,200)"
+    },
+    "status": {
+      "$ref": "status"
+    }
+  },
+  "headers": {
+    "eventType": "OPENED"
+  }
+}

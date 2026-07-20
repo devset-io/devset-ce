@@ -22,7 +22,6 @@ import { SchemaRepoView } from './features/schema-repo'
 import { SettingsView } from './features/settings/SettingsView'
 import { WorkflowRunsView } from './features/workflow-runs/WorkflowRunsView'
 import { KafkaLiveView } from './features/kafka-live/KafkaLiveView'
-import { DocsView } from './features/docs/DocsView'
 import type { ViewId } from './shared/types/navigation'
 
 const VIEW_ROUTES: Record<ViewId, string> = {
@@ -32,7 +31,6 @@ const VIEW_ROUTES: Record<ViewId, string> = {
   'schema-repo': '/schema-repo',
   runs: '/runs',
   'kafka-live': '/kafka-live',
-  docs: '/docs',
   settings: '/settings',
 }
 const FLOW_BUILDER_EDITOR_ROUTE = '/flow-builder/editor'
@@ -53,9 +51,6 @@ const resolveActiveView = (pathname: string): ViewId => {
   }
   if (pathname.startsWith(`${VIEW_ROUTES['message-dispatch']}/`)) {
     return 'message-dispatch'
-  }
-  if (pathname.startsWith(`${VIEW_ROUTES.docs}/`)) {
-    return 'docs'
   }
   return PATH_TO_VIEW[pathname] ?? 'flow-builder'
 }
@@ -152,7 +147,6 @@ function App() {
           <Route path={VIEW_ROUTES.runs} element={<WorkflowRunsView />} />
           <Route path={`${VIEW_ROUTES.runs}/new`} element={<WorkflowRunsView />} />
           <Route path={`${VIEW_ROUTES.runs}/:runId`} element={<WorkflowRunsView />} />
-          <Route path={VIEW_ROUTES.docs} element={<DocsView />} />
           <Route path={VIEW_ROUTES.settings} element={<SettingsView />} />
           <Route path="*" element={<Navigate to={VIEW_ROUTES['flow-builder']} replace />} />
         </Routes>

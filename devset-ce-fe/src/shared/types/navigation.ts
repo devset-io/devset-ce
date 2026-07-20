@@ -15,7 +15,6 @@ export type ViewId =
   | 'schema-repo'
   | 'runs'
   | 'kafka-live'
-  | 'docs'
   | 'settings'
 
 export type MenuItem = {

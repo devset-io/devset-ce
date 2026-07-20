@@ -56,17 +56,20 @@ const MENU_ICON_BY_VIEW: Record<ViewId, ReactNode> = {
       <path d="M4 7h16v4H4zm0 6h16v4H4z" />
     </svg>
   ),
-  docs: (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M7 4.75h9.25A1.75 1.75 0 0 1 18 6.5v11.75a1 1 0 0 1-1.58.81L13 16.5l-3.42 2.56A1 1 0 0 1 8 18.25V6.5A1.75 1.75 0 0 1 9.75 4.75zM10.5 8.5h5M10.5 11.5h5" />
-    </svg>
-  ),
   settings: (
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <path d="M12 8.75A3.25 3.25 0 1 0 12 15.25 3.25 3.25 0 1 0 12 8.75zM4.75 13.25v-2.5l2.2-.5c.13-.45.31-.88.54-1.28L6.2 7.05l1.77-1.77 1.92 1.3c.4-.23.83-.41 1.28-.54l.5-2.2h2.5l.5 2.2c.45.13.88.31 1.28.54l1.92-1.3 1.77 1.77-1.3 1.92c.23.4.41.83.54 1.28l2.2.5v2.5l-2.2.5c-.13.45-.31.88-.54 1.28l1.3 1.92-1.77 1.77-1.92-1.3c-.4.23-.83.41-1.28.54l-.5 2.2h-2.5l-.5-2.2a6.8 6.8 0 0 1-1.28-.54l-1.92 1.3-1.77-1.77 1.3-1.92a6.8 6.8 0 0 1-.54-1.28l-2.2-.5z" />
     </svg>
   ),
 }
+
+const DOCS_URL = 'https://docs.devset.io/'
+
+const DOCS_ICON: ReactNode = (
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M7 4.75h9.25A1.75 1.75 0 0 1 18 6.5v11.75a1 1 0 0 1-1.58.81L13 16.5l-3.42 2.56A1 1 0 0 1 8 18.25V6.5A1.75 1.75 0 0 1 9.75 4.75zM10.5 8.5h5M10.5 11.5h5" />
+  </svg>
+)
 
 export function AppLayout({
   items,
@@ -85,8 +88,6 @@ export function AppLayout({
   const activeFeatureLabel = t(`menu.${activeItem.id}.label`)
   const activeFeatureDescription = t(`menu.${activeItem.id}.description`)
   const brandLogoSrc = isSidebarCollapsed ? '/logo_down.svg' : '/logo.svg'
-  const uiVersion = import.meta.env.VITE_UI_VERSION ?? '0.1.0'
-  const apiVersion = import.meta.env.VITE_API_VERSION ?? '0.1.0'
 
   return (
     <div className={`app-shell min-h-full ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
@@ -117,7 +118,7 @@ export function AppLayout({
             <button
               key={item.id}
               type="button"
-              className={`menu-item ${item.id === 'docs' ? 'menu-item-group-start' : ''} ${item.id === activeView ? 'active' : ''}`}
+              className={`menu-item ${item.id === activeView ? 'active' : ''}`}
               onClick={() => onChangeView(item.id)}
               aria-label={t(`menu.${item.id}.label`)}
               title={t(`menu.${item.id}.label`)}
@@ -126,19 +127,19 @@ export function AppLayout({
               <span className="menu-item-label">{t(`menu.${item.id}.label`)}</span>
             </button>
           ))}
-        </nav>
 
-        <footer className="sidebar-feature" aria-label="Version info">
-          <p className="sidebar-feature-eyebrow">Versions</p>
-          <p className="sidebar-feature-version">
-            <span>UI</span>
-            <strong>{uiVersion}</strong>
-          </p>
-          <p className="sidebar-feature-version">
-            <span>API</span>
-            <strong>{apiVersion}</strong>
-          </p>
-        </footer>
+          <a
+            className="menu-item menu-item-group-start"
+            href={DOCS_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={t('menu.docs.label')}
+            title={t('menu.docs.label')}
+          >
+            <span className="menu-item-icon">{DOCS_ICON}</span>
+            <span className="menu-item-label">{t('menu.docs.label')}</span>
+          </a>
+        </nav>
       </aside>
 
       <main className="content">

@@ -1,0 +1,53 @@
+{
+  "id": "example-workflow",
+  "messageType": "kafka",
+  "contentType": "application/json",
+  "producerName": "local-kafka",
+  "topic": "devset.example.entity",
+  "schemaId": "example-json-schema",
+  "executions": 1,
+  "state": {
+    "entityId": { "$fn": "uuid()" },
+    "status": "OPEN"
+  },
+  "pipeline": [
+    {
+      "stage": "open",
+      "event": "entity-opened",
+      "source": "none",
+      "emit": true,
+      "headers": { "eventType": "OPENED" },
+      "set": {
+        "id": { "$ref": "state.entityId" },
+        "userId": 1,
+        "status": "OPEN"
+      }
+    },
+    {
+      "stage": "progress",
+      "event": "entity-progressed",
+      "source": "none",
+      "emit": true,
+      "repeat": 2,
+      "wait": "1s",
+      "headers": { "eventType": "PROGRESSED" },
+      "set": {
+        "id": { "$ref": "state.entityId" },
+        "userId": 1,
+        "status": "IN_PROGRESS"
+      }
+    },
+    {
+      "stage": "close",
+      "event": "entity-closed",
+      "source": "none",
+      "emit": true,
+      "headers": { "eventType": "CLOSED" },
+      "set": {
+        "id": { "$ref": "state.entityId" },
+        "userId": 1,
+        "status": "CLOSED"
+      }
+    }
+  ]
+}
