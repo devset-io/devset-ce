@@ -10,6 +10,7 @@
 
 package io.devset.ce.be.examples.infrastructure;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.devset.ce.be.collection.application.CollectionFacade;
 import io.devset.ce.be.collection.domain.CollectionDefinition;
@@ -24,6 +25,8 @@ import io.devset.ce.be.workflow.application.WorkflowFacade;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -105,5 +108,61 @@ class PredefinedExamplesFacadeImplTest {
         verify(workflowFacade).createRequest(any(Workflow.class));
         verify(collectionFacade).create(any(CollectionDefinition.class));
         verify(singleRequestFacade, times(2)).save(any(SingleRequestDefinition.class));
+    }
+
+    @Test
+    void shouldSkipSeedingWhenWorkflowsAlreadyExist() {
+        List<Workflow> existing = nonEmpty();
+        when(workflowFacade.listRequests()).thenReturn(existing);
+
+        facade.seedFreshInstance();
+
+        verify(schemaFacade, never()).create(any());
+        verify(workflowFacade, never()).createRequest(any());
+    }
+
+    @Test
+    void shouldSkipSeedingWhenCollectionsAlreadyExist() {
+        List<CollectionDefinition> existing = nonEmpty();
+        when(collectionFacade.getAll()).thenReturn(existing);
+
+        facade.seedFreshInstance();
+
+        verify(schemaFacade, never()).create(any());
+        verify(collectionFacade, never()).create(any());
+    }
+
+    @Test
+    void shouldSkipSeedingWhenSingleRequestsAlreadyExist() {
+        List<SingleRequestDefinition> existing = nonEmpty();
+        when(singleRequestFacade.getAll()).thenReturn(existing);
+
+        facade.seedFreshInstance();
+
+        verify(schemaFacade, never()).create(any());
+        verify(singleRequestFacade, never()).save(any());
+    }
+
+    @Test
+    void shouldContinueWhenResourceCannotBeDeserialized() throws IOException {
+        ObjectMapper failingMapper = mock(ObjectMapper.class);
+        when(failingMapper.readValue(any(InputStream.class), any(Class.class)))
+                .thenThrow(new IOException("stream broken"));
+        when(failingMapper.readValue(any(InputStream.class), any(TypeReference.class)))
+                .thenThrow(new IOException("stream broken"));
+        PredefinedExamplesFacadeImpl failingFacade = new PredefinedExamplesFacadeImpl(
+                schemaFacade, workflowFacade, collectionFacade, singleRequestFacade, failingMapper);
+
+        assertThatCode(failingFacade::seedFreshInstance).doesNotThrowAnyException();
+
+        verify(workflowFacade, never()).createRequest(any());
+        verify(collectionFacade).create(any(CollectionDefinition.class));
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> List<T> nonEmpty() {
+        List<T> list = mock(List.class);
+        when(list.isEmpty()).thenReturn(false);
+        return list;
     }
 }
