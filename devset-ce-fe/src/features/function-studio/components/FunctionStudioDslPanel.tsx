@@ -239,7 +239,7 @@ export const FunctionStudioDslPanel = React.memo(function FunctionStudioDslPanel
         </button>
       </div>
       <div role="tabpanel" id={`dsl-panel-${activeRootTab}`} aria-labelledby={`dsl-tab-${activeRootTab}`}>
-      {activeRootError ? <p className="m-0 mb-1 text-xs text-red-700">{activeRootError}</p> : null}
+      {activeRootError ? <p data-testid="dsl-parse-error" className="m-0 mb-1 text-xs text-red-700">{activeRootError}</p> : null}
       <JsonCodeEditor
         value={activeDraftRaw}
         onChange={

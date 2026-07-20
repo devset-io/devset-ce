@@ -21,7 +21,7 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "e2e:build": "bash scripts/e2e-build.sh",
-    "e2e:up": "docker compose -f docker-compose.e2e.yml up --exit-code-from e2e --abort-on-container-exit",
+    "e2e:up": "docker compose -f docker-compose.e2e.yml up --build --exit-code-from e2e --abort-on-container-exit",
     "e2e:down": "docker compose -f docker-compose.e2e.yml down -v",
     "e2e:full": "npm run e2e:build && (npm run e2e:up; rc=$?; npm run e2e:down; exit $rc)"
   },
