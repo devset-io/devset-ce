@@ -55,5 +55,11 @@
     "typescript-eslint": "8.56.1",
     "vite": "8.0.16",
     "vitest": "4.1.5"
+  },
+  "overrides": {
+    "brace-expansion": "1.1.16",
+    "@typescript-eslint/typescript-estree": {
+      "brace-expansion": "5.0.7"
+    }
   }
 }
