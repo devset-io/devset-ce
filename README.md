@@ -46,31 +46,63 @@ docker run -p 8082:8082 -v devset-data:/data ghcr.io/devset-io/devset-ce:latest
 
 Open **http://localhost:8082**.
 
-### 2. Add a broker connection
+> **Already seeded — nothing to set up first.** A fresh instance boots with example
+> connectors and a working set of example data (JSON + Protobuf schemas, a three-stage
+> workflow, an `examples` collection and two single requests). You can jump straight to
+> **Message Dispatch** or **Flow Builder**, open an example, and hit run. The steps
+> below walk through building your own from scratch. See
+> [Predefined connections](#predefined-connections) and
+> [Predefined examples](#predefined-examples) to control what gets seeded.
+
+---
+
+## How it works
+
+### Connect a broker
 
 Go to **Settings → Brokers → New connector**. Name it (e.g. `kafka-local`), point it at
 your bootstrap servers (e.g. `localhost:9092`), and save. That name is the `producerName`
-referenced everywhere below.
+referenced everywhere below. (On a fresh instance a couple of example connectors are
+already here — or preconfigure your own via
+[predefined connections](#predefined-connections).)
 
-### 3. Send a single message
+<p align="center">
+  <img src="docs/gif/connection.gif" width="90%" alt="Adding a broker connection" />
+</p>
+
+### Send a single message
 
 Open **Message Dispatch**. The UI is form-based — like Postman, but for Kafka and
 RabbitMQ. Pick the broker connector, fill in the destination (topic, or exchange +
 routing key), add headers if you need them, write the payload in the editor, hit
 **Send**.
 
-For the demo: pick `kafka-local`, set the topic to `user-events`, use `user-123` as the
-key, and paste this as the payload:
+For a quick try: pick `kafka-local`, set the topic to `user-events`, use `user-123` as
+the key, and paste this as the payload:
 
 ```json
 { "userId": "user-123", "action": "OPEN" }
 ```
 
-Headers are a free-form map passed through to the broker verbatim. Schemas are bound
-through a dedicated field, not through a header. Saved requests and request history are
-available from the side panels.
+Headers are a free-form map passed through to the broker verbatim. Saved requests and
+request history are available from the side panels.
 
-### 4. Run a multi-stage flow
+<p align="center">
+  <img src="docs/gif/message-dispatch.gif" width="90%" alt="Sending a single message" />
+</p>
+
+### Bind a schema
+
+Register JSON or Protobuf schemas in the **Schema Repo** once, then bind them to a
+message through a dedicated field (not a header). Protobuf descriptors are parsed
+in-process — no external schema registry. A fresh instance already ships one JSON and
+one Protobuf example schema so you can see the binding in action immediately.
+
+<p align="center">
+  <img src="docs/gif/schema.gif" width="90%" alt="Working with schemas" />
+</p>
+
+### Run a multi-stage flow
 
 Open **Flow Builder → New workflow** and paste:
 
@@ -93,9 +125,9 @@ Open **Flow Builder → New workflow** and paste:
       }
     },
     {
-      "stage": "wait-a-second",
+      "stage": "wait-two-seconds",
       "event": "tick",
-      "wait": "PT1S"
+      "wait": "2s"
     },
     {
       "stage": "signup",
@@ -113,9 +145,13 @@ Open **Flow Builder → New workflow** and paste:
 ```
 
 Save the workflow, then go to **Workflow Runners → New run**, pick `user-signup-flow`
-and start it. The first message lands on `user-events`, a one-second wait elapses, and
+and start it. The first message lands on `user-events`, a two-second wait elapses, and
 then three signup messages are emitted in order — status and per-execution events show
 up live in the run view.
+
+<p align="center">
+  <img src="docs/gif/output-workflow.gif" width="90%" alt="Running a multi-stage workflow" />
+</p>
 
 ---
 
@@ -124,7 +160,7 @@ up live in the run view.
 Each item below maps to code that exists on this branch.
 
 - Declarative workflow DSL with `stage`, `event`, `emit`, `set`, `state`, `repeat`,
-  `repeatWhile`, `repeatUntil`, `wait` (ISO-8601), `headers`, `key`, `wireFormat`,
+  `repeatWhile`, `repeatUntil`, `wait` (e.g. `2s`, `500ms`), `headers`, `key`, `wireFormat`,
   `schemaId`, and `query` fields.
 - Sends real messages to real Kafka and RabbitMQ brokers — selectable per workflow via
   `messageType: KAFKA | RABBIT`.
