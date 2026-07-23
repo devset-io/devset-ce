@@ -3,10 +3,12 @@
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="theme-color" content="#131a20"/>
     <title>Devset — Send real messages to Kafka and RabbitMQ. Local. Yours.</title>
     <meta name="description"
           content="Send real messages to local Kafka and RabbitMQ, test how your app responds and trace the outcome — without scripts, without cloud."/>
-    <link rel="icon" type="image/svg+xml" href="./assets/devset-logo.svg"/>
+    <link rel="icon" type="image/png" sizes="32x32" href="./assets/favicon-32.png"/>
+    <link rel="apple-touch-icon" href="./assets/apple-touch-icon.png"/>
 
     <meta property="og:type" content="website"/>
     <meta property="og:title" content="Devset — Send real messages to Kafka and RabbitMQ"/>
@@ -39,12 +41,12 @@
         </a>
 
         <nav class="topnav" aria-label="Main">
+            <a href="#walkthrough">walkthrough</a>
             <a href="#install">install</a>
             <a href="#canvas">flow</a>
-            <a href="#modules">modules</a>
             <a href="#fn">functions</a>
             <a href="#roadmap">roadmap</a>
-            <a href="#faq">faq</a>
+            <a href="https://docs.devset.io/" target="_blank" rel="noreferrer">docs ↗</a>
         </nav>
 
         <div class="topbar-right">
@@ -72,15 +74,13 @@
                 </h1>
 
                 <p class="hero-lead">
-                    Devset is a small, local-first app for testing message-driven systems on Kafka and RabbitMQ.
-                    Built for engineers who want a real UI — and for everyone on the team who shouldn't have to write a
-                    script
-                    just to fire one message.
+                    A local-first app for testing message-driven systems on Kafka and RabbitMQ, with a UI
+                    the whole team can use.
                 </p>
 
                 <div class="hero-actions">
                     <a class="btn btn-primary" href="#install">$ docker compose up</a>
-                    <a class="btn btn-link" href="#flow">see how it works →</a>
+                    <a class="btn btn-link" href="#walkthrough">see how it works →</a>
                 </div>
 
                 <ul class="hero-points">
@@ -92,59 +92,17 @@
 
             </div>
 
-            <aside class="flow-mock" aria-label="Devset message flow">
-                <div class="flow-head">
-                    <span class="flow-title">devset ▸ message flow</span>
+            <aside class="hero-gif" aria-label="Devset in action">
+                <div class="cap-bar">
+                    <span class="cap-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+                    <span class="cap-path">devset ▸ message flow</span>
                     <span class="flow-live"><i class="flow-live-dot"></i>LIVE</span>
                 </div>
-
-                <div class="flow-stage" aria-hidden="true">
-                    <div class="flow-row">
-                        <div class="flow-node is-devset">
-                            <span class="flow-node-label">devset</span>
-                            <span class="flow-node-glyph">⊙</span>
-                            <span class="flow-node-sub">dispatch</span>
-                        </div>
-                        <div class="flow-wire">
-                            <span class="flow-pkt flow-pkt-1">▣</span>
-                        </div>
-                        <div class="flow-node is-broker">
-                            <span class="flow-node-label">broker</span>
-                            <span class="flow-node-glyph">≡</span>
-                            <span class="flow-node-sub">kafka  rabbitmq</span>
-                        </div>
-                        <div class="flow-wire">
-                            <span class="flow-pkt flow-pkt-2">▣</span>
-                        </div>
-                        <div class="flow-node is-consumer">
-                            <span class="flow-node-label">consumer</span>
-                            <span class="flow-node-glyph">▷</span>
-                            <span class="flow-node-sub">your service</span>
-                        </div>
-                    </div>
-
-                    <div class="flow-return-wrap">
-                        <div class="flow-return">
-                            <span class="flow-return-label">your app · trace ack</span>
-                            <span class="flow-pkt flow-pkt-3">▣</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="flow-log" aria-hidden="true">
-                    <div class="flow-log-line"><span class="t">12:04:11.082</span> <span class="ok">PUBLISHED</span>
-                        orders.v3 · key=order-123 · 4ms
-                    </div>
-                    <div class="flow-log-line"><span class="t">12:04:11.094</span> <span class="ok">DELIVERED</span>
-                        partition 2 · offset 88421
-                    </div>
-                    <div class="flow-log-line"><span class="t">12:04:12.310</span> <span class="ok">CONSUMED</span>
-                        tracking-svc · 12ms
-                    </div>
-                    <div class="flow-log-line"><span class="t">12:04:12.318</span> <span class="dim">ACK</span>
-                        trace-id=8c5c-4d67
-                    </div>
-                </div>
+                <video class="cap-img" autoplay loop muted playsinline preload="auto"
+                       width="1920" height="1179"
+                       aria-label="Composing a payload and sending a real message in Devset">
+                    <source src="./assets/gif/message-dispatch.mp4" type="video/mp4"/>
+                </video>
             </aside>
 
             <ul class="hero-modules" aria-label="What you get on day one">
@@ -179,6 +137,92 @@
                     <span>dry-run flows, no broker required</span>
                 </li>
             </ul>
+        </section>
+
+        <div class="ascii-rule">walkthrough</div>
+
+        <!-- ─────────────────────── WALKTHROUGH (gifs) ─────────────────────── -->
+        <section class="section" id="walkthrough">
+            <div class="section-heading">
+                <p class="eyebrow">walkthrough</p>
+                <h2>See it move. No install required.</h2>
+                <p>Four short captures of the real UI — connect a broker, dispatch a message, run a workflow and
+                    manage schemas.</p>
+            </div>
+
+            <div class="gifwall">
+                <figure class="cap">
+                    <div class="cap-bar">
+                        <span class="cap-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+                        <span class="cap-path">devset ▸ connections</span>
+                        <span class="cap-tag">01</span>
+                    </div>
+                    <video class="cap-img" autoplay loop muted playsinline preload="none"
+                           width="1920" height="1179"
+                           aria-label="Adding a Kafka connection in the Devset UI">
+                        <source src="./assets/gif/connection.mp4" type="video/mp4"/>
+                    </video>
+                    <figcaption class="cap-desc">
+                        <strong>Wire up a broker</strong>
+                        Point Devset at local Kafka, RabbitMQ or a database. Add it once, reuse it everywhere.
+                    </figcaption>
+                </figure>
+
+                <figure class="cap">
+                    <div class="cap-bar">
+                        <span class="cap-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+                        <span class="cap-path">devset ▸ dispatch</span>
+                        <span class="cap-tag">02</span>
+                    </div>
+                    <video class="cap-img" autoplay loop muted playsinline preload="none"
+                           width="1920" height="1179"
+                           aria-label="Composing and sending a message in Message Dispatch">
+                        <source src="./assets/gif/message-dispatch.mp4" type="video/mp4"/>
+                    </video>
+                    <figcaption class="cap-desc">
+                        <strong>Fire a message</strong>
+                        Build the payload and headers in the UI, pick a topic, hit send. No producer script.
+                    </figcaption>
+                </figure>
+
+                <figure class="cap">
+                    <div class="cap-bar">
+                        <span class="cap-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+                        <span class="cap-path">devset ▸ workflow ▸ run</span>
+                        <span class="cap-tag">03</span>
+                    </div>
+                    <video class="cap-img" autoplay loop muted playsinline preload="none"
+                           width="1920" height="1179"
+                           aria-label="Running a workflow and watching the live output stream">
+                        <source src="./assets/gif/output-workflow.mp4" type="video/mp4"/>
+                    </video>
+                    <figcaption class="cap-desc">
+                        <strong>Run a flow, read the output</strong>
+                        Fire a multi-stage flow and watch every event land in a live output stream.
+                    </figcaption>
+                </figure>
+
+                <figure class="cap">
+                    <div class="cap-bar">
+                        <span class="cap-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+                        <span class="cap-path">devset ▸ schemas</span>
+                        <span class="cap-tag">04</span>
+                    </div>
+                    <video class="cap-img" autoplay loop muted playsinline preload="none"
+                           width="1920" height="1179"
+                           aria-label="Browsing and editing schemas in the schema repository">
+                        <source src="./assets/gif/schema.mp4" type="video/mp4"/>
+                    </video>
+                    <figcaption class="cap-desc">
+                        <strong>Keep schemas close</strong>
+                        JSON Schema and Protobuf, versioned and ready to bind to any field in Function Studio.
+                    </figcaption>
+                </figure>
+            </div>
+
+            <div class="gifwall-cta">
+                <a class="btn btn-link" href="https://docs.devset.io/" target="_blank" rel="noreferrer">read the docs →</a>
+            </div>
         </section>
 
         <div class="ascii-rule">install</div>
@@ -625,6 +669,7 @@
                         <a class="btn btn-primary" href="https://github.com/devset-io/devset-ce" target="_blank"
                            rel="noreferrer">open github →</a>
                         <a class="btn" href="#install">install in 3 steps</a>
+                        <a class="btn btn-link" href="https://docs.devset.io/" target="_blank" rel="noreferrer">read the docs →</a>
                     </div>
                 </div>
             </section>
@@ -634,10 +679,11 @@
     <!-- ─────────────────────── FOOTER ─────────────────────── -->
     <footer class="footer">
         <div class="left">
-            <img class="mark" src="./assets/devset-logo.svg" alt=""/>
+            <img class="mark" src="./assets/favicon-32.png" alt=""/>
             <span>devset — local message lab · source-available</span>
         </div>
         <div class="meta">
+            <a href="https://docs.devset.io/" target="_blank" rel="noreferrer">docs</a>
             <a href="https://github.com/devset-io/devset-ce" target="_blank" rel="noreferrer">github</a>
             <a href="https://github.com/devset-io/devset-ce/issues" target="_blank" rel="noreferrer">issues</a>
             <a href="https://github.com/devset-io/devset-ce/blob/main/LICENSE" target="_blank" rel="noreferrer">license · fsl-1.1-apache-2.0</a>
