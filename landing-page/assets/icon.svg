@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="180" height="180" viewBox="0 0 180 180">
+  <rect width="180" height="180" rx="34" fill="#131a20"/>
+  <image xlink:href="logo.svg" href="logo.svg" x="20" y="69" width="140" height="42"
+         preserveAspectRatio="xMidYMid meet"/>
+</svg>
