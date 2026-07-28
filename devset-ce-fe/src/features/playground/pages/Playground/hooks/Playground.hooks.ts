@@ -110,7 +110,7 @@ export function usePlaygroundPage(options: UsePlaygroundPageOptions) {
   }, [rawDispatch])
 
   // 4. Stable callbacks — memoized so identity only changes if dispatch changes (never).
-  // eslint-disable-next-line react-hooks/refs -- stateRef is only read inside event handler callbacks, not during memo computation
+  // stateRef is only read inside event-handler callbacks, not during memo computation.
   const callbacks = useMemo(() => buildCallbacks(dispatchWithEffects, stateRef), [dispatchWithEffects])
   const onBackToBuilder = useCallback(() => dispatchWithEffects({ type: 'backToBuilder' }), [dispatchWithEffects])
 

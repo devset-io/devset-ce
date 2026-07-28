@@ -90,6 +90,7 @@ const parseRawJsonObject = (raw: string, fieldName: 'set' | 'state'): Record<str
         `Pole \`${fieldName}\` zawiera niepoprawny JSON: ${message}`,
         `Field \`${fieldName}\` contains invalid JSON: ${message}`,
       ),
+      { cause: error },
     )
   }
   if (!isRecordObject(parsed)) {

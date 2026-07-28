@@ -46,7 +46,6 @@ export const HintInput = React.memo(function HintInput({ value, onChange, items,
   const showHints = open && filtered.length > 0
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: reset index when query changes
     setActiveIndex(0)
   }, [query])
 
