@@ -253,7 +253,6 @@ export const FunctionExpressionBuilder = React.memo(function FunctionExpressionB
   useEffect(() => {
     if (inputMode === 'builder' && value.trim()) {
       suppressNextBuilderEmitRef.current = true
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       hydrateFromExpression(value)
     }
   }, [inputMode, value])

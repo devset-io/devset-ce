@@ -58,7 +58,7 @@ export function useFlowBuilderPayload(payload: DslPayload) {
     if (isPayloadDraftDirty) {
       return
     }
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: sync draft with payload when user hasn't edited
+    // Intentional setState-in-effect: sync draft with payload when the user hasn't edited.
     setPayloadDraft(JSON.stringify(payload, null, 2))
   }, [isPayloadDraftDirty, payload])
 
