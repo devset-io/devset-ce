@@ -72,8 +72,7 @@ export function createLocalStorageWorkspaceRepository(
       if (!parsed || !Array.isArray(parsed.tabs) || parsed.schemaVersion !== WORKSPACE_SCHEMA_VERSION) {
         return Promise.resolve(null)
       }
-      const { schemaVersion: _schemaVersion, ...workspace } = parsed
-      return Promise.resolve(workspace)
+      return Promise.resolve({ activeTabId: parsed.activeTabId, tabs: parsed.tabs })
     },
 
     save(workspace) {
