@@ -1,6 +1,13 @@
-import { describe, expect, it } from 'vitest'
-import { parseStepStateStrict, resolveCollectionContext } from './dispatchExecution.utils'
+import { describe, expect, it, vi } from 'vitest'
+import {
+  parseStepState,
+  parseStepStateStrict,
+  resolveCollectionContext,
+  resolveDispatchWireFormat,
+} from './dispatchExecution.utils'
 import type { CollectionSummary } from '../../../../services/message-dispatch.service'
+
+const t = (key: string) => key
 
 const collection = (
   collectionName: string,
@@ -55,5 +62,72 @@ describe('parseStepStateStrict', () => {
     expect(() => parseStepStateStrict('[1,2,3]')).toThrow()
     expect(() => parseStepStateStrict('"text"')).toThrow()
     expect(() => parseStepStateStrict('null')).toThrow()
+  })
+})
+
+describe('parseStepState', () => {
+  it('parses a valid non-empty JSON object', () => {
+    expect(parseStepState('{"a":1}', t)).toEqual({ a: 1 })
+  })
+
+  it('throws for non-object payloads (array, string, null)', () => {
+    expect(() => parseStepState('[1,2,3]', t)).toThrow()
+    expect(() => parseStepState('"text"', t)).toThrow()
+    expect(() => parseStepState('null', t)).toThrow()
+  })
+
+  it('throws for an empty object', () => {
+    expect(() => parseStepState('{}', t)).toThrow()
+  })
+})
+
+describe('resolveDispatchWireFormat', () => {
+  const onInvalidPrefix = vi.fn()
+
+  it('returns undefined when not in protobuf mode', () => {
+    const result = resolveDispatchWireFormat({
+      isProtobuf: false,
+      wireFormatEnabled: true,
+      wireFormatPrefixValue: '10',
+      onInvalidPrefix,
+      t,
+    })
+    expect(result).toBeUndefined()
+  })
+
+  it('returns undefined when wire format is not enabled', () => {
+    const result = resolveDispatchWireFormat({
+      isProtobuf: true,
+      wireFormatEnabled: false,
+      wireFormatPrefixValue: '10',
+      onInvalidPrefix,
+      t,
+    })
+    expect(result).toBeUndefined()
+  })
+
+  it('builds a binary-prefix wire format for a valid prefix value', () => {
+    const result = resolveDispatchWireFormat({
+      isProtobuf: true,
+      wireFormatEnabled: true,
+      wireFormatPrefixValue: '16',
+      onInvalidPrefix,
+      t,
+    })
+    expect(result).toEqual({ type: 'binary-prefix', prefix: { size: 2, source: 'messagePrefix', value: 16 } })
+  })
+
+  it('reports and throws on an invalid prefix value', () => {
+    onInvalidPrefix.mockClear()
+    expect(() =>
+      resolveDispatchWireFormat({
+        isProtobuf: true,
+        wireFormatEnabled: true,
+        wireFormatPrefixValue: 'not-a-number',
+        onInvalidPrefix,
+        t,
+      }),
+    ).toThrow()
+    expect(onInvalidPrefix).toHaveBeenCalledTimes(1)
   })
 })

@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { createInitialState, reducer } from './MessageDispatch.reducer'
-import type { CollectionContextEntry, MessageDispatchState } from './MessageDispatch.types'
+import type { CollectionContextEntry, MessageDispatchAction, MessageDispatchState } from './MessageDispatch.types'
+import type { ConnectorStatus } from '../../../../../shared/services/kafka-connectors.service'
+import type { FieldOverridePayload } from '../../../../flow-builder/types'
 
 const stateWith = (overrides: Partial<MessageDispatchState>): MessageDispatchState => ({
   ...createInitialState(),
@@ -458,5 +460,356 @@ describe('singleRequestSelected tab sync', () => {
     })
     expect(cleared.tabs[0].savedRequestRef).toBeNull()
     expect(cleared.tabs[0].title).toBe('Untitled')
+  })
+})
+
+// -- config -------------------------------------------------------------------
+
+const conn = (name: string): ConnectorStatus => ({
+  name,
+  type: 'kafka',
+  endpoint: 'localhost:9092',
+  producerConnected: true,
+  consumerConnected: true,
+  authenticated: true,
+})
+
+describe('configLoaded', () => {
+  it('uses the given active connector name when present', () => {
+    const next = reducer(createInitialState(), {
+      type: 'configLoaded',
+      connectors: [conn('a'), conn('b')],
+      activeConnectorName: 'b',
+      schemas: [],
+    })
+    expect(next.selectedConnectorName).toBe('b')
+    expect(next.isLoadingConfig).toBe(false)
+    expect(next.configError).toBeNull()
+  })
+
+  it('falls back to the first connector when no active name is given', () => {
+    const next = reducer(createInitialState(), {
+      type: 'configLoaded',
+      connectors: [conn('a'), conn('b')],
+      activeConnectorName: null,
+      schemas: [],
+    })
+    expect(next.selectedConnectorName).toBe('a')
+  })
+
+  it('falls back to an empty string when there are no connectors', () => {
+    const next = reducer(createInitialState(), {
+      type: 'configLoaded',
+      connectors: [],
+      activeConnectorName: null,
+      schemas: [],
+    })
+    expect(next.selectedConnectorName).toBe('')
+  })
+})
+
+describe('configLoadFailed', () => {
+  it('stores the error and clears the loading flag', () => {
+    const next = reducer(createInitialState(), { type: 'configLoadFailed', error: 'boom' })
+    expect(next.isLoadingConfig).toBe(false)
+    expect(next.configError).toBe('boom')
+  })
+})
+
+describe('connectorsUpdated', () => {
+  it('preserves the current selection when it still exists', () => {
+    const state = stateWith({ selectedConnectorName: 'b' })
+    const next = reducer(state, {
+      type: 'connectorsUpdated',
+      connectors: [conn('a'), conn('b')],
+      activeConnectorName: 'a',
+    })
+    expect(next.selectedConnectorName).toBe('b')
+  })
+
+  it('switches to the active connector when the current one disappears', () => {
+    const state = stateWith({ selectedConnectorName: 'gone' })
+    const next = reducer(state, {
+      type: 'connectorsUpdated',
+      connectors: [conn('a')],
+      activeConnectorName: 'a',
+    })
+    expect(next.selectedConnectorName).toBe('a')
+  })
+
+  it('falls back to the first connector when neither the current nor active one is available', () => {
+    const state = stateWith({ selectedConnectorName: 'gone' })
+    const next = reducer(state, {
+      type: 'connectorsUpdated',
+      connectors: [conn('a')],
+      activeConnectorName: null,
+    })
+    expect(next.selectedConnectorName).toBe('a')
+  })
+})
+
+// -- payload / studio -----------------------------------------------------------
+
+describe('payload editor actions', () => {
+  it('stepStateRawChanged and stepStateBeautified both replace stepStateRaw', () => {
+    expect(reducer(createInitialState(), { type: 'stepStateRawChanged', value: '{"a":1}' }).stepStateRaw).toBe('{"a":1}')
+    expect(reducer(createInitialState(), { type: 'stepStateBeautified', value: '{\n  "a": 1\n}' }).stepStateRaw).toBe(
+      '{\n  "a": 1\n}',
+    )
+  })
+
+  it('studioOverrideApplied merges the override and selects the field', () => {
+    const payload = { mode: 'literal', value: 'x' } as unknown as FieldOverridePayload
+    const next = reducer(createInitialState(), { type: 'studioOverrideApplied', field: 'foo', payload })
+    expect(next.studioOverridesByField.foo).toEqual(payload)
+    expect(next.studioSelectedField).toBe('foo')
+  })
+
+  it('studioStateReset clears overrides, selected field, and scope path', () => {
+    const state = stateWith({
+      studioOverridesByField: { foo: {} as FieldOverridePayload },
+      studioSelectedField: 'foo',
+      studioScopePath: '$.foo',
+    })
+    const next = reducer(state, { type: 'studioStateReset' })
+    expect(next.studioOverridesByField).toEqual({})
+    expect(next.studioSelectedField).toBe('')
+    expect(next.studioScopePath).toBe('')
+  })
+
+  it('schemaTemplateApplied replaces stepStateRaw and clears studio state', () => {
+    const state = stateWith({ studioSelectedField: 'foo', studioScopePath: '$.foo' })
+    const next = reducer(state, { type: 'schemaTemplateApplied', stepStateRaw: '{"tpl":true}' })
+    expect(next.stepStateRaw).toBe('{"tpl":true}')
+    expect(next.studioSelectedField).toBe('')
+    expect(next.studioScopePath).toBe('')
+  })
+})
+
+// -- wire format ------------------------------------------------------------------
+
+describe('wireFormatEnabledChanged', () => {
+  it('clears the error and disables when turned off', () => {
+    const state = stateWith({ wireFormatEnabled: true, wireFormatPrefixValueError: 'invalid-range' })
+    const next = reducer(state, { type: 'wireFormatEnabledChanged', enabled: false })
+    expect(next.wireFormatEnabled).toBe(false)
+    expect(next.wireFormatPrefixValueError).toBeNull()
+  })
+
+  it('enables and keeps a valid prefix value as-is', () => {
+    const state = stateWith({ wireFormatPrefixValue: '42' })
+    const next = reducer(state, { type: 'wireFormatEnabledChanged', enabled: true })
+    expect(next.wireFormatEnabled).toBe(true)
+    expect(next.wireFormatPrefixValue).toBe('42')
+  })
+
+  it('enables and resets an invalid prefix value to "0"', () => {
+    const state = stateWith({ wireFormatPrefixValue: 'not-a-number' })
+    const next = reducer(state, { type: 'wireFormatEnabledChanged', enabled: true })
+    expect(next.wireFormatEnabled).toBe(true)
+    expect(next.wireFormatPrefixValue).toBe('0')
+  })
+})
+
+describe('wireFormatRestoredFromHistory', () => {
+  it('applies a valid binary-prefix wire format from history', () => {
+    const next = reducer(createInitialState(), {
+      type: 'wireFormatRestoredFromHistory',
+      wireFormat: { type: 'binary-prefix', prefix: { size: 2, source: 'messagePrefix', value: 8 } },
+    })
+    expect(next.wireFormatEnabled).toBe(true)
+    expect(next.wireFormatPrefixValue).toBe('8')
+  })
+
+  it('resets to defaults when no wire format is present', () => {
+    const state = stateWith({ wireFormatEnabled: true, wireFormatPrefixValue: '8' })
+    const next = reducer(state, { type: 'wireFormatRestoredFromHistory', wireFormat: undefined })
+    expect(next.wireFormatEnabled).toBe(false)
+    expect(next.wireFormatPrefixValue).toBe('0')
+  })
+})
+
+// -- history / execution -----------------------------------------------------------
+
+describe('history and execution actions', () => {
+  it('historyLoaded / historyLoadFailed', () => {
+    const loaded = reducer(createInitialState(), { type: 'historyLoaded', items: [] })
+    expect(loaded.isHistoryLoading).toBe(false)
+    expect(loaded.historyError).toBeNull()
+
+    const failed = reducer(createInitialState(), { type: 'historyLoadFailed', error: 'oops' })
+    expect(failed.isHistoryLoading).toBe(false)
+    expect(failed.historyError).toBe('oops')
+  })
+
+  it('sendStarted / sendCompleted / sendFailed / sendErrorCleared', () => {
+    const started = reducer(stateWith({ sendError: 'stale' }), { type: 'sendStarted' })
+    expect(started.isSending).toBe(true)
+    expect(started.sendError).toBeNull()
+
+    const completed = reducer(stateWith({ isSending: true }), { type: 'sendCompleted' })
+    expect(completed.isSending).toBe(false)
+
+    const failed = reducer(stateWith({ isSending: true }), { type: 'sendFailed', error: 'network' })
+    expect(failed.isSending).toBe(false)
+    expect(failed.sendError).toBe('network')
+
+    const cleared = reducer(stateWith({ sendError: 'network' }), { type: 'sendErrorCleared' })
+    expect(cleared.sendError).toBeNull()
+  })
+})
+
+// -- collections / saved requests -----------------------------------------------------
+
+describe('collections and saved-request bookkeeping actions', () => {
+  it('collectionsLoaded replaces the collections list and clears loading/error', () => {
+    const next = reducer(createInitialState(), {
+      type: 'collectionsLoaded',
+      collections: [{ collectionName: 'a', collectionContext: {} }],
+    })
+    expect(next.collections).toEqual([{ collectionName: 'a', collectionContext: {} }])
+    expect(next.isCollectionsLoading).toBe(false)
+    expect(next.collectionsError).toBeNull()
+  })
+
+  it('savingSingleRequestStarted / savingSingleRequestCompleted toggle the saving flag', () => {
+    expect(reducer(createInitialState(), { type: 'savingSingleRequestStarted' }).isSavingSingleRequest).toBe(true)
+    expect(
+      reducer(stateWith({ isSavingSingleRequest: true }), { type: 'savingSingleRequestCompleted' }).isSavingSingleRequest,
+    ).toBe(false)
+  })
+
+  it('loadedSelectionCleared wipes the loaded single-request selection', () => {
+    const state = stateWith({
+      selectedSingleRequestName: 'req-a',
+      loadedSingleRequestCollectionName: 'col-a',
+      singleRequestNameRaw: 'req-a',
+    })
+    const next = reducer(state, { type: 'loadedSelectionCleared' })
+    expect(next.selectedSingleRequestName).toBeNull()
+    expect(next.loadedSingleRequestCollectionName).toBeNull()
+    expect(next.singleRequestNameRaw).toBe('')
+  })
+
+  it('requestRenameCompleted dismisses the inline editor', () => {
+    const state = stateWith({ editingRequest: { collectionName: 'c', currentName: 'a', nextName: 'b' } })
+    expect(reducer(state, { type: 'requestRenameCompleted' }).editingRequest).toBeNull()
+  })
+})
+
+// -- collection context modal saving flag ------------------------------------------------
+
+describe('collection context saving flags', () => {
+  it('savingCollectionContextStarted / savingCollectionContextCompleted toggle the flag', () => {
+    expect(reducer(createInitialState(), { type: 'savingCollectionContextStarted' }).isSavingCollectionContext).toBe(true)
+    expect(
+      reducer(stateWith({ isSavingCollectionContext: true }), { type: 'savingCollectionContextCompleted' })
+        .isSavingCollectionContext,
+    ).toBe(false)
+  })
+})
+
+// -- bulk hydration ------------------------------------------------------------------
+
+describe('draftHydratedFromHistory / draftHydratedFromSavedRequest', () => {
+  it('spreads the patch directly onto state', () => {
+    const fromHistory = reducer(createInitialState(), {
+      type: 'draftHydratedFromHistory',
+      patch: { topicRaw: 'orders', contentMode: 'protobuf' },
+    })
+    expect(fromHistory.topicRaw).toBe('orders')
+    expect(fromHistory.contentMode).toBe('protobuf')
+
+    const fromSavedRequest = reducer(createInitialState(), {
+      type: 'draftHydratedFromSavedRequest',
+      patch: { topicRaw: 'events' },
+    })
+    expect(fromSavedRequest.topicRaw).toBe('events')
+  })
+})
+
+// -- tabClosed edge case --------------------------------------------------------------
+
+describe('tabClosed with an unknown id', () => {
+  it('is a no-op', () => {
+    const state = createInitialState()
+    expect(reducer(state, { type: 'tabClosed', id: 'does-not-exist' })).toBe(state)
+  })
+})
+
+// -- side-effect-only actions ----------------------------------------------------------
+
+describe('side-effect-only actions', () => {
+  it('return the same state unchanged', () => {
+    const state = createInitialState()
+    const sideEffectActions: MessageDispatchAction[] = [
+      { type: 'init' },
+      { type: 'send' },
+      { type: 'refreshHistory' },
+      { type: 'refreshCollections' },
+      { type: 'createCollection' },
+      { type: 'deleteCollection', name: 'col' },
+      { type: 'cloneCollection', name: 'col' },
+      { type: 'loadCollection', name: 'col' },
+      { type: 'loadSingleRequest', name: 'req', collectionName: 'col' },
+      { type: 'deleteSingleRequest', name: 'req', collectionName: 'col' },
+      { type: 'saveSingleRequest' },
+      { type: 'submitRequestRename' },
+      { type: 'applyProtoSchemaBase' },
+      { type: 'importProtoSchema', schemaId: 's1' },
+      { type: 'importJsonSchema', schemaId: 's1' },
+      { type: 'loadHistoryEntry', historyId: 'h1' },
+      { type: 'previewHistoryEntry', historyId: 'h1' },
+      { type: 'saveModalSubmit' },
+    ]
+    for (const action of sideEffectActions) {
+      expect(reducer(state, action)).toBe(state)
+    }
+  })
+})
+
+describe('remaining small config/execution actions', () => {
+  it('kafkaHeadersSet converts a headers record into rows', () => {
+    const next = reducer(createInitialState(), { type: 'kafkaHeadersSet', headers: { 'X-Trace': 'abc' } })
+    expect(next.kafkaHeadersRows.map((r) => [r.key, r.value])).toEqual([['X-Trace', 'abc']])
+  })
+
+  it('protoBaseApplied / protoBaseCleared toggle isProtoBaseApplied', () => {
+    expect(reducer(createInitialState(), { type: 'protoBaseApplied' }).isProtoBaseApplied).toBe(true)
+    expect(reducer(stateWith({ isProtoBaseApplied: true }), { type: 'protoBaseCleared' }).isProtoBaseApplied).toBe(false)
+  })
+
+  it('selectedSchemaIdChanged / appliedProtoSchemaChanged replace their fields', () => {
+    expect(reducer(createInitialState(), { type: 'selectedSchemaIdChanged', id: 's1' }).selectedSchemaId).toBe('s1')
+    expect(reducer(createInitialState(), { type: 'appliedProtoSchemaChanged', value: 'message X {}' }).appliedProtoSchemaRaw).toBe(
+      'message X {}',
+    )
+  })
+
+  it('protoResyncRequired sets the flag from the action', () => {
+    expect(reducer(createInitialState(), { type: 'protoResyncRequired', value: true }).isProtoResyncRequired).toBe(true)
+  })
+
+  it('loadedHistoryCleared wipes the loaded history pointers', () => {
+    const state = stateWith({
+      loadedHistoryMetadata: { executions: 1, stage: 's', event: 'e', headers: {}, workflowState: {} },
+      loadedFromHistoryId: 'h1',
+    })
+    const next = reducer(state, { type: 'loadedHistoryCleared' })
+    expect(next.loadedHistoryMetadata).toBeNull()
+    expect(next.loadedFromHistoryId).toBeNull()
+  })
+
+  it('savingSingleRequestFailed clears the saving flag', () => {
+    const next = reducer(stateWith({ isSavingSingleRequest: true }), { type: 'savingSingleRequestFailed' })
+    expect(next.isSavingSingleRequest).toBe(false)
+  })
+})
+
+describe('exhaustiveness guard', () => {
+  it('does not throw for an unrecognised action type', () => {
+    const state = createInitialState()
+    const bogus = { type: 'not-a-real-action' } as unknown as MessageDispatchAction
+    expect(() => reducer(state, bogus)).not.toThrow()
   })
 })
