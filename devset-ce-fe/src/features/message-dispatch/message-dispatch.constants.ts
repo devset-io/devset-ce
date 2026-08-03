@@ -30,3 +30,6 @@ message ExampleMessage {
 
 export const DEFAULT_STAGE = 'single-step'
 export const DEFAULT_EVENT = 'single-step-event'
+
+/** Fallback collection for requests saved without picking a collection. */
+export const DEFAULT_COLLECTION_NAME = 'Uncategorized'

@@ -11,6 +11,7 @@
 import React from 'react'
 import { DispatchRequestHead } from './DispatchRequestHead'
 import { DispatchSaveModal } from './DispatchSaveModal'
+import { DispatchUpdateConfirmModal } from './DispatchUpdateConfirmModal'
 import { DispatchConnectorConfig } from './DispatchConnectorConfig'
 import { DispatchSchemaSection } from './DispatchSchemaSection'
 import { DispatchPayloadEditor } from './DispatchPayloadEditor'
@@ -43,6 +44,14 @@ export const DispatchRequestCard = React.memo(function DispatchRequestCard(props
         onSaveModalSubmit={props.onSaveModalSubmit}
         onSaveCollectionNameChange={props.onSaveCollectionNameChange}
         onSaveRequestNameChange={props.onSaveRequestNameChange}
+      />
+
+      <DispatchUpdateConfirmModal
+        labels={props.labels}
+        updateConfirm={props.updateConfirm}
+        isSavingSingleRequest={props.isSavingSingleRequest}
+        onUpdateConfirmClose={props.onUpdateConfirmClose}
+        onUpdateConfirmSubmit={props.onUpdateConfirmSubmit}
       />
 
       {props.configError ? <p className="dispatch-error">{props.configError}</p> : null}

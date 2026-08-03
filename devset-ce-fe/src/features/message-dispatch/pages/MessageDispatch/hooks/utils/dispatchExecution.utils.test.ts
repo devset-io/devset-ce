@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { resolveCollectionContext } from './dispatchExecution.utils'
+import { parseStepStateStrict, resolveCollectionContext } from './dispatchExecution.utils'
 import type { CollectionSummary } from '../../../../services/message-dispatch.service'
 
 const collection = (
@@ -39,5 +39,21 @@ describe('resolveCollectionContext', () => {
   it('flags missing=true when collections list is empty', () => {
     const result = resolveCollectionContext([], 'gone')
     expect(result).toEqual({ context: {}, missing: true })
+  })
+})
+
+describe('parseStepStateStrict', () => {
+  it('parses a valid JSON object', () => {
+    expect(parseStepStateStrict('{"a":1}')).toEqual({ a: 1 })
+  })
+
+  it('throws on invalid JSON instead of returning {}', () => {
+    expect(() => parseStepStateStrict('{"a":1},sss')).toThrow()
+  })
+
+  it('throws when the payload is not an object', () => {
+    expect(() => parseStepStateStrict('[1,2,3]')).toThrow()
+    expect(() => parseStepStateStrict('"text"')).toThrow()
+    expect(() => parseStepStateStrict('null')).toThrow()
   })
 })

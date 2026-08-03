@@ -21,13 +21,13 @@ import {
 } from '../../../../services/message-dispatch.service'
 import type { MessageDispatchAction, MessageDispatchState } from '../../state/MessageDispatch.types'
 import { normalizeError } from '../../../../../../shared/utils/error'
+import { DEFAULT_COLLECTION_NAME } from '../../../../message-dispatch.constants'
 
 type UseDispatchSingleRequestActionsParams = {
   dispatch: Dispatch<MessageDispatchAction>
   stateRef: RefObject<MessageDispatchState>
   refreshCollections: (showSpinner?: boolean) => Promise<void>
   buildSingleRequestPayload: (singleRequestName: string, collectionName: string) => SingleRequestPayload
-  loadSingleRequestToDispatch: (entry: SingleRequestPayload) => void
 }
 
 export function useDispatchSingleRequestActions({
@@ -35,7 +35,6 @@ export function useDispatchSingleRequestActions({
   stateRef,
   refreshCollections,
   buildSingleRequestPayload,
-  loadSingleRequestToDispatch,
 }: UseDispatchSingleRequestActionsParams) {
   const { t } = useI18n()
 
@@ -48,11 +47,9 @@ export function useDispatchSingleRequestActions({
     collectionName: string,
     singleRequestName: string,
   ): Promise<boolean> => {
-    const normalizedCollectionName = collectionName.trim()
-    if (!normalizedCollectionName) {
-      failCollection(t('dispatch.vm.selectCollectionFirst'))
-      return false
-    }
+    // No collection picked → fall back to the default "Uncategorized" collection
+    // (auto-created below), so scratch requests can be saved without a collection.
+    const normalizedCollectionName = collectionName.trim() || DEFAULT_COLLECTION_NAME
 
     const normalizedSingleRequestName = singleRequestName.trim()
     if (!normalizedSingleRequestName) {
@@ -100,9 +97,11 @@ export function useDispatchSingleRequestActions({
 
   const saveCurrentAsSingleRequest = async () => {
     const state = stateRef.current
+    // Update writes back to the SOURCE the tab was opened from (its saved-request
+    // collection), not whatever collection is currently selected in the sidebar.
     return saveSingleRequestWithValues(
-      state.selectedCollectionName,
-      state.singleRequestNameRaw || state.selectedSingleRequestName || '',
+      state.loadedSingleRequestCollectionName || state.selectedCollectionName,
+      state.selectedSingleRequestName || state.singleRequestNameRaw || '',
     )
   }
 
@@ -209,6 +208,17 @@ export function useDispatchSingleRequestActions({
     )
   }
 
+  // Always opens a saved request in a NEW tab at the front of the bar (each click
+  // gets its own mirror, even if the request is already open elsewhere). The tab
+  // keeps a savedRequestRef to its source so Update writes back there. The form is
+  // hydrated from the catalog by useDispatchTabHydration once the tab is active.
+  const openSavedRequestInNewTab = (entry: SingleRequestPayload) => {
+    dispatch({
+      type: 'tabOpenedFromSavedRequest',
+      ref: { collectionName: entry.collectionName, singleRequestName: entry.singleRequestName },
+    })
+  }
+
   const loadSingleRequest = async (singleRequestName: string, collectionName?: string) => {
     const normalizedName = singleRequestName.trim()
     if (!normalizedName) {
@@ -232,10 +242,7 @@ export function useDispatchSingleRequestActions({
       null
 
     if (local) {
-      loadSingleRequestToDispatch(local)
-      dispatch({ type: 'collectionSelected', name: local.collectionName })
-      dispatch({ type: 'singleRequestSelected', name: local.singleRequestName, collectionName: local.collectionName })
-      dispatch({ type: 'singleRequestNameChanged', value: local.singleRequestName })
+      openSavedRequestInNewTab(local)
       return
     }
 
@@ -244,10 +251,17 @@ export function useDispatchSingleRequestActions({
       if (!loaded) {
         throw new Error(t('dispatch.vm.singleRequestNotFound', { requestName: normalizedName }))
       }
-      loadSingleRequestToDispatch(loaded)
-      dispatch({ type: 'collectionSelected', name: loaded.collectionName })
-      dispatch({ type: 'singleRequestSelected', name: loaded.singleRequestName, collectionName: loaded.collectionName })
-      dispatch({ type: 'singleRequestNameChanged', value: loaded.singleRequestName })
+      // Ensure the fetched request is in the catalog so the hydration effect can populate the tab.
+      if (
+        !stateRef.current.singleRequests.some(
+          (entry) =>
+            entry.singleRequestName === loaded.singleRequestName &&
+            entry.collectionName === loaded.collectionName,
+        )
+      ) {
+        dispatch({ type: 'singleRequestsLoaded', requests: [...stateRef.current.singleRequests, loaded] })
+      }
+      openSavedRequestInNewTab(loaded)
     } catch (error) {
       failCollection(normalizeError(error, t('dispatch.vm.loadSingleRequestFailed')))
     }

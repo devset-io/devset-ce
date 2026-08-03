@@ -12,13 +12,14 @@ import type { RefObject } from 'react'
 import { useI18n } from '../../../../../../core/i18n/I18nProvider'
 import { requireTrimmed } from '../../../../../../shared/utils/string-guards'
 import { trimOr, trimToNull } from '../../../../../../shared/utils/string-normalization'
+import { serializeKeyValue } from '../../../../../../shared/types/key-value.types'
 import type { LoadedSchema } from '../../../../../flow-builder/types'
 import type { ConnectorStatus } from '../../../../../../shared/services/kafka-connectors.service'
 import type { SingleRequestPayload } from '../../../../services/message-dispatch.service'
 import type { MessageDispatchState } from '../../state/MessageDispatch.types'
 import {
   isRecord,
-  parseStepStateLenient,
+  parseStepStateStrict,
   resolveExecutionCount,
   resolveSavedRequestWireFormat,
   toHeadersRecord,
@@ -69,7 +70,11 @@ export function useDispatchSingleRequestDraft({
       executions: resolveExecutionCount(state.loadedHistoryMetadata?.executions),
       stage: trimToNull(state.loadedHistoryMetadata?.stage),
       event: trimToNull(state.loadedHistoryMetadata?.event),
-      state: parseStepStateLenient(state.stepStateRaw),
+      state: parseStepStateStrict(state.stepStateRaw),
+      key:
+        messageType === 'kafka'
+          ? serializeKeyValue({ kind: state.kafkaKeyKind, value: state.kafkaKeyRaw })
+          : null,
       headers:
         messageType === 'kafka'
           ? Object.keys(normalizedKafkaHeaders).length > 0

@@ -258,3 +258,205 @@ describe('collectionContextModalErrorSet', () => {
     expect(next.collectionContextModalError).toBeNull()
   })
 })
+
+// -- tabs ---------------------------------------------------------------------
+
+describe('tabs', () => {
+  it('starts with a single active scratch tab', () => {
+    const state = createInitialState()
+    expect(state.tabs).toHaveLength(1)
+    expect(state.tabs[0].savedRequestRef).toBeNull()
+    expect(state.activeTabId).toBe(state.tabs[0].id)
+  })
+
+  it('tabOpenedScratch stashes the current form and resets to defaults', () => {
+    const state = stateWith({ topicRaw: 'orders', stepStateRaw: '{"a":1}' })
+    const next = reducer(state, { type: 'tabOpenedScratch' })
+
+    expect(next.tabs).toHaveLength(2)
+    expect(next.activeTabId).toBe(next.tabs[1].id)
+    // outgoing tab keeps the stashed form
+    expect(next.tabs[0].formSnapshot?.topicRaw).toBe('orders')
+    // live form is reset for the new scratch tab
+    expect(next.topicRaw).toBe('')
+    expect(next.stepStateRaw).toBe(createInitialState().stepStateRaw)
+  })
+
+  it('tabOpenedFromSavedRequest adds a tab at the front with the ref and null snapshot', () => {
+    const state = createInitialState()
+    const ref = { collectionName: 'col', singleRequestName: 'req-a' }
+    const next = reducer(state, { type: 'tabOpenedFromSavedRequest', ref })
+
+    const opened = next.tabs[0]
+    expect(next.tabs).toHaveLength(2)
+    expect(next.activeTabId).toBe(opened.id)
+    expect(opened.savedRequestRef).toEqual(ref)
+    expect(opened.formSnapshot).toBeNull()
+    expect(opened.title).toBe('req-a')
+    expect(opened.order).toBe(0)
+  })
+
+  it('tabSwitched stashes the active form and restores the target snapshot', () => {
+    const opened = reducer(
+      stateWith({ topicRaw: 'first' }),
+      { type: 'tabOpenedScratch' },
+    )
+    const edited = reducer(opened, { type: 'topicChanged', value: 'second' })
+    const firstTabId = edited.tabs[0].id
+
+    const back = reducer(edited, { type: 'tabSwitched', id: firstTabId })
+
+    expect(back.activeTabId).toBe(firstTabId)
+    expect(back.topicRaw).toBe('first')
+    // the tab we left keeps its edited value
+    const secondTab = back.tabs.find((t) => t.id === edited.activeTabId)
+    expect(secondTab?.formSnapshot?.topicRaw).toBe('second')
+  })
+
+  it('tabSwitched is a no-op for the active tab and for unknown ids', () => {
+    const state = createInitialState()
+    expect(reducer(state, { type: 'tabSwitched', id: state.activeTabId! })).toBe(state)
+    expect(reducer(state, { type: 'tabSwitched', id: 'nope' })).toBe(state)
+  })
+
+  it('tabClosed activates a neighbour and restores its snapshot', () => {
+    const opened = reducer(stateWith({ topicRaw: 'first' }), { type: 'tabOpenedScratch' })
+    const edited = reducer(opened, { type: 'topicChanged', value: 'second' })
+
+    const closed = reducer(edited, { type: 'tabClosed', id: edited.activeTabId! })
+
+    expect(closed.tabs).toHaveLength(1)
+    expect(closed.activeTabId).toBe(closed.tabs[0].id)
+    expect(closed.topicRaw).toBe('first')
+  })
+
+  it('tabClosed on the last tab leaves a fresh scratch tab', () => {
+    const state = stateWith({ topicRaw: 'orders' })
+    const closed = reducer(state, { type: 'tabClosed', id: state.activeTabId! })
+
+    expect(closed.tabs).toHaveLength(1)
+    expect(closed.tabs[0].savedRequestRef).toBeNull()
+    expect(closed.topicRaw).toBe('')
+  })
+
+  it('tabClosed on an inactive tab keeps the active one', () => {
+    const opened = reducer(createInitialState(), { type: 'tabOpenedScratch' })
+    const inactiveId = opened.tabs[0].id
+
+    const closed = reducer(opened, { type: 'tabClosed', id: inactiveId })
+
+    expect(closed.tabs).toHaveLength(1)
+    expect(closed.activeTabId).toBe(opened.activeTabId)
+  })
+
+  it('tabsHydrated restores tabs and applies the active snapshot', () => {
+    const seed = reducer(stateWith({ topicRaw: 'restored' }), { type: 'tabOpenedScratch' })
+    // simulate what a repository load would carry back
+    const persistedTabs = reducer(seed, { type: 'tabSwitched', id: seed.tabs[0].id }).tabs
+    const targetId = seed.tabs[0].id
+
+    const hydrated = reducer(createInitialState(), {
+      type: 'tabsHydrated',
+      tabs: persistedTabs,
+      activeTabId: targetId,
+    })
+
+    expect(hydrated.tabs).toHaveLength(2)
+    expect(hydrated.activeTabId).toBe(targetId)
+    expect(hydrated.topicRaw).toBe('restored')
+  })
+
+  it('tabsHydrated is a no-op for an empty tab list', () => {
+    const state = createInitialState()
+    expect(reducer(state, { type: 'tabsHydrated', tabs: [], activeTabId: null })).toBe(state)
+  })
+
+  it('serverTabsMerged appends unknown tabs while preserving active tab and edits', () => {
+    const state = stateWith({ topicRaw: 'in-progress' })
+    const serverTab = {
+      id: 'from-other-device',
+      savedRequestRef: { collectionName: 'col', singleRequestName: 'req-b' },
+      formSnapshot: null,
+      activeHistoryRef: null,
+      title: 'req-b',
+      order: 0,
+    }
+
+    const merged = reducer(state, { type: 'serverTabsMerged', tabs: [serverTab] })
+
+    expect(merged.tabs).toHaveLength(2)
+    expect(merged.tabs.map((t) => t.id)).toEqual([state.tabs[0].id, 'from-other-device'])
+    expect(merged.tabs.map((t) => t.order)).toEqual([0, 1])
+    // the live active tab and its in-progress edit are untouched
+    expect(merged.activeTabId).toBe(state.activeTabId)
+    expect(merged.topicRaw).toBe('in-progress')
+  })
+
+  it('serverTabsMerged is a no-op when every incoming tab is already open', () => {
+    const state = createInitialState()
+    const alreadyOpen = { ...state.tabs[0] }
+    expect(reducer(state, { type: 'serverTabsMerged', tabs: [alreadyOpen] })).toBe(state)
+  })
+
+  // Stash invariant guard: only the active tab's fields are ever live on
+  // MessageDispatchState. Editing the active tab, or switching between two OTHER
+  // tabs, must never reach into a third tab's stashed formSnapshot.
+  it('stash invariant: a tab not involved in the current edit or switch keeps its snapshot untouched', () => {
+    const withZero = reducer(stateWith({ topicRaw: 'zero' }), { type: 'tabOpenedScratch' })
+    const tab0Id = withZero.tabs[0].id
+
+    const withOne = reducer(
+      reducer(withZero, { type: 'topicChanged', value: 'one' }),
+      { type: 'tabOpenedScratch' },
+    )
+    const tab1Id = withOne.tabs[1].id
+    const tab2Id = withOne.tabs[2].id
+
+    const withTwo = reducer(withOne, { type: 'topicChanged', value: 'two' })
+
+    // Before any switch: tab0 and tab1 are stashed, tab2 is live.
+    expect(withTwo.tabs.find((t) => t.id === tab0Id)?.formSnapshot?.topicRaw).toBe('zero')
+    expect(withTwo.tabs.find((t) => t.id === tab1Id)?.formSnapshot?.topicRaw).toBe('one')
+    expect(withTwo.topicRaw).toBe('two')
+
+    // Switching tab2 -> tab0 stashes tab2 and hydrates tab0; tab1 is not involved
+    // and must remain exactly as it was stashed.
+    const back = reducer(withTwo, { type: 'tabSwitched', id: tab0Id })
+    expect(back.topicRaw).toBe('zero')
+    expect(back.tabs.find((t) => t.id === tab2Id)?.formSnapshot?.topicRaw).toBe('two')
+    expect(back.tabs.find((t) => t.id === tab1Id)?.formSnapshot?.topicRaw).toBe('one')
+  })
+})
+
+// -- singleRequestSelected syncs the active tab -------------------------------
+
+describe('singleRequestSelected tab sync', () => {
+  it('sets the active tab ref and title when a request is selected', () => {
+    const state = createInitialState()
+    const next = reducer(state, {
+      type: 'singleRequestSelected',
+      name: 'orders-req',
+      collectionName: 'col',
+    })
+    expect(next.tabs[0].savedRequestRef).toEqual({
+      collectionName: 'col',
+      singleRequestName: 'orders-req',
+    })
+    expect(next.tabs[0].title).toBe('orders-req')
+  })
+
+  it('resets the active tab to scratch when the selection is cleared', () => {
+    const loaded = reducer(createInitialState(), {
+      type: 'singleRequestSelected',
+      name: 'orders-req',
+      collectionName: 'col',
+    })
+    const cleared = reducer(loaded, {
+      type: 'singleRequestSelected',
+      name: null,
+      collectionName: null,
+    })
+    expect(cleared.tabs[0].savedRequestRef).toBeNull()
+    expect(cleared.tabs[0].title).toBe('Untitled')
+  })
+})

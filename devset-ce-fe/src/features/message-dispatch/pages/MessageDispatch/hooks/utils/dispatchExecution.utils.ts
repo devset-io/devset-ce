@@ -9,6 +9,7 @@
  */
 
 import { parseWireFormatPrefixValue } from '../../../../message-dispatch.utils'
+import { msg } from '../../../../../../shared/utils/i18n'
 import type { StageWireFormat } from '../../../../../flow-builder/types'
 import type {
   CollectionSummary,
@@ -66,17 +67,24 @@ export const parseStepState = (
   return parsed as Record<string, unknown> // SAFETY: parsed confirmed as non-null non-array object by preceding guards
 }
 
-export const parseStepStateLenient = (stepStateRaw: string): Record<string, unknown> => {
+/**
+ * Strict step-state parse for persistence: throws on invalid or non-object JSON
+ * instead of silently collapsing to `{}`, so a broken payload can never overwrite
+ * a saved request with an empty body.
+ */
+export const parseStepStateStrict = (stepStateRaw: string): Record<string, unknown> => {
+  let parsed: unknown
   try {
-    const parsed = JSON.parse(stepStateRaw)
-    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
-      return parsed as Record<string, unknown> // SAFETY: parsed confirmed as non-null non-array object by preceding guards
-    }
-    return {}
+    parsed = JSON.parse(stepStateRaw)
   } catch {
-    // Intentional: invalid JSON step state returns empty object for lenient downstream processing
-    return {}
+    throw new Error(
+      msg('Nieprawidlowy JSON w payloadzie — popraw przed zapisem', 'Invalid JSON payload — fix it before saving'),
+    )
   }
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    throw new Error(msg('Payload musi byc obiektem JSON', 'Payload must be a JSON object'))
+  }
+  return parsed as Record<string, unknown> // SAFETY: guarded as non-null non-array object above
 }
 
 export const toHeadersRecord = (rows: DispatchHeaderRow[]): Record<string, string> =>
