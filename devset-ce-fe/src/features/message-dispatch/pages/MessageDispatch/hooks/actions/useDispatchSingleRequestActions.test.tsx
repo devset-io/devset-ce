@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest'
-import { act } from 'react'
+import { act, useEffect } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { createInitialState } from '../../state/MessageDispatch.reducer'
 import type { MessageDispatchAction, MessageDispatchState } from '../../state/MessageDispatch.types'
@@ -79,11 +79,14 @@ function dispatch(action: MessageDispatchAction) {
 }
 
 function Probe() {
-  actions = useDispatchSingleRequestActions({
+  const result = useDispatchSingleRequestActions({
     dispatch,
     stateRef,
     refreshCollections,
     buildSingleRequestPayload,
+  })
+  useEffect(() => {
+    actions = result
   })
   return null
 }

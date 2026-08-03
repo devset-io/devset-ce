@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest'
-import { act } from 'react'
+import { act, useEffect } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { createInitialState } from '../../state/MessageDispatch.reducer'
 import type { MessageDispatchAction, MessageDispatchState } from '../../state/MessageDispatch.types'
@@ -93,14 +93,17 @@ let root: Root | null = null
 let dispatchLog: MessageDispatchAction[] = []
 let stateRef: { current: MessageDispatchState }
 let actions: ReturnType<typeof useDispatchDraftHydration>
-const findRepoProtoSchema = vi.fn((_id: string): RepoProtoSchema | null => null)
+const findRepoProtoSchema = vi.fn((): RepoProtoSchema | null => null)
 
 function dispatch(action: MessageDispatchAction) {
   dispatchLog.push(action)
 }
 
 function Probe() {
-  actions = useDispatchDraftHydration({ dispatch, stateRef, findRepoProtoSchema })
+  const result = useDispatchDraftHydration({ dispatch, stateRef, findRepoProtoSchema })
+  useEffect(() => {
+    actions = result
+  })
   return null
 }
 

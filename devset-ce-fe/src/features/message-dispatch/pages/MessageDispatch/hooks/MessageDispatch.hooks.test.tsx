@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from 'vitest'
-import { act } from 'react'
+import { act, useEffect } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import type { MessageDispatchLabels, MessageDispatchProps } from '../../../types/messageDispatch.view.types'
 
@@ -130,7 +130,10 @@ let root: Root | null = null
 let latest: MessageDispatchProps
 
 function Probe() {
-  latest = useMessageDispatch({ labels: fakeLabels })
+  const result = useMessageDispatch({ labels: fakeLabels })
+  useEffect(() => {
+    latest = result
+  })
   return null
 }
 

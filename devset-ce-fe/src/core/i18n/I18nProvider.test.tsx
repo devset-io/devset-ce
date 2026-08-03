@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { act } from 'react'
+import { act, useEffect } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { I18nProvider, translateFor, useI18n } from './I18nProvider'
 
@@ -14,7 +14,10 @@ let root: Root | null = null
 let latest: ReturnType<typeof useI18n>
 
 function Probe() {
-  latest = useI18n()
+  const result = useI18n()
+  useEffect(() => {
+    latest = result
+  })
   return null
 }
 
