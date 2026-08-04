@@ -94,9 +94,12 @@ export function useMessageDispatchRequestCard({
     [derived.availableSchemas],
   )
 
-  const handleSaveAction = async () => {
+  const handleSaveAction = () => {
     if (shouldUpdateSingleRequest || isLoadedSingleRequest) {
-      await callbacks.saveCurrentAsSingleRequest()
+      // Update overwrites the source saved request — confirm the target first.
+      const targetCollection = state.loadedSingleRequestCollectionName || state.selectedCollectionName
+      const targetName = state.selectedSingleRequestName || resolvedSingleRequestName
+      callbacks.openUpdateConfirm(targetCollection, targetName)
       return
     }
 
@@ -107,6 +110,16 @@ export function useMessageDispatchRequestCard({
         '',
       resolvedSingleRequestName,
     )
+  }
+
+  const handleUpdateConfirmClose = () => {
+    if (state.isSavingSingleRequest) return
+    callbacks.closeUpdateConfirm()
+  }
+
+  const handleUpdateConfirmSubmit = async () => {
+    const success = await callbacks.saveCurrentAsSingleRequest()
+    if (success) callbacks.closeUpdateConfirm()
   }
 
   const handleSaveModalClose = () => {
@@ -145,6 +158,14 @@ export function useMessageDispatchRequestCard({
       collectionName: state.saveCollectionName,
       requestName: state.saveRequestName,
       collectionOptions: state.collections.map((collection) => collection.collectionName),
+    },
+    updateConfirm: {
+      isOpen: state.updateConfirm !== null,
+      message: state.updateConfirm
+        ? labels.updateConfirmMessage
+            .replace('{name}', state.updateConfirm.requestName)
+            .replace('{collection}', state.updateConfirm.collectionName)
+        : '',
     },
     connectorOptions,
     selectedConnectorName: state.selectedConnectorName,
@@ -206,6 +227,8 @@ export function useMessageDispatchRequestCard({
     onSaveAction: handleSaveAction,
     onSaveModalClose: handleSaveModalClose,
     onSaveModalSubmit: handleSaveModalSubmit,
+    onUpdateConfirmClose: handleUpdateConfirmClose,
+    onUpdateConfirmSubmit: handleUpdateConfirmSubmit,
     onSaveCollectionNameChange: callbacks.setSaveCollectionName,
     onSaveRequestNameChange: callbacks.setSaveRequestName,
     onConnectorChange: callbacks.onConnectorChange,

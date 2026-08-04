@@ -13,6 +13,7 @@ import { toast } from 'sonner'
 import { useI18n } from '../../../../../../core/i18n/I18nProvider'
 import { setActiveConnector } from '../../../../../../shared/services/kafka-connectors.service'
 import { trimOr } from '../../../../../../shared/utils/string-normalization'
+import { parseKeyValue } from '../../../../../../shared/types/key-value.types'
 import {
   DEFAULT_EVENT,
   DEFAULT_STAGE,
@@ -117,8 +118,13 @@ export function useDispatchDraftHydration({
     toast.success(t('dispatch.execution.loadedHistoryEntry', { historyId: entry.id }))
   }
 
-  const loadSingleRequestToDispatch = (entry: SingleRequestPayload) => {
+  const loadSingleRequestToDispatch = (
+    entry: SingleRequestPayload,
+    options?: { silent?: boolean },
+  ) => {
+    const silent = options?.silent ?? false
     const isProtobuf = entry.contentType === 'application/x-protobuf'
+    const parsedKey = parseKeyValue(entry.key)
     const connectorExists = stateRef.current.connectors.some(
       (connector) => connector.name === entry.producerName,
     )
@@ -150,8 +156,8 @@ export function useDispatchDraftHydration({
         topicRaw: entry.topic ?? '',
         routingKeyRaw: entry.routingKey ?? '',
         exchangeRaw: entry.exchange ?? '',
-        kafkaKeyRaw: '',
-        kafkaKeyKind: 'literal',
+        kafkaKeyRaw: parsedKey.value,
+        kafkaKeyKind: parsedKey.kind,
         kafkaHeadersRows: toHeaderRows(entry.headers),
         stepStateRaw: JSON.stringify(entry.state, null, 2),
         loadedHistoryMetadata: {
@@ -175,6 +181,10 @@ export function useDispatchDraftHydration({
         ...schemaPatch,
       },
     })
+
+    if (silent) {
+      return
+    }
 
     if (!connectorExists) {
       toast.warning(t('dispatch.execution.connectorMissing', { producer: entry.producerName }))

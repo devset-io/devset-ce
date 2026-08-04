@@ -86,6 +86,8 @@ export interface MessageDispatchCallbacks {
   clearEditingRequest: () => void
   openSaveModal: (collectionName: string, requestName: string) => void
   closeSaveModal: () => void
+  openUpdateConfirm: (collectionName: string, requestName: string) => void
+  closeUpdateConfirm: () => void
   setSaveCollectionName: (value: string) => void
   setSaveRequestName: (value: string) => void
   // Collection context modal

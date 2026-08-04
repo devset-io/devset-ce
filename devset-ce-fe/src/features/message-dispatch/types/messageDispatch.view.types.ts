@@ -74,6 +74,10 @@ export type DispatchRequestCardLabels = {
   saveModalAria: string
   saveModalTitle: string
   saveModalSubtitle: string
+  updateConfirmAria: string
+  updateConfirmTitle: string
+  // Template with {name} and {collection} placeholders.
+  updateConfirmMessage: string
   close: string
   collectionLabel: string
   collectionPlaceholder: string
@@ -276,6 +280,12 @@ export type DispatchSaveModalViewModel = {
   collectionOptions: string[]
 }
 
+export type DispatchUpdateConfirmViewModel = {
+  isOpen: boolean
+  // Fully interpolated confirmation message.
+  message: string
+}
+
 export type DispatchRequestCardProps = {
   labels: DispatchRequestCardLabels
   isHistoryPanelOpen: boolean
@@ -289,6 +299,7 @@ export type DispatchRequestCardProps = {
   configError: string | null
   sendError: string | null
   saveModal: DispatchSaveModalViewModel
+  updateConfirm: DispatchUpdateConfirmViewModel
   connectorOptions: DispatchConnectorOptionViewModel[]
   selectedConnectorName: string
   contentMode: ContentMode
@@ -331,6 +342,8 @@ export type DispatchRequestCardProps = {
   onSaveAction: () => void | Promise<void>
   onSaveModalClose: () => void
   onSaveModalSubmit: () => void | Promise<void>
+  onUpdateConfirmClose: () => void
+  onUpdateConfirmSubmit: () => void | Promise<void>
   onSaveCollectionNameChange: (value: string) => void
   onSaveRequestNameChange: (value: string) => void
   onConnectorChange: (name: string) => void
@@ -430,8 +443,24 @@ export type DispatchCollectionContextModalProps = {
   onSubmit: () => void | Promise<void>
 }
 
+export type DispatchTabItem = {
+  id: string
+  title: string
+  isActive: boolean
+  broker: 'kafka' | 'rabbit' | null
+  contentMode: ContentMode
+}
+
+export type DispatchTabBarProps = {
+  tabs: DispatchTabItem[]
+  onSelect: (id: string) => void
+  onClose: (id: string) => void
+  onNewTab: () => void
+}
+
 export type MessageDispatchProps = {
   isHistoryPanelOpen: boolean
+  tabBar: DispatchTabBarProps
   collectionsPanel: DispatchCollectionsPanelProps
   collectionContextModal: DispatchCollectionContextModalProps
   requestCard: DispatchRequestCardProps

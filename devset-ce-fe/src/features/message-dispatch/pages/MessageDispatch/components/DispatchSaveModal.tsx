@@ -111,7 +111,6 @@ export const DispatchSaveModal = React.memo(function DispatchSaveModal({
             onClick={() => void onSaveModalSubmit()}
             disabled={
               isSavingSingleRequest ||
-              saveModal.collectionName.trim().length === 0 ||
               saveModal.requestName.trim().length === 0
             }
           >

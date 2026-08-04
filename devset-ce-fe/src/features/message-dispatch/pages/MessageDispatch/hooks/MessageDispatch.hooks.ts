@@ -41,6 +41,8 @@ import type { DispatchKeyKind } from '../../../types/messageDispatch.types'
 import { useDispatchDerivedState } from './MessageDispatch.selectors'
 import { useDispatchPayloadHandlers } from './MessageDispatch.payloadHandlers'
 import { useDispatchEffects } from './MessageDispatch.effects'
+import { useDispatchWorkspacePersistence } from './useDispatchWorkspacePersistence'
+import { useDispatchTabHydration } from './useDispatchTabHydration'
 
 // ── Action hooks (dispatch-based) ──
 import { useDispatchDraftHydration } from './actions/useDispatchDraftHydration'
@@ -127,6 +129,9 @@ export function useMessageDispatch({ labels }: UseMessageDispatchOptions): Messa
   // ── 4. Side effects (init, subscriptions, proto sync, etc.) ──
   useDispatchEffects(state, dispatch, stateRef, derived, t)
 
+  // ── 4b. Tab workspace persistence (scratch → localStorage, saved-request tabs → API) ──
+  useDispatchWorkspacePersistence(state, dispatch, stateRef)
+
   // ── 5. Action hooks (dispatch-based, no adapter dependency) ──
   const schemaActions = useDispatchSchemaActions({
     dispatch,
@@ -171,8 +176,10 @@ export function useMessageDispatch({ labels }: UseMessageDispatchOptions): Messa
     stateRef,
     refreshCollections,
     buildSingleRequestPayload: singleRequestDraft.buildSingleRequestPayload,
-    loadSingleRequestToDispatch: hydrationActions.loadSingleRequestToDispatch,
   })
+
+  // Hydrate saved-request tabs (opened fresh or restored from the backend) from the catalog.
+  useDispatchTabHydration(state, dispatch, hydrationActions.loadSingleRequestToDispatch)
 
   // ── 6. Callbacks (all dispatch-based, plain value signatures) ──
   const callbacks: MessageDispatchCallbacks = useMemo(
@@ -284,6 +291,9 @@ export function useMessageDispatch({ labels }: UseMessageDispatchOptions): Messa
       openSaveModal: (collectionName: string, requestName: string) =>
         dispatch({ type: 'saveModalOpened', collectionName, requestName }),
       closeSaveModal: () => dispatch({ type: 'saveModalClosed' }),
+      openUpdateConfirm: (collectionName: string, requestName: string) =>
+        dispatch({ type: 'updateConfirmRequested', collectionName, requestName }),
+      closeUpdateConfirm: () => dispatch({ type: 'updateConfirmClosed' }),
       setSaveCollectionName: (value: string) =>
         dispatch({ type: 'saveCollectionNameChanged', value }),
       setSaveRequestName: (value: string) =>
@@ -338,6 +348,30 @@ export function useMessageDispatch({ labels }: UseMessageDispatchOptions): Messa
     callbacks,
   })
 
+  const tabBar = useMemo(() => {
+    const connectorTypeByName = new Map(state.connectors.map((c) => [c.name, c.type]))
+    return {
+      tabs: [...state.tabs]
+        .sort((a, b) => a.order - b.order)
+        .map((tab) => {
+          const isActive = tab.id === state.activeTabId
+          const connectorName = isActive
+            ? state.selectedConnectorName
+            : tab.formSnapshot?.selectedConnectorName ?? ''
+          return {
+            id: tab.id,
+            title: tab.title,
+            isActive,
+            broker: connectorTypeByName.get(connectorName) ?? null,
+            contentMode: isActive ? state.contentMode : tab.formSnapshot?.contentMode ?? 'json',
+          }
+        }),
+      onSelect: (id: string) => dispatch({ type: 'tabSwitched', id }),
+      onClose: (id: string) => dispatch({ type: 'tabClosed', id }),
+      onNewTab: () => dispatch({ type: 'tabOpenedScratch' }),
+    }
+  }, [state.tabs, state.activeTabId, state.connectors, state.selectedConnectorName, state.contentMode, dispatch])
+
   const { historyPanel, historyPreviewModal } = useMessageDispatchHistoryPanel({
     historyLabels: labels.history,
     historyPreviewLabels: labels.historyPreview,
@@ -380,6 +414,7 @@ export function useMessageDispatch({ labels }: UseMessageDispatchOptions): Messa
 
   return {
     isHistoryPanelOpen: state.isHistoryPanelOpen,
+    tabBar,
     collectionsPanel,
     collectionContextModal,
     requestCard,

@@ -14,10 +14,12 @@ import { DispatchCollectionsPanel } from './DispatchCollectionsPanel'
 import { DispatchHistoryPanel } from './DispatchHistoryPanel'
 import { DispatchHistoryPreviewModal } from './DispatchHistoryPreviewModal'
 import { DispatchRequestCard } from './DispatchRequestCard'
+import { DispatchTabBar } from './DispatchTabBar'
 import type { MessageDispatchProps } from '../../../types/messageDispatch.view.types'
 
 export const MessageDispatch = React.memo(function MessageDispatch({
   isHistoryPanelOpen,
+  tabBar,
   collectionsPanel,
   collectionContextModal,
   requestCard,
@@ -30,7 +32,10 @@ export const MessageDispatch = React.memo(function MessageDispatch({
     >
       <div className="dispatch-main">
         <DispatchCollectionsPanel {...collectionsPanel} />
-        <DispatchRequestCard {...requestCard} />
+        <div className="dispatch-request-column">
+          <DispatchTabBar {...tabBar} />
+          <DispatchRequestCard {...requestCard} />
+        </div>
       </div>
 
       {isHistoryPanelOpen ? <DispatchHistoryPanel {...historyPanel} /> : null}

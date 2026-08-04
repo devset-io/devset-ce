@@ -22,6 +22,14 @@
 import { DEFAULT_PROTO_SCHEMA, DEFAULT_STEP_STATE } from '../../../message-dispatch.constants'
 import { parseWireFormatPrefixValue } from '../../../message-dispatch.utils'
 import { generateUuid } from '../../../../../shared/utils/random'
+import {
+  applyPerTabFields,
+  createScratchTab,
+  extractPerTabFields,
+  SCRATCH_TAB_TITLE,
+  stashActiveTab,
+} from './MessageDispatch.tabs'
+import type { DispatchTab } from './MessageDispatch.tabs'
 import type { MessageDispatchAction, MessageDispatchState } from './MessageDispatch.types'
 
 // ──────────────────────────────────────────────────────────────
@@ -33,6 +41,7 @@ import type { MessageDispatchAction, MessageDispatchState } from './MessageDispa
  * Called once when the reducer is first initialized via useReducer.
  */
 export function createInitialState(): MessageDispatchState {
+  const initialTab = createScratchTab(0)
   return {
     // ── Config ──
     connectors: [],
@@ -109,6 +118,7 @@ export function createInitialState(): MessageDispatchState {
     isSaveModalOpen: false,
     saveCollectionName: '',
     saveRequestName: '',
+    updateConfirm: null,
 
     // ── Collection context modal ──
     isCollectionContextModalOpen: false,
@@ -116,7 +126,16 @@ export function createInitialState(): MessageDispatchState {
     collectionContextModalEntries: [],
     collectionContextModalError: null,
     isSavingCollectionContext: false,
+
+    // ── Tabs ──
+    tabs: [initialTab],
+    activeTabId: initialTab.id,
   }
+}
+
+/** Default per-tab field values — the fresh-form baseline used when opening/resetting a tab. */
+function defaultPerTabFields() {
+  return extractPerTabFields(createInitialState())
 }
 
 // ──────────────────────────────────────────────────────────────
@@ -596,12 +615,23 @@ export function reducer(
       return { ...state, singleRequestNameRaw: action.value }
 
     // User selected a saved request (or cleared the selection with null).
-    case 'singleRequestSelected':
+    // Keep the active tab's pointer and title in sync so the tab bar reflects
+    // what is loaded in the current tab.
+    case 'singleRequestSelected': {
+      const ref =
+        action.name && action.collectionName
+          ? { collectionName: action.collectionName, singleRequestName: action.name }
+          : null
+      const title = action.name ?? SCRATCH_TAB_TITLE
       return {
         ...state,
         selectedSingleRequestName: action.name,
         loadedSingleRequestCollectionName: action.collectionName,
+        tabs: state.tabs.map((tab) =>
+          tab.id === state.activeTabId ? { ...tab, savedRequestRef: ref, title } : tab,
+        ),
       }
+    }
 
     // Saved requests for the selected collection were loaded.
     case 'singleRequestsLoaded':
@@ -690,6 +720,17 @@ export function reducer(
     case 'saveModalClosed':
       return { ...state, isSaveModalOpen: false }
 
+    // User pressed Update — ask to confirm overwriting the source saved request.
+    case 'updateConfirmRequested':
+      return {
+        ...state,
+        updateConfirm: { collectionName: action.collectionName, requestName: action.requestName },
+      }
+
+    // User dismissed the update confirmation.
+    case 'updateConfirmClosed':
+      return { ...state, updateConfirm: null }
+
     // User typed in the collection name field inside the save modal.
     case 'saveCollectionNameChanged':
       return { ...state, saveCollectionName: action.value }
@@ -769,6 +810,118 @@ export function reducer(
     // Load a full set of fields from a saved request into the dispatch form.
     case 'draftHydratedFromSavedRequest':
       return { ...state, ...action.patch }
+
+    // ────────────────────────────────────────────────
+    // Tabs
+    //
+    // Only the active tab's fields are live in the state above. Opening,
+    // switching and closing stash the current form into the outgoing tab's
+    // snapshot and apply the incoming tab's snapshot (or defaults, when the
+    // tab has not been hydrated from its saved request yet).
+    // ────────────────────────────────────────────────
+
+    // User opened a new empty (scratch) tab — stash current, reset the form.
+    case 'tabOpenedScratch': {
+      const stashed = stashActiveTab(state)
+      const newTab = createScratchTab(stashed.length)
+      return {
+        ...applyPerTabFields(state, defaultPerTabFields()),
+        tabs: [...stashed, newTab],
+        activeTabId: newTab.id,
+      }
+    }
+
+    // User opened a saved request in a new tab. The tab is inserted at the FRONT
+    // of the bar. The form is reset to defaults; the caller hydrates it from the
+    // referenced saved request.
+    case 'tabOpenedFromSavedRequest': {
+      const stashed = stashActiveTab(state)
+      const newTab: DispatchTab = {
+        id: generateUuid(),
+        savedRequestRef: action.ref,
+        formSnapshot: null,
+        activeHistoryRef: null,
+        title: action.ref.singleRequestName,
+        order: 0,
+      }
+      const tabs = [newTab, ...stashed].map((tab, index) => ({ ...tab, order: index }))
+      return {
+        ...applyPerTabFields(state, defaultPerTabFields()),
+        tabs,
+        activeTabId: newTab.id,
+      }
+    }
+
+    // User switched to another tab — stash current, restore the target's snapshot.
+    case 'tabSwitched': {
+      if (action.id === state.activeTabId) return state
+      const target = state.tabs.find((tab) => tab.id === action.id)
+      if (!target) return state
+      const snapshot = target.formSnapshot ?? defaultPerTabFields()
+      return {
+        ...applyPerTabFields(state, snapshot),
+        tabs: stashActiveTab(state),
+        activeTabId: action.id,
+      }
+    }
+
+    // User closed a tab. Closing the active one activates a neighbour; closing
+    // the last one leaves a single fresh scratch tab.
+    case 'tabClosed': {
+      const closedIndex = state.tabs.findIndex((tab) => tab.id === action.id)
+      if (closedIndex === -1) return state
+
+      const remaining = state.tabs
+        .filter((tab) => tab.id !== action.id)
+        .map((tab, index) => ({ ...tab, order: index }))
+
+      if (action.id !== state.activeTabId) {
+        return { ...state, tabs: remaining }
+      }
+
+      if (remaining.length === 0) {
+        const scratch = createScratchTab(0)
+        return {
+          ...applyPerTabFields(state, defaultPerTabFields()),
+          tabs: [scratch],
+          activeTabId: scratch.id,
+        }
+      }
+
+      const neighbour = remaining[Math.min(closedIndex, remaining.length - 1)]
+      const snapshot = neighbour.formSnapshot ?? defaultPerTabFields()
+      return {
+        ...applyPerTabFields(state, snapshot),
+        tabs: remaining,
+        activeTabId: neighbour.id,
+      }
+    }
+
+    // Bulk-restore tabs from persistence (localStorage). Runs on mount from the
+    // fast local-storage load, before any user input, so replacing the initial
+    // scratch tab wholesale is safe.
+    case 'tabsHydrated': {
+      if (action.tabs.length === 0) return state
+      const active =
+        action.tabs.find((tab) => tab.id === action.activeTabId) ?? action.tabs[0]
+      const snapshot = active.formSnapshot ?? defaultPerTabFields()
+      return {
+        ...applyPerTabFields(state, snapshot),
+        tabs: action.tabs,
+        activeTabId: active.id,
+      }
+    }
+
+    // Merge in tabs opened on another device (backend pointers), arriving after
+    // the local load. Append-only: tabs already open are left untouched so
+    // in-progress edits and the active tab survive the cross-device merge.
+    case 'serverTabsMerged': {
+      const openIds = new Set(state.tabs.map((tab) => tab.id))
+      const additions = action.tabs.filter((tab) => !openIds.has(tab.id))
+      if (additions.length === 0) return state
+      const tabs = [...state.tabs, ...additions].map((tab, index) => ({ ...tab, order: index }))
+      return { ...state, tabs }
+    }
 
     // ────────────────────────────────────────────────
     // Side-effect-only actions

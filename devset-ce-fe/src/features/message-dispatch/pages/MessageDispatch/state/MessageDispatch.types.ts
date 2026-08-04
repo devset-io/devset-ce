@@ -24,6 +24,7 @@ import type {
   SingleRequestPayload as ServiceSingleRequestPayload,
   SingleStepHistoryEntry,
 } from '../../../services/message-dispatch.service'
+import type { DispatchTab, SavedRequestRef } from './MessageDispatch.tabs'
 
 // ── Re-export domain types (from old types/messageDispatch.types.ts) ──
 
@@ -152,6 +153,8 @@ export interface MessageDispatchState {
   isSaveModalOpen: boolean
   saveCollectionName: string
   saveRequestName: string
+  // Target of the "overwrite saved request" confirmation, or null when closed.
+  updateConfirm: { collectionName: string; requestName: string } | null
 
   // ── Collection context modal ──
   // When open, edits the collectionContext template for the given collection
@@ -161,6 +164,12 @@ export interface MessageDispatchState {
   collectionContextModalEntries: CollectionContextEntry[]
   collectionContextModalError: string | null
   isSavingCollectionContext: boolean
+
+  // ── Tabs (Postman-style) ──
+  // Open tabs and the active one. Only the active tab's fields are live above;
+  // inactive tabs keep their snapshot in `formSnapshot`. See MessageDispatch.tabs.ts.
+  tabs: DispatchTab[]
+  activeTabId: string | null
 }
 
 // ──────────────────────────────────────────────────────────────
@@ -261,6 +270,8 @@ export type MessageDispatchAction =
   | { type: 'saveModalClosed' }
   | { type: 'saveCollectionNameChanged'; value: string }
   | { type: 'saveRequestNameChanged'; value: string }
+  | { type: 'updateConfirmRequested'; collectionName: string; requestName: string }
+  | { type: 'updateConfirmClosed' }
 
   // ── Collection context modal ──
   | { type: 'collectionContextModalOpened'; collectionName: string; entries: CollectionContextEntry[] }
@@ -275,6 +286,14 @@ export type MessageDispatchAction =
   // ── Bulk state hydration (loading from history/saved request) ──
   | { type: 'draftHydratedFromHistory'; patch: Partial<MessageDispatchState> }
   | { type: 'draftHydratedFromSavedRequest'; patch: Partial<MessageDispatchState> }
+
+  // ── Tabs ──
+  | { type: 'tabOpenedScratch' }
+  | { type: 'tabOpenedFromSavedRequest'; ref: SavedRequestRef }
+  | { type: 'tabSwitched'; id: string }
+  | { type: 'tabClosed'; id: string }
+  | { type: 'tabsHydrated'; tabs: DispatchTab[]; activeTabId: string | null }
+  | { type: 'serverTabsMerged'; tabs: DispatchTab[] }
 
   // ── Side-effect-only actions (handled in dispatchWithEffects) ──
   | { type: 'init' }

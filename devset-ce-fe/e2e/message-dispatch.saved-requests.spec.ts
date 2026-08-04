@@ -167,7 +167,7 @@ test('saved-requests: clicking a saved request loads it into the dispatch head',
   await page.reload()
   await waitForDispatchReady(page)
   await collectionToggle(page, collectionName).click()
-  await page.getByRole('button', { name: requestName, exact: true }).click()
+  await collectionsPanel(page).getByRole('button', { name: requestName, exact: true }).click()
 
   // The head's "Loaded single-request" hint is the canonical witness that
   // hydration completed.
@@ -187,20 +187,26 @@ test('saved-requests: clicking Update on a loaded request saves in-place without
   await page.goto('/message-dispatch')
   await waitForDispatchReady(page)
   await saveSingleRequestViaUi(page, collectionName, requestName)
-  await page.getByRole('button', { name: requestName, exact: true }).click()
+  await collectionsPanel(page).getByRole('button', { name: requestName, exact: true }).click()
   await expect(dispatchHead(page).getByRole('button', { name: 'Update', exact: true })).toBeVisible()
 
   // The PATCH is the user-invisible thing that distinguishes update from save;
   // verifying it fires guarantees we exercised the patchSingleRequest branch
   // of saveSingleRequestWithValues (otherwise a phantom POST would still pass
   // the visible-name assertion).
+  // Update now confirms before overwriting the source request — accept it.
+  await dispatchHead(page).getByRole('button', { name: 'Update', exact: true }).click()
+  const confirmDialog = page.getByRole('dialog', { name: 'Confirm single-request update' })
+  await expect(confirmDialog).toBeVisible()
+
   const patchResponse = page.waitForResponse(
     (res) => res.url().includes(`/api/single-requests/${encodeURIComponent(requestName)}`) && res.request().method() === 'PATCH' && res.ok(),
   )
-  await dispatchHead(page).getByRole('button', { name: 'Update', exact: true }).click()
+  await confirmDialog.getByRole('button', { name: 'Update', exact: true }).click()
   await patchResponse
 
-  // No modal — Update is the direct-save path.
+  // The confirm modal closes; no "Save single-request" modal is involved.
+  await expect(confirmDialog).toHaveCount(0)
   await expect(page.getByRole('dialog', { name: 'Save single-request' })).toHaveCount(0)
 })
 
@@ -216,7 +222,7 @@ test('saved-requests: double-clicking a request name swaps it for a rename input
   await waitForDispatchReady(page)
   await saveSingleRequestViaUi(page, collectionName, requestName)
 
-  const requestButton = page.getByRole('button', { name: requestName, exact: true })
+  const requestButton = collectionsPanel(page).getByRole('button', { name: requestName, exact: true })
   await requestButton.dblclick()
 
   const renameInput = page.getByLabel('Rename collection')
@@ -226,8 +232,8 @@ test('saved-requests: double-clicking a request name swaps it for a rename input
 
   // The renameSingleRequest effect calls refreshCollections after rollback-
   // safe create+delete; the old name must vanish from the tree.
-  await expect(page.getByRole('button', { name: nextName, exact: true })).toBeVisible()
-  await expect(page.getByRole('button', { name: requestName, exact: true })).toHaveCount(0)
+  await expect(collectionsPanel(page).getByRole('button', { name: nextName, exact: true })).toBeVisible()
+  await expect(collectionsPanel(page).getByRole('button', { name: requestName, exact: true })).toHaveCount(0)
 })
 
 test('saved-requests: pressing Escape in the rename input restores the original name', async ({ page }) => {
@@ -238,14 +244,14 @@ test('saved-requests: pressing Escape in the rename input restores the original 
   await waitForDispatchReady(page)
   await saveSingleRequestViaUi(page, collectionName, requestName)
 
-  await page.getByRole('button', { name: requestName, exact: true }).dblclick()
+  await collectionsPanel(page).getByRole('button', { name: requestName, exact: true }).dblclick()
   const renameInput = page.getByLabel('Rename collection')
   await renameInput.fill('this-should-be-discarded')
   await renameInput.press('Escape')
 
   // Reducer's `requestRenameCancelled` resets editingRequest to null without
   // dispatching the rename effect — old name stays, no API call ever fires.
-  await expect(page.getByRole('button', { name: requestName, exact: true })).toBeVisible()
+  await expect(collectionsPanel(page).getByRole('button', { name: requestName, exact: true })).toBeVisible()
   await expect(page.getByLabel('Rename collection')).toHaveCount(0)
 })
 
@@ -266,7 +272,7 @@ test('saved-requests: starting rename via the actions menu offers the same input
   await renameInput.fill(nextName)
   await renameInput.press('Enter')
 
-  await expect(page.getByRole('button', { name: nextName, exact: true })).toBeVisible()
+  await expect(collectionsPanel(page).getByRole('button', { name: nextName, exact: true })).toBeVisible()
 })
 
 test('saved-requests: deleting via the actions menu removes the request from the tree', async ({ page }) => {
@@ -280,7 +286,7 @@ test('saved-requests: deleting via the actions menu removes the request from the
   await page.getByRole('button', { name: `Actions for ${requestName}`, exact: true }).click()
   await page.getByRole('menuitem', { name: 'Delete' }).click()
 
-  await expect(page.getByRole('button', { name: requestName, exact: true })).toHaveCount(0)
+  await expect(collectionsPanel(page).getByRole('button', { name: requestName, exact: true })).toHaveCount(0)
   // Collection survives — only the leaf request was removed.
   await expect(collectionRow(page, collectionName)).toBeVisible()
 })
@@ -301,7 +307,7 @@ test('saved-requests: a saved request survives a hard page reload', async ({ pag
   // on init; persistence is what we're actually asserting here.
   await expect(collectionRow(page, collectionName)).toBeVisible()
   await collectionToggle(page, collectionName).click()
-  await expect(page.getByRole('button', { name: requestName, exact: true })).toBeVisible()
+  await expect(collectionsPanel(page).getByRole('button', { name: requestName, exact: true })).toBeVisible()
 })
 
 function trackUniqueCollection(kind: string): string {
@@ -369,5 +375,5 @@ async function expectRequestInTree(page: Page, collectionName: string, requestNa
   if ((await toggle.getAttribute('aria-expanded')) !== 'true') {
     await toggle.click()
   }
-  await expect(page.getByRole('button', { name: requestName, exact: true })).toBeVisible()
+  await expect(collectionsPanel(page).getByRole('button', { name: requestName, exact: true })).toBeVisible()
 }
