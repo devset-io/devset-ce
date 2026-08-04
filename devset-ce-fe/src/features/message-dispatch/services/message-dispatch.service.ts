@@ -326,6 +326,8 @@ const toSingleRequestPayload = (payload: unknown): SingleRequestPayload | null =
     return null
   }
 
+  const key = isRecord(payload.key) ? payload.key : typeof payload.key === 'string' ? payload.key : null
+
   return {
     singleRequestName,
     collectionName,
@@ -339,7 +341,7 @@ const toSingleRequestPayload = (payload: unknown): SingleRequestPayload | null =
     stage: readOptionalText(payload.stage),
     event: readOptionalText(payload.event),
     state: isRecord(payload.state) ? payload.state : {},
-    key: isRecord(payload.key) ? payload.key : typeof payload.key === 'string' ? payload.key : null,
+    key,
     headers: isRecord(payload.headers) ? payload.headers : {},
     wireFormat: normalizeSingleRequestWireFormat(payload.wireFormat),
     workflowState: isRecord(payload.workflowState) ? payload.workflowState : {},

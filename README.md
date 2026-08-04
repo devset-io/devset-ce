@@ -9,7 +9,6 @@
 <p align="center">
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-FSL--1.1--Apache--2.0-4eb58a?style=flat-square"/></a>
   <a href="https://github.com/devset-io/devset-ce/releases"><img alt="Release" src="https://img.shields.io/github/v/release/devset-io/devset-ce?color=4eb58a&style=flat-square"/></a>
-  <a href="https://github.com/devset-io/devset-ce/stargazers"><img alt="Stars" src="https://img.shields.io/github/stars/devset-io/devset-ce?color=4eb58a&style=flat-square"/></a>
   <a href="https://github.com/devset-io/devset-ce/actions/workflows/ci.yml?query=branch%3Amain"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/devset-io/devset-ce/ci.yml?branch=main&label=ci&style=flat-square"/></a>
   <a href="https://github.com/devset-io/devset-ce/actions/workflows/e2e.yml?query=branch%3Amain"><img alt="E2E" src="https://img.shields.io/github/actions/workflow/status/devset-io/devset-ce/e2e.yml?branch=main&label=e2e&style=flat-square"/></a>
   <a href="https://github.com/devset-io/devset-ce/actions/workflows/release.yml"><img alt="Release" src="https://img.shields.io/github/actions/workflow/status/devset-io/devset-ce/release.yml?label=release&style=flat-square"/></a>

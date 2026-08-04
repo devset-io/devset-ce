@@ -28,7 +28,7 @@ export function useDispatchTabHydration(
 
   useEffect(() => {
     const activeTab = state.tabs.find((tab) => tab.id === state.activeTabId)
-    if (!activeTab || !activeTab.savedRequestRef || activeTab.formSnapshot !== null) return
+    if (!activeTab?.savedRequestRef || activeTab.formSnapshot !== null) return
     if (hydratedTabIds.current.has(activeTab.id)) return
 
     const ref = activeTab.savedRequestRef
