@@ -10,8 +10,8 @@
 
 package io.devset.ce.be.engine.application.steps.impl.query;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import io.devset.ce.be.common.domain.WorkflowEngineException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -55,7 +55,7 @@ public final class QueryProjectionBuilder {
         }
         try {
             return objectMapper.writeValueAsString(projection);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new WorkflowEngineException("Failed to serialize projection", e);
         }
     }

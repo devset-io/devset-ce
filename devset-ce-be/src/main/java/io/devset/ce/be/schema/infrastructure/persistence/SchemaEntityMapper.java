@@ -45,7 +45,6 @@ public interface SchemaEntityMapper {
     @Mapping(target = "schemaType", expression = "java(fromSchemaType(domain.type()))")
     @Mapping(source = "schema", target = "schemaJson")
     @Mapping(source = "descriptor", target = "schemaDescriptor")
-    @Mapping(target = "id", ignore = true)
     @Mapping(target = "entityVersion", ignore = true)
     SchemaEntity toEntity(SchemaDefinition domain);
 

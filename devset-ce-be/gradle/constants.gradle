@@ -17,21 +17,17 @@ ext {
             flyway                : "10.13.0",
             sqlite                : "3.45.1.0",
             testcontainersBom     : "1.21.4",
-            junitJupiter          : "5.11.4",
             spockBom              : "2.4-M5-groovy-4.0",
             jackson               : "2.18.3",
             lombok                : "1.18.40",
             mapstruct             : "1.6.3",
             lombokMapstructBinding: "0.2.0",
-            hibernateDialect      : "6.6.11.Final",
+            hibernateDialect      : "7.4.1.Final",
             ehcache               : "3.10.9",
             hibernateUtils55      : "3.8.1",
-            jacksonDatabind       : "2.21.4",
             mongoDbDriver         : "5.6.1",
-            springKafka           : "3.3.16",
             protobuf              : "4.31.1",
-            tomcat                : "10.1.55",
-            commonsLang3          : "3.18.0",
-            commonsCompress       : "1.28.0"
+            commonsCompress       : "1.28.0",
+            netty                 : "4.2.16.Final"
     ]
 }

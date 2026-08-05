@@ -10,9 +10,9 @@
 
 package io.devset.ce.be.common.persistence;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 import io.devset.ce.be.common.domain.WorkflowEngineException;
 import jakarta.persistence.AttributeConverter;
 
@@ -40,7 +40,7 @@ public abstract class BaseJsonConverter<T> implements AttributeConverter<T, Stri
         }
         try {
             return MAPPER.writeValueAsString(attribute);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new WorkflowEngineException("JSON write failed", e);
         }
     }
@@ -52,7 +52,7 @@ public abstract class BaseJsonConverter<T> implements AttributeConverter<T, Stri
         }
         try {
             return MAPPER.readValue(dbData, typeReference());
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new WorkflowEngineException("JSON read failed", e);
         }
     }

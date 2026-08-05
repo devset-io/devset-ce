@@ -13,34 +13,30 @@ package io.devset.ce.be.schema.infrastructure.persistence;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.IdClass;
 import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 import jakarta.persistence.Version;
 import lombok.Getter;
 import lombok.Setter;
 
 /**
  * JPA entity for the workflow_schema table.
+ * Identified by the composite key of its logical schema id and version
+ * (see {@link SchemaEntityId}) — there is no separate surrogate key.
  */
 @Entity
-@Table(
-        name = "workflow_schema",
-        uniqueConstraints = @UniqueConstraint(name = "uk_workflow_schema_id_version", columnNames = {"schema_id", "schema_version"})
-)
+@Table(name = "workflow_schema")
+@IdClass(SchemaEntityId.class)
 @Getter
 @Setter
 public class SchemaEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
     @Column(name = "schema_id", nullable = false, length = 200)
     private String schemaId;
 
+    @Id
     @Column(name = "schema_version", nullable = false)
     private Integer schemaVersion;
 

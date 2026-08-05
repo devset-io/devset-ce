@@ -10,8 +10,8 @@
 
 package io.devset.ce.be.kafka.application;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -41,7 +41,7 @@ import static org.mockito.Mockito.when;
 class KafkaTopicStreamServiceTest {
 
     private final DynamicKafkaProducerManager producerManager = mock(DynamicKafkaProducerManager.class);
-    private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
+    private final ObjectMapper objectMapper = JsonMapper.builder().build();
     private final KafkaTopicStreamService service = new KafkaTopicStreamService(producerManager, objectMapper);
 
     @Test

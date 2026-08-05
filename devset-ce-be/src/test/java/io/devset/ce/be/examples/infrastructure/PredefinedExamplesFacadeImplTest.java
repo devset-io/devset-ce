@@ -10,8 +10,9 @@
 
 package io.devset.ce.be.examples.infrastructure;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 import io.devset.ce.be.collection.application.CollectionFacade;
 import io.devset.ce.be.collection.domain.CollectionDefinition;
 import io.devset.ce.be.common.domain.SchemaType;
@@ -25,7 +26,6 @@ import io.devset.ce.be.workflow.application.WorkflowFacade;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
@@ -144,12 +144,12 @@ class PredefinedExamplesFacadeImplTest {
     }
 
     @Test
-    void shouldContinueWhenResourceCannotBeDeserialized() throws IOException {
+    void shouldContinueWhenResourceCannotBeDeserialized() {
         ObjectMapper failingMapper = mock(ObjectMapper.class);
         when(failingMapper.readValue(any(InputStream.class), any(Class.class)))
-                .thenThrow(new IOException("stream broken"));
+                .thenThrow(new JacksonException("stream broken") {});
         when(failingMapper.readValue(any(InputStream.class), any(TypeReference.class)))
-                .thenThrow(new IOException("stream broken"));
+                .thenThrow(new JacksonException("stream broken") {});
         PredefinedExamplesFacadeImpl failingFacade = new PredefinedExamplesFacadeImpl(
                 schemaFacade, workflowFacade, collectionFacade, singleRequestFacade, failingMapper);
 

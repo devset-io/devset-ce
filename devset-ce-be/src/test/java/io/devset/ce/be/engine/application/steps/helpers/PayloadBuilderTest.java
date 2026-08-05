@@ -10,7 +10,7 @@
 
 package io.devset.ce.be.engine.application.steps.helpers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import io.devset.ce.be.common.domain.WorkflowEngineException;
 import io.devset.ce.be.schema.infrastructure.protobuf.ProtoDescriptorUtils;
 import io.devset.ce.be.schema.infrastructure.protobuf.ProtobufDescriptorServiceImpl;

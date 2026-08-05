@@ -10,8 +10,8 @@
 
 package io.devset.ce.be.kafka.application;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -146,7 +146,7 @@ public class KafkaTopicStreamService {
 
         try {
             webSocketSession.sendMessage(new TextMessage(objectMapper.writeValueAsString(event)));
-        } catch (JsonProcessingException exception) {
+        } catch (JacksonException exception) {
             throw new IllegalStateException("Cannot serialize Kafka WS event", exception);
         } catch (Exception exception) {
             log.debug("Cannot send Kafka WS message. sessionId={}", webSocketSession.getId(), exception);

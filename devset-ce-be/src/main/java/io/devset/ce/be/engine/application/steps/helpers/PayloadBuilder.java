@@ -10,8 +10,8 @@
 
 package io.devset.ce.be.engine.application.steps.helpers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -48,7 +48,7 @@ public final class PayloadBuilder {
     ) {
         try {
             return objectMapper.writeValueAsString(value);
-        } catch (JsonProcessingException exception) {
+        } catch (JacksonException exception) {
             throw new WorkflowEngineException("Failed to serialize payload for step: " + stepId);
         }
     }
