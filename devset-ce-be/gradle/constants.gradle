@@ -27,6 +27,7 @@ ext {
             hibernateUtils55      : "3.8.1",
             mongoDbDriver         : "5.6.1",
             protobuf              : "4.31.1",
-            commonsCompress       : "1.28.0"
+            commonsCompress       : "1.28.0",
+            netty                 : "4.2.16.Final"
     ]
 }
