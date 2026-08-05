@@ -110,6 +110,10 @@ configurations.configureEach {
             details.useVersion "${versions.commonsCompress}"
             details.because 'CVE-2024-25710, CVE-2024-26308'
         }
+        if (details.requested.group == 'io.netty') {
+            details.useVersion "${versions.netty}"
+            details.because 'Bzip2Decoder infinite loop in RLE state machine can hang event-loop threads'
+        }
     }
 }
 
