@@ -10,7 +10,7 @@
 
 package io.devset.ce.be.rabbit.infrastructure;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import io.devset.ce.be.common.domain.ConnectionType;
 import io.devset.ce.be.common.domain.WorkflowEngineException;
 import io.devset.ce.be.common.util.LogSanitizer;

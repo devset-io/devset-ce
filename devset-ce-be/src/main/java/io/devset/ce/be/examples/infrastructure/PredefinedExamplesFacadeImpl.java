@@ -10,8 +10,9 @@
 
 package io.devset.ce.be.examples.infrastructure;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 import io.devset.ce.be.collection.application.CollectionFacade;
 import io.devset.ce.be.collection.domain.CollectionDefinition;
 import io.devset.ce.be.common.domain.SchemaType;
@@ -98,7 +99,7 @@ public class PredefinedExamplesFacadeImpl implements PredefinedExamplesFacade {
     private <T> T read(String path, Class<T> type) {
         try (InputStream in = new ClassPathResource(path).getInputStream()) {
             return objectMapper.readValue(in, type);
-        } catch (IOException e) {
+        } catch (IOException | JacksonException e) {
             throw new WorkflowEngineException("Cannot read predefined example resource: " + path, e);
         }
     }
@@ -107,7 +108,7 @@ public class PredefinedExamplesFacadeImpl implements PredefinedExamplesFacade {
         try (InputStream in = new ClassPathResource(path).getInputStream()) {
             return objectMapper.readValue(in, new TypeReference<LinkedHashMap<String, Object>>() {
             });
-        } catch (IOException e) {
+        } catch (IOException | JacksonException e) {
             throw new WorkflowEngineException("Cannot read predefined example resource: " + path, e);
         }
     }

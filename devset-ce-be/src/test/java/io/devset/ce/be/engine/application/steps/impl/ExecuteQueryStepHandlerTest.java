@@ -10,7 +10,7 @@
 
 package io.devset.ce.be.engine.application.steps.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import io.devset.ce.be.common.domain.ExecutionStateKeys;
 import io.devset.ce.be.common.domain.StepType;
 import io.devset.ce.be.common.domain.WorkflowEngineException;

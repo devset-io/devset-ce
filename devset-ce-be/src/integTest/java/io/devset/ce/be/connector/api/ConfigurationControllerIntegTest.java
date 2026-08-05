@@ -10,15 +10,15 @@
 
 package io.devset.ce.be.connector.api;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import io.devset.ce.be.config.DevsetCeBeApplication;
 import io.devset.ce.be.kafka.application.DynamicKafkaProducerManager;
 import io.devset.ce.be.kafka.application.dto.KafkaConnectionStatusDto;
 import io.devset.ce.be.rabbit.application.DynamicRabbitProducerManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;

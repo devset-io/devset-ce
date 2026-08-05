@@ -23,7 +23,7 @@ import java.util.Optional;
  * {@link io.devset.ce.be.schema.application.SchemaFacade} instead).
  */
 @Repository
-public interface SchemaRepository extends JpaRepository<SchemaEntity, Long> {
+public interface SchemaRepository extends JpaRepository<SchemaEntity, SchemaEntityId> {
 
     /**
      * Returns all schemas ordered by schema identifier then version (ascending).

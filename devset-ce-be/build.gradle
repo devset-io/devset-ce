@@ -1,18 +1,11 @@
 plugins {
     id 'java'
     id 'jacoco'
-    id 'org.springframework.boot' version '3.5.14'
+    id 'org.springframework.boot' version '4.1.0'
     id 'io.spring.dependency-management' version '1.1.7'
     id "idea"
 }
 apply from: rootProject.file("gradle/constants.gradle")
-
-ext['tomcat.version'] = versions.tomcat // CVE-2026-42498, 43513, 43514, 43515
-// Override the Spring Boot-managed BOM versions so the managed constraint itself is patched
-// (not just the resolved version). This removes the vulnerable 2.21.2 / 3.3.15 nodes from the
-// submitted dependency graph, which resolutionStrategy alone cannot do.
-ext['jackson-bom.version'] = versions.jacksonDatabind // CVE GHSA-j3rv-43j4-c7qm, GHSA-rmj7-2vxq-3g9f - PolymorphicTypeValidator bypass; force jackson-databind 2.21.4
-ext['spring-kafka.version'] = versions.springKafka // CVE - JsonKafkaHeaderMapper arbitrary JDK type deserialization; force spring-kafka 3.3.16
 
 group = "io.devset"
 version = "0.1.0"
@@ -79,12 +72,12 @@ dependencies {
         }
     }
     implementation "org.springframework.boot:spring-boot-starter-amqp"
-    implementation "org.springframework.kafka:spring-kafka:${versions.springKafka}"
+    implementation "org.springframework.kafka:spring-kafka"
     implementation "org.mongodb:bson:${versions.mongoDbDriver}"
     implementation "org.mongodb:mongodb-driver-core:${versions.mongoDbDriver}"
     implementation "org.mongodb:mongodb-driver-sync:${versions.mongoDbDriver}"
 
-    implementation "com.fasterxml.jackson.core:jackson-databind:${versions.jacksonDatabind}"
+    implementation "tools.jackson.core:jackson-databind"
     implementation "com.google.protobuf:protobuf-java:${versions.protobuf}"
     implementation "com.google.protobuf:protobuf-java-util:${versions.protobuf}"
     implementation "org.apache.kafka:kafka-clients"
@@ -99,7 +92,7 @@ dependencies {
     annotationProcessor "org.projectlombok:lombok-mapstruct-binding:${versions.lombokMapstructBinding}"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
-    testImplementation platform("org.junit:junit-bom:${versions.junitJupiter}")
+    testImplementation "org.springframework.boot:spring-boot-starter-webmvc-test"
     testImplementation "org.junit.jupiter:junit-jupiter"
 
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
@@ -113,10 +106,6 @@ dependencies {
 
 configurations.configureEach {
     resolutionStrategy.eachDependency { details ->
-        if (details.requested.group == 'org.apache.commons' && details.requested.name == 'commons-lang3') {
-            details.useVersion "${versions.commonsLang3}"
-            details.because 'CVE-2025-48924 - Uncontrolled Recursion'
-        }
         if (details.requested.group == 'org.apache.commons' && details.requested.name == 'commons-compress') {
             details.useVersion "${versions.commonsCompress}"
             details.because 'CVE-2024-25710, CVE-2024-26308'

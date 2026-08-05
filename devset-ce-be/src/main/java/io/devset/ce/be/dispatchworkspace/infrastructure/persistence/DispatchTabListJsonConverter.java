@@ -10,7 +10,7 @@
 
 package io.devset.ce.be.dispatchworkspace.infrastructure.persistence;
 
-import com.fasterxml.jackson.core.type.TypeReference;
+import tools.jackson.core.type.TypeReference;
 import io.devset.ce.be.common.persistence.BaseJsonConverter;
 import io.devset.ce.be.dispatchworkspace.domain.DispatchTab;
 import jakarta.persistence.Converter;

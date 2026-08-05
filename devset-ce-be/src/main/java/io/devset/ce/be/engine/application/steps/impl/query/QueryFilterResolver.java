@@ -10,8 +10,8 @@
 
 package io.devset.ce.be.engine.application.steps.impl.query;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import io.devset.ce.be.common.domain.WorkflowEngineException;
 import io.devset.ce.be.engine.application.steps.helpers.ExecutionPlanRuntimeContext;
 import io.devset.ce.be.engine.application.steps.helpers.SetFieldExpressionResolver;
@@ -57,7 +57,7 @@ public final class QueryFilterResolver {
         Map<String, Object> resolved = resolveMap(findConfig, context, stepId);
         try {
             return objectMapper.writeValueAsString(resolved);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new WorkflowEngineException("Failed to serialize resolved filter for step: " + stepId, e);
         }
     }

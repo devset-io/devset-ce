@@ -10,7 +10,7 @@
 
 package io.devset.ce.be.schema.infrastructure.persistence;
 
-import com.fasterxml.jackson.core.type.TypeReference;
+import tools.jackson.core.type.TypeReference;
 import io.devset.ce.be.common.persistence.BaseJsonConverter;
 import jakarta.persistence.Converter;
 
